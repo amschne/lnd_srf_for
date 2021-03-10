@@ -38,7 +38,7 @@ def get_args():
     return args
     
 def call_ncks(input_path, input_files, output_path):
-    for i, input_file in enuemrate(input_files):
+    for i, input_file in enumerate(input_files):
         ncks_mk_time_rec_dmn.run(os.path.abspath(os.path.join(input_path,
                                                               input_file)),
                                  os.path.abspath(os.path.join(output_path,
