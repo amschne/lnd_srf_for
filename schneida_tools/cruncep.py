@@ -16,33 +16,8 @@ import os
 import argparse
 
 from schneida_tools import ncks_mk_time_rec_dmn
-
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--cruncep_raw_data_path',
-                        default=os.path.join('data_raw',
-                          'atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715'),
-                        help='Path to top level directory where raw CRUNCEP '
-                             'data is stored.')
-    parser.add_argument('--cruncep_clean_data_path',
-                        default=os.path.join('data_clean',
-                        'atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715'),
-                        help='Path to top level directory where clean CRUNCEP '
-                             'data is stored.')
-    parser.add_argument('--cruncep_precip_dir', default='Precip6Hrly')
-    parser.add_argument('--cruncep_solar_dir', default='Solar6Hrly')
-    parser.add_argument('--cruncep_tphwl_dir', default='TPHWL6Hrly')
+from schneida_tools.schneida_args import get_args
     
-    args = parser.parse_args()
-    
-    return args
-    
-def call_ncks(input_path, input_files, output_path):
-    for i, input_file in enumerate(input_files):
-        ncks_mk_time_rec_dmn.run(os.path.abspath(os.path.join(input_path,
-                                                              input_file)),
-                                 os.path.abspath(os.path.join(output_path,
-                                                              input_file)))
 def clean_data():
     """ 1. Gather raw data
         2. Call ncks to change the time dimension to the record dimension.
@@ -53,25 +28,25 @@ def clean_data():
     precip_path = os.path.join(args.cruncep_raw_data_path,
                                args.cruncep_precip_dir)
     precip_files = os.listdir(precip_path)
-    call_ncks(precip_path, precip_files,
-              os.path.join(args.cruncep_clean_data_path,
-                           args.cruncep_precip_dir))
+    ncks_mk_time_rec_dmn.call_ncks(precip_path, precip_files,
+                                   os.path.join(args.cruncep_clean_data_path,
+                                   args.cruncep_precip_dir))
     
     # Clean solar data
     solar_path = os.path.join(args.cruncep_raw_data_path,
                               args.cruncep_solar_dir)
     solar_files = os.listdir(solar_path)
-    call_ncks(solar_path, solar_files,
-              os.path.join(args.cruncep_clean_data_path,
-                           args.cruncep_solar_dir))
+    ncks_mk_time_rec_dmn.call_ncks(solar_path, solar_files,
+                                   os.path.join(args.cruncep_clean_data_path,
+                                   args.cruncep_solar_dir))
     
     # Clean temperature, pressure, humidity, wind, and longwave data
     tphwl_path = os.path.join(args.cruncep_raw_data_path,
                               args.cruncep_tphwl_dir)
     tphwl_files = os.listdir(tphwl_path)
-    call_ncks(tphwl_path, tphwl_files,
-              os.path.join(args.cruncep_clean_data_path,
-                           args.cruncep_tphwl_dir))
+    ncks_mk_time_rec_dmn.call_ncks(tphwl_path, tphwl_files,
+                                   os.path.join(args.cruncep_clean_data_path,
+                                   args.cruncep_tphwl_dir))
     
 def run():
     clean_data()
