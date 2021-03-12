@@ -14,9 +14,55 @@
 
 import os
 import argparse
+import fnmatch
+from netCDF4 import Dataset
 
 from schneida_tools import ncks_mk_time_rec_dmn
 from schneida_tools.schneida_args import get_args
+
+class WFDE5(object):
+    def __init__(self):
+        args = get_args()
+        self.lw_down = list()
+        self.p_surf = list()
+        self.q_air = list()
+        self.rainf = list()
+        self.snowf = list()
+        self.sw_down = list()
+        self.t_air = list()
+        self.wind = list()
+        for i, file_name in enumerate(sorted(os.listdir(args.wfde5_clean_data_path))):
+            # Get downwelling longwave radiation
+            if fnmatch.fnmatch(file_name, 'LWdown_WFDE5_CRU_*_v1.1.nc'):
+                self.lw_down.append(Dataset(file_name))
+            
+            # Get surface pressure
+            elif fnmatch.fnmatch(file_name, 'PSurf_WFDE5_CRU_*_v1.1.nc'):
+                self.p_surf.append(Dataset(file_name))
+            
+            # Get humidity
+            elif fnmatch.fnmatch(file_name, 'Qair_WFDE5_CRU_*_v1.1.nc'):
+                self.q_air.append(Dataset(file_name))
+            
+            # Get rainfall
+            elif fnmatch.fnmatch(file_name, 'Rainf_WFDE5_CRU+GPCC_*_v1.1.nc'):
+                self.rainf.append(Dataset(file_name))
+            
+            # Get snowfall
+            elif fnmatch.fnmatch(file_name, 'Snowf_WFDE5_CRU+GPCC_*_v1.1.nc'):
+                self.snowf.append(Dataset(file_name))
+            
+            # Get downwelling shortwave radiation
+            elif fnmatch.fnmatch(file_name, 'SWdown_WFDE5_CRU_*_v1.1.nc'):
+                self.sw_down.append(Dataset(file_name))
+            
+            # Get air temperature
+            elif fnmatch.fnmatch(file_name, 'Tair_WFDE5_CRU_*_v1.1.nc'):
+                self.t_air.append(Dataset(file_name))
+                
+            # Get wind
+            elif fnmatch.fnmatch(file_name, 'Wind_WFDE5_CRU_*_v1.1.nc'):
+                self.wind.append(Dataset(file_name))
 
 def clean_data():
     """ 1. Gather raw data
