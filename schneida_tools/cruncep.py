@@ -14,10 +14,27 @@
 
 import os
 import argparse
+from netCDF4 import MFDataset
 
 from schneida_tools import ncks_mk_time_rec_dmn
 from schneida_tools.schneida_args import get_args
-    
+
+class CRUNCEP7(object):
+    def __init__(self):
+        args = get_args()
+        self.precip_rootgrp = MFDataset(
+                               os.path.join(args.cruncep_clean_data_path,
+                                            args.cruncep_precip_dir,
+                                     'clmforc.cruncep.V7.c2016.0.5d.Prec.*.nc'))
+        self.solar_rootgrp = MFDataset(
+                               os.path.join(args.cruncep_clean_data_path,
+                                            args.cruncep_solar_dir,
+                                     'clmforc.cruncep.V7.c2016.0.5d.Solr.*.nc'))
+        self.tphwl_rootgrp = MFDataset(
+                               os.path.join(args.cruncep_clean_data_path,
+                                            args.cruncep_tphwl_dir,
+                                    'clmforc.cruncep.V7.c2016.0.5d.TPQWL.*.nc'))
+
 def clean_data():
     """ 1. Gather raw data
         2. Call ncks to change the time dimension to the record dimension.
