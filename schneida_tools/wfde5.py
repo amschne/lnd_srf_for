@@ -26,70 +26,57 @@ class WFDE5(object):
         self.clean_data_path = args.wfde5_clean_data_path
         self.sorted_files = sorted(os.listdir(self.clean_data_path))
         
+    def get_data(self, pattern):
+        """ Use fnmatch to find relevant data files and append to list
+        
+            Return data_list, a list of WFDE5 (netCDF4) data instances
+        """
+        rootgrps = list()
+        for i, file_name in enumerate(self.sorted_files):
+            if fnmatch.fnmatch(file_name, pattern);
+                rootgrps.append(Dataset(os.path.join(self.clean_data_path,
+                                                     file_name)))
+        return rootgrps
+    
     def get_lwdown(self):
         """ Get downwelling longwave radiation
         """
-        self.lw_down = list()
-        for i, file_name in enumerate(self.sorted_files):
-            if fnmatch.fnmatch(file_name, 'LWdown_WFDE5_CRU_*_v1.1.nc'):
-                self.lw_down.append(Dataset(os.path.join(self.clean_data_path,
-                                                         file_name)))
+        self.lw_down = self.get_data('LWdown_WFDE5_CRU_*_v1.1.nc')
+        
     def get_psurf(self):
         """ Get surface pressure
         """
-        self.p_surf = list()
-        for i, file_name in enumerate(self.sorted_files):
-            if fnmatch.fnmatch(file_name, 'PSurf_WFDE5_CRU_*_v1.1.nc'):
-                self.p_surf.append(Dataset(os.path.join(self.clean_data_path,
-                                                         file_name)))
+        self.p_surf = self.get_data('PSurf_WFDE5_CRU_*_v1.1.nc')
+    
     def get_qair(self):
         """ Get humidity
         """
-        self.q_air = list()
-        for i, file_name in enumerate(self.sorted_files):
-            if fnmatch.fnmatch(file_name, 'Qair_WFDE5_CRU_*_v1.1.nc'):
-                self.q_air.append(Dataset(os.path.join(self.clean_data_path,
-                                                         file_name)))
+        self.q_air = self.get_data('Qair_WFDE5_CRU_*_v1.1.nc')
+        
     def get_rainf(self):
         """ Get rainfall
         """
-        self.rainf = list()
-        for i, file_name in enumerate(self.sorted_files):
-            if fnmatch.fnmatch(file_name, 'Rainf_WFDE5_CRU+GPCC_*_v1.1.nc'):
-                self.rainf.append(Dataset(os.path.join(self.clean_data_path,
-                                                         file_name)))
+        self.rainf = self.get_data('Rainf_WFDE5_CRU+GPCC_*_v1.1.nc')
+        
     def get_snowf(self):
         """ Get snowfall
         """
-        self.snowf = list()
-        for i, file_name in enumerate(self.sorted_files):
-            if fnmatch.fnmatch(file_name, 'Snowf_WFDE5_CRU+GPCC_*_v1.1.nc'):
-                self.snowf.append(Dataset(os.path.join(self.clean_data_path,
-                                                         file_name)))
+        self.snowf = self.get_data('Snowf_WFDE5_CRU+GPCC_*_v1.1.nc')
+    
     def get_swdown(self):
         """ Get downwelling shortwave radiation
         """
-        self.sw_down = list()
-        for i, file_name in enumerate(self.sorted_files):
-            if fnmatch.fnmatch(file_name, 'SWdown_WFDE5_CRU_*_v1.1.nc'):
-                self.sw_down.append(Dataset(os.path.join(self.clean_data_path,
-                                                         file_name)))
+        self.sw_down = self.get_data('SWdown_WFDE5_CRU_*_v1.1.nc')
+        
     def get_tair(self):
         """ Get air temperature
         """
-        self.t_air = list()
-        for i, file_name in enumerate(self.sorted_files):
-            if fnmatch.fnmatch(file_name, 'Tair_WFDE5_CRU_*_v1.1.nc'):
-                self.t_air.append(Dataset(os.path.join(self.clean_data_path,
-                                                         file_name)))
+        self.t_air = self.get_data('Tair_WFDE5_CRU_*_v1.1.nc')
+    
     def get_wind(self):
         """ Get wind
         """
-        self.wind = list()
-        for i, file_name in enumerate(self.sorted_files):
-            if fnmatch.fnmatch(file_name, 'Wind_WFDE5_CRU_*_v1.1.nc'):
-                self.wind.append(Dataset(os.path.join(self.clean_data_path,
-                                                         file_name)))
+        self.wind = self.get_data('Wind_WFDE5_CRU_*_v1.1.nc')
 
 def clean_data():
     """ 1. Gather raw data
