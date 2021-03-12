@@ -33,7 +33,7 @@ class WFDE5(object):
         """
         rootgrps = list()
         for i, file_name in enumerate(self.sorted_files):
-            if fnmatch.fnmatch(file_name, pattern);
+            if fnmatch.fnmatch(file_name, pattern):
                 rootgrps.append(Dataset(os.path.join(self.clean_data_path,
                                                      file_name)))
         return rootgrps
