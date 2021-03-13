@@ -25,13 +25,14 @@ class WFDE5(object):
         args = get_args()
         self.clean_data_path = args.wfde5_clean_data_path
         self.sorted_files = sorted(os.listdir(self.clean_data_path))
-        
+    
     def get_data(self, pattern):
         """ Use fnmatch to find relevant data files and append to list
         
             Return data_list, a list of WFDE5 (netCDF4) data instances
         """
         rootgrps = list()
+        print('Opening %s' % os.path.join(self.clean_data_path, pattern))
         for i, file_name in enumerate(self.sorted_files):
             if fnmatch.fnmatch(file_name, pattern):
                 rootgrps.append(Dataset(os.path.join(self.clean_data_path,
@@ -77,6 +78,12 @@ class WFDE5(object):
         """ Get wind
         """
         self.wind = self.get_data('Wind_WFDE5_CRU_*_v1.1.nc')
+
+def close_rootgrps(rootgrps):
+    """ Close files in WFDE5 rootgrp list
+    """
+    for i, rootgrp in enumerate(rootgrps):
+        rootgrp.close()
 
 def clean_data():
     """ 1. Gather raw data
