@@ -22,18 +22,32 @@ from schneida_tools.schneida_args import get_args
 class CRUNCEP7(object):
     def __init__(self):
         args = get_args()
-        self.precip_rootgrp = MFDataset(
-                               os.path.join(args.cruncep_clean_data_path,
-                                            args.cruncep_precip_dir,
-                                     'clmforc.cruncep.V7.c2016.0.5d.Prec.*.nc'))
-        self.solar_rootgrp = MFDataset(
-                               os.path.join(args.cruncep_clean_data_path,
-                                            args.cruncep_solar_dir,
-                                     'clmforc.cruncep.V7.c2016.0.5d.Solr.*.nc'))
-        self.tphwl_rootgrp = MFDataset(
-                               os.path.join(args.cruncep_clean_data_path,
-                                            args.cruncep_tphwl_dir,
-                                    'clmforc.cruncep.V7.c2016.0.5d.TPQWL.*.nc'))
+        self.clean_data_path = args.cruncep_clean_data_path
+        self.precip_dir = args.cruncep_precip_dir
+        self.solar_dir = args.cruncep_solar_dir
+        self.tphwl_dir = args.cruncep_tphwl_dir
+        
+    def get_precip(self, pattern='clmforc.cruncep.V7.c2016.0.5d.Prec.*.nc'):
+        """ Get precipitation
+        """
+        files = os.path.join(self.clean_data_path, self.precip_dir, pattern)
+        print('Opening %s' % files)
+        self.precip_rootgrp = MFDataset(files)
+        
+    def get_solar(self, pattern='clmforc.cruncep.V7.c2016.0.5d.Solr.*.nc'):
+        """ Get downwelling solar radiation
+        """
+        files = os.path.join(self.clean_data_path, self.solar_dir, pattern)
+        print('Opening %s' % files)
+        self.solar_rootgrp = MFDataset(files)
+        
+    def get_tphwl(self, pattern='clmforc.cruncep.V7.c2016.0.5d.TPQWL.*.nc'):
+        """ Get temperature, pressure, humidity, wind, and downwelling longwave
+            radiation
+        """
+        files = os.path.join(self.clean_data_path, self.tphwl_dir, pattern)
+        print('Opening %s' % files) 
+        self.tphwl_rootgrp = MFDataset(files)
 
 def clean_data():
     """ 1. Gather raw data
@@ -64,9 +78,22 @@ def clean_data():
     ncks_mk_time_rec_dmn.call_ncks(tphwl_path, tphwl_files,
                                    os.path.join(args.cruncep_clean_data_path,
                                    args.cruncep_tphwl_dir))
+
+def test():
+    data = CRUNCEP7()
     
+    data.get_precip()
+    data.precip_rootgrp.close()
+    
+    data.get_solar()
+    data.solar_rootgrp.close()
+    
+    data.get_tphwl()
+    data.tphwl_rootgrp.close()
+
 def run():
-    clean_data()
+    #clean_data()
+    test()
 
 def main():
     run()

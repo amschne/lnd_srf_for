@@ -39,45 +39,45 @@ class WFDE5(object):
                                                      file_name)))
         return rootgrps
     
-    def get_lwdown(self):
+    def get_lwdown(self, pattern='LWdown_WFDE5_CRU_*_v1.1.nc'):
         """ Get downwelling longwave radiation
         """
-        self.lw_down = self.get_data('LWdown_WFDE5_CRU_*_v1.1.nc')
+        self.lw_down = self.get_data(pattern)
         
-    def get_psurf(self):
+    def get_psurf(self, pattern='PSurf_WFDE5_CRU_*_v1.1.nc'):
         """ Get surface pressure
         """
-        self.p_surf = self.get_data('PSurf_WFDE5_CRU_*_v1.1.nc')
+        self.p_surf = self.get_data(pattern)
     
-    def get_qair(self):
+    def get_qair(self, pattern='Qair_WFDE5_CRU_*_v1.1.nc'):
         """ Get humidity
         """
-        self.q_air = self.get_data('Qair_WFDE5_CRU_*_v1.1.nc')
+        self.q_air = self.get_data(pattern)
         
-    def get_rainf(self):
+    def get_rainf(self, pattern='Rainf_WFDE5_CRU+GPCC_*_v1.1.nc'):
         """ Get rainfall
         """
-        self.rainf = self.get_data('Rainf_WFDE5_CRU+GPCC_*_v1.1.nc')
+        self.rainf = self.get_data(pattern)
         
-    def get_snowf(self):
+    def get_snowf(self, pattern='Snowf_WFDE5_CRU+GPCC_*_v1.1.nc'):
         """ Get snowfall
         """
-        self.snowf = self.get_data('Snowf_WFDE5_CRU+GPCC_*_v1.1.nc')
+        self.snowf = self.get_data(pattern)
     
-    def get_swdown(self):
+    def get_swdown(self, pattern='SWdown_WFDE5_CRU_*_v1.1.nc'):
         """ Get downwelling shortwave radiation
         """
-        self.sw_down = self.get_data('SWdown_WFDE5_CRU_*_v1.1.nc')
+        self.sw_down = self.get_data(pattern)
         
-    def get_tair(self):
+    def get_tair(self, pattern='Tair_WFDE5_CRU_*_v1.1.nc'):
         """ Get air temperature
         """
-        self.t_air = self.get_data('Tair_WFDE5_CRU_*_v1.1.nc')
+        self.t_air = self.get_data(pattern)
     
-    def get_wind(self):
+    def get_wind(self, pattern='Wind_WFDE5_CRU_*_v1.1.nc'):
         """ Get wind
         """
-        self.wind = self.get_data('Wind_WFDE5_CRU_*_v1.1.nc')
+        self.wind = self.get_data(pattern)
 
 def close_rootgrps(rootgrps):
     """ Close files in WFDE5 rootgrp list
@@ -95,8 +95,36 @@ def clean_data():
     ncks_mk_time_rec_dmn.call_ncks(args.wfde5_raw_data_path, wfde5_files,
                                    args.wfde5_clean_data_path)
 
+def test():
+    data = WFDE5()
+    
+    data.get_lwdown()
+    close_rootgrps(data.lw_down)
+    
+    data.get_psurf()
+    close_rootgrps(data.p_surf)
+    
+    data.get_qair()
+    close_rootgrps(data.q_air)
+    
+    data.get_rainf()
+    close_rootgrps(data.rainf)
+    
+    data.get_snowf()
+    close_rootgrps(data.snowf)
+    
+    data.get_swdown()
+    close_rootgrps(data.sw_down)
+    
+    data.get_tair()
+    close_rootgrps(data.t_air)
+    
+    data.get_wind()
+    close_rootgrps(data.wind)
+
 def run():
-    clean_data()
+    #clean_data()
+    test()
     
 def main():
     run()
