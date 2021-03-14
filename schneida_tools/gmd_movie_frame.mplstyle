@@ -28,7 +28,7 @@ font.sans-serif : Arial, Helvetica, Bitstream Vera Sans, Lucida Grande, Verdana,
 ## The text properties used by `text.Text`.
 ## See https://matplotlib.org/api/artist_api.html#module-matplotlib.text
 ## for more information on text properties
-text.color: FFD200
+text.color: C6BEB5
 
 ## ***************************************************************************
 ## * AXES                                                                    *
@@ -52,7 +52,7 @@ axes.edgecolor:     555759   # axes edge color
 #axes.labelsize:     medium  # fontsize of the x any y labels
 #axes.labelpad:      4.0     # space between label and axis
 #axes.labelweight:   normal  # weight of the x and y labels
-axes.labelcolor:    FFD200
+axes.labelcolor:    C6BEB5
 #axes.axisbelow:     line    # draw axis gridlines and ticks:
                              #     - below patches (True)
                              #     - above patches but below lines ('line')
@@ -115,7 +115,7 @@ axes.labelcolor:    FFD200
 #xtick.minor.width:   0.6     # minor tick width in points
 #xtick.major.pad:     3.5     # distance to major tick label in points
 #xtick.minor.pad:     3.4     # distance to the minor tick label in points
-xtick.color:          FFD200  # color of the tick labels
+xtick.color:          C6BEB5  # color of the tick labels
 #xtick.labelsize:     medium  # fontsize of the tick labels
 #xtick.direction:     out     # direction: {in, out, inout}
 #xtick.minor.visible: False   # visibility of minor ticks on x-axis
@@ -135,7 +135,7 @@ xtick.color:          FFD200  # color of the tick labels
 #ytick.minor.width:   0.6     # minor tick width in points
 #ytick.major.pad:     3.5     # distance to major tick label in points
 #ytick.minor.pad:     3.4     # distance to the minor tick label in points
-ytick.color:         FFD200   # color of the tick labels
+ytick.color:         C6BEB5   # color of the tick labels
 #ytick.labelsize:     medium  # fontsize of the tick labels
 #ytick.direction:     out     # direction: {in, out, inout}
 #ytick.minor.visible: False   # visibility of minor ticks on y-axis
