@@ -116,6 +116,7 @@ def compare_precip(sample_step=1, cmap='cet_CET_D6_r', vmin=-150, vmax=150):
     wfde5_init_rainf = wfde5_data.rainf[0]
     wfde5_time_mean_rainf = np.ma.zeros(wfde5_init_rainf.variables['Rainf'][0].shape)
     file_counter = 0.
+    print('Integrating WFDE5 rainfall rates...')
     for i, wfde5_month in enumerate(wfde5_data.rainf):
         month_mean = np.ma.mean(wfde5_month.variables['Rainf'][::sample_step],
                                 axis=0)
@@ -127,6 +128,7 @@ def compare_precip(sample_step=1, cmap='cet_CET_D6_r', vmin=-150, vmax=150):
     wfde5_init_snowf = wfde5_data.snowf[0]
     wfde5_time_mean_snowf = np.ma.zeros(wfde5_init_snowf.variables['Snowf'][0].shape)
     file_counter = 0.
+    print('Integrating WFDE5 snowfall rates...')
     for i, wfde5_month in enumerate(wfde5_data.snowf):
         month_mean = np.ma.mean(wfde5_month.variables['Snowf'][::sample_step],
                                 axis=0)
@@ -180,7 +182,7 @@ def compare_precip(sample_step=1, cmap='cet_CET_D6_r', vmin=-150, vmax=150):
     fig = plt.gcf()
     cbar = fig.colorbar(cruncep_quad_mesh,
                         ax=axes[:], orientation='horizontal')
-    cbar.set_label('Precipitation rate (cm H$_2$O yr$^{-1})')
+    cbar.set_label('Precipitation rate (cm H$_2$O yr$^{-1}$)')
 
     # Set the figure title
     plt.suptitle('Northern Hemisphere mean 1980 to 1990 precipitation')
@@ -191,7 +193,8 @@ def compare_precip(sample_step=1, cmap='cet_CET_D6_r', vmin=-150, vmax=150):
     
     # Close figure and files
     plt.close()
-    wfde5.close_rootgrps(wfde5_data.precip)
+    wfde5.close_rootgrps(wfde5_data.rainf)
+    wfde5.close_rootgrps(wfde5_data.snowf)
     cruncep.precip_rootgrp.close()
     
 def test():
