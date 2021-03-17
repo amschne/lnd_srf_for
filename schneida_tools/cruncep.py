@@ -14,7 +14,10 @@
 
 import os
 import argparse
+
 from netCDF4 import MFDataset
+from netCDF4 import Dataset
+import numpy as np
 
 from schneida_tools import ncks_mk_time_rec_dmn
 from schneida_tools.schneida_args import get_args
@@ -88,7 +91,6 @@ def get_temporal_mean(rootgrp_in, var, compute=True, results_dir='results'):
         mean_var.long_name = rootgrp_in.variables[var].long_name
         mean_var.units = rootgrp_in.variables[var].units
         mean_var.mode = rootgrp_in.variables[var].mode
-        mean_var._FillValue = rootgrp_in.variables[var]._FillValue
         mean_var.missing_value = rootgrp_in.variables[var].missing_value
         
         # Write data
