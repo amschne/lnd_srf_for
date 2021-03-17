@@ -33,7 +33,7 @@ class CRUNCEP7(object):
     def get_precip(self):
         """ Get precipitation
         """
-        pattern = str.join(self.file_prefix, 'Prec.*.nc')
+        pattern = self.file_prefix + 'Prec.*.nc'
         files = os.path.join(self.clean_data_path, self.precip_dir, pattern)
         print('Opening %s' % files)
         self.precip_rootgrp = MFDataset(files)
@@ -41,7 +41,7 @@ class CRUNCEP7(object):
     def get_solar(self):
         """ Get downwelling solar radiation
         """
-        pattern = str.join(self.file_prefix, 'Solr.*.nc')
+        pattern = self.file_prefix + 'Solr.*.nc'
         files = os.path.join(self.clean_data_path, self.solar_dir, pattern)
         print('Opening %s' % files)
         self.solar_rootgrp = MFDataset(files)
@@ -50,7 +50,7 @@ class CRUNCEP7(object):
         """ Get temperature, pressure, humidity, wind, and downwelling longwave
             radiation
         """
-        pattern = str.join(self.file_prefix, 'TPQWL.*.nc')
+        pattern = self.file_prefix + 'TPQWL.*.nc'
         files = os.path.join(self.clean_data_path, self.tphwl_dir, pattern)
         print('Opening %s' % files) 
         self.tphwl_rootgrp = MFDataset(files)
@@ -61,8 +61,8 @@ def get_temporal_mean(rootgrp_in, var, compute=True, results_dir='results'):
     # Get high level args
     data = CRUNCEP7()
     
-    file_path = os.path.join(results_dir, str.join(data.file_prefix,
-                                                   var, '.temporal_mean.nc'))
+    file_path = os.path.join(results_dir,
+                             data.file_prefix + var + '.temporal_mean.nc')
     if compute:
         # Create new netCDF file
         rootgrp_out = Dataset(file_path, 'w', format='NETCDF4')
