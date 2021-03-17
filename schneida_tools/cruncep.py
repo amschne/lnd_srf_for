@@ -30,29 +30,32 @@ class CRUNCEP7(object):
         self.solar_dir = args.cruncep_solar_dir
         self.tphwl_dir = args.cruncep_tphwl_dir
         
-    def get_precip(self, pattern=str.join(self.file_prefix, 'Prec.*.nc')):
+    def get_precip(self):
         """ Get precipitation
         """
+        pattern = str.join(self.file_prefix, 'Prec.*.nc')
         files = os.path.join(self.clean_data_path, self.precip_dir, pattern)
         print('Opening %s' % files)
         self.precip_rootgrp = MFDataset(files)
         
-    def get_solar(self, pattern=str.join(self.file_prefix, 'Solr.*.nc')):
+    def get_solar(self):
         """ Get downwelling solar radiation
         """
+        pattern = str.join(self.file_prefix, 'Solr.*.nc')
         files = os.path.join(self.clean_data_path, self.solar_dir, pattern)
         print('Opening %s' % files)
         self.solar_rootgrp = MFDataset(files)
         
-    def get_tphwl(self, pattern=str.join(self.file_prefix, 'TPQWL.*.nc')):
+    def get_tphwl(self):
         """ Get temperature, pressure, humidity, wind, and downwelling longwave
             radiation
         """
+        pattern = str.join(self.file_prefix, 'TPQWL.*.nc')
         files = os.path.join(self.clean_data_path, self.tphwl_dir, pattern)
         print('Opening %s' % files) 
         self.tphwl_rootgrp = MFDataset(files)
 
-def get_temporal_mean(rootgrp_in, var, compute=False, results_dir='results'):
+def get_temporal_mean(rootgrp_in, var, compute=True, results_dir='results'):
     """ Works for var = 'TBOT'
     """
     # Get high level args
