@@ -44,12 +44,12 @@ def compare_temperature(compute_means=True, cmap='cet_CET_L8', vmin=-7, vmax=37)
     wfde5_time_mean_tc = np.roll(-TFRZ + wfde5_mean_t_rootgrp.variables['Tair'][:],
                                  360, axis=1)
     # Calculate difference
-    print('Computing differences...')
+    print('Computing temperature differences...')
     time_mean_tc_diffs = cruncep_time_mean_tc - wfde5_time_mean_tc
     time_mean_tc_diffs_rel = time_mean_tc_diffs / (wfde5_time_mean_tc + TFRZ)
     
     # Setup maps
-    print('Mapping data to figure...')
+    print('Mapping temperature data to figure...')
     axes = coordinate_space.nh_horizontal_comparison()
     set_map_titles(axes)
 
@@ -76,7 +76,7 @@ def compare_temperature(compute_means=True, cmap='cet_CET_L8', vmin=-7, vmax=37)
                     cmap='cet_CET_L4', vmin=-14, vmax=14,
                     transform=ccrs.PlateCarree())
                     
-    rel_diffs_quad_mesh = axes[4].pcolor(
+    rel_diffs_quad_mesh = axes[3].pcolor(
                     cruncep_mean_t_rootgrp.variables['LONGXY'][:],
                     cruncep_mean_t_rootgrp.variables['LATIXY'][:],
                     np.ma.clip(100. * time_mean_tc_diffs_rel, -5, 5),
@@ -154,7 +154,7 @@ def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=-180, vmax=180):
                              wfde5_mean_snowf_rootgrp.variables['Snowf'][:])) / 10.,
                              360, axis=1)
     # Calculate difference
-    print('Computing differences...')
+    print('Computing precipitation differences...')
     time_mean_precip_diffs = cruncep_time_mean_precip - wfde5_time_mean_precip
     time_mean_precip_diffs_rel = time_mean_precip_diffs / wfde5_time_mean_precip
     
@@ -163,7 +163,7 @@ def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=-180, vmax=180):
     set_map_titles(axes)
 
     # Map data
-    print('Mapping data to figure...')
+    print('Mapping precipitation data to figure...')
     cruncep_quad_mesh = axes[0].pcolor(
                     cruncep_mean_precip_rootgrp.variables['LONGXY'][:],
                     cruncep_mean_precip_rootgrp.variables['LATIXY'][:],
@@ -185,7 +185,7 @@ def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=-180, vmax=180):
                     shading='nearest',
                     cmap='cet_CET_D6_r', vmin=-5, vmax=5,
                     transform=ccrs.PlateCarree())
-    rel_diffs_quad_mesh = axes[2].pcolor(
+    rel_diffs_quad_mesh = axes[3].pcolor(
                     cruncep_mean_precip_rootgrp.variables['LONGXY'][:],
                     cruncep_mean_precip_rootgrp.variables['LATIXY'][:],
                     np.ma.clip(100.*time_mean_precip_diffs_rel, -5, 5),
