@@ -81,7 +81,7 @@ def compare_temperature(compute_means=True, cmap='cet_CET_L8', vmin=-7, vmax=37)
                     cruncep_mean_t_rootgrp.variables['LATIXY'][:],
                     np.ma.clip(100. * time_mean_tc_diffs_rel, -5, 5),
                     shading='nearest',
-                    cmap=cmap, vmin=-5, vmax=5,
+                    cmap='cet_CET_L4', vmin=-5, vmax=5,
                     transform=ccrs.PlateCarree())
 
     # Add evelvation contours
@@ -183,14 +183,14 @@ def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=-180, vmax=180):
                     cruncep_mean_precip_rootgrp.variables['LATIXY'][:],
                     np.ma.clip(time_mean_precip_diffs, -5, 5),
                     shading='nearest',
-                    cmap=cmap, vmin=-5, vmax=5,
+                    cmap='cet_CET_D6_r', vmin=-5, vmax=5,
                     transform=ccrs.PlateCarree())
     rel_diffs_quad_mesh = axes[2].pcolor(
                     cruncep_mean_precip_rootgrp.variables['LONGXY'][:],
                     cruncep_mean_precip_rootgrp.variables['LATIXY'][:],
-                    np.ma.clip(100*time_mean_precip_diffs_rel, -5, 5),
+                    np.ma.clip(100.*time_mean_precip_diffs_rel, -5, 5),
                     shading='nearest',
-                    cmap=cmap, vmin=-5, vmax=5,
+                    cmap='cet_CET_D6_r', vmin=-5, vmax=5,
                     transform=ccrs.PlateCarree())
 
     # Add evelvation contours
