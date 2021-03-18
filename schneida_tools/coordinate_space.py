@@ -57,10 +57,14 @@ def nh_horizontal_comparison(map_lat_min=15, map_lon_0=-80,
                                               false_northing=0.0)
                              
     plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
-    geo_axes1 = plt.subplot(1, 3, 1, projection=map_proj)
-    geo_axes2 = plt.subplot(1, 3, 2, projection=map_proj)
-    geo_axes3 = plt.subplot(1, 3, 3, projection=map_proj)
-    axes = [geo_axes1, geo_axes2, geo_axes3]
+    
+    nrows=1
+    ncols=4
+    geo_axes1 = plt.subplot(nrows, ncols, 1, projection=map_proj)
+    geo_axes2 = plt.subplot(nrows, ncols, 2, projection=map_proj)
+    geo_axes3 = plt.subplot(nrows, ncols, 3, projection=map_proj)
+    geo_axes4 = plt.subplot(nrows, ncols, 4, projection=map_proj)
+    axes = [geo_axes1, geo_axes2, geo_axes3, geo_axes4]
     for i, ax in enumerate(axes):
         ax.set_extent((-180, 180, map_lat_min, 90), crs=ccrs.PlateCarree())
         ax.add_feature(cfeature.LAND, color='#555759')

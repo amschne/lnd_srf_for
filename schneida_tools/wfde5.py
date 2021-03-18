@@ -21,6 +21,8 @@ import numpy as np
 from schneida_tools import ncks_mk_time_rec_dmn
 from schneida_tools.schneida_args import get_args
 
+import ipdb
+
 class WFDE5(object):
     def __init__(self):
         args = get_args()
