@@ -22,6 +22,8 @@ import numpy as np
 from schneida_tools import ncks_mk_time_rec_dmn
 from schneida_tools.schneida_args import get_args
 
+import ipdb
+
 class CRUNCEP7(object):
     def __init__(self, file_prefix='clmforc.cruncep.V7.c2016.0.5d.'):
         self.file_prefix = file_prefix
@@ -66,8 +68,7 @@ def get_temporal_mean(rootgrp_in, var, compute=True, results_dir='results'):
     
     file_path = os.path.join(results_dir,
                              data.file_prefix + var + '.temporal_mean.nc')
-    if compute:
-        # Create new netCDF file
+    if compute: # Create new netCDF file
         rootgrp_out = Dataset(file_path, 'w', format='NETCDF4')
         # Create dimensions
         lat = rootgrp_out.createDimension('lat',
@@ -103,7 +104,7 @@ def get_temporal_mean(rootgrp_in, var, compute=True, results_dir='results'):
         rootgrp_out.close()
     
     # Open and return temporal mean dataset
-    return(Dataset(file_path))
+    return(Dataset(file_path, 'r'))
         
 def clean_data():
     """ 1. Gather raw data

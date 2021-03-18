@@ -16,6 +16,7 @@ import os
 import argparse
 import fnmatch
 from netCDF4 import Dataset
+import numpy as np
 
 from schneida_tools import ncks_mk_time_rec_dmn
 from schneida_tools.schneida_args import get_args
@@ -78,6 +79,56 @@ class WFDE5(object):
         """ Get wind
         """
         self.wind = self.get_data(pattern)
+        
+def get_temporal_mean(rootgrp_list, var, compute=True, results_dir='results'):
+    """
+    """
+    file_path = os.path.join(results_dir,
+                             '%s_WFDE5_temporal_mean_v1.1.nc' % var)
+    if compute: # Create new netCDF file
+        rootgrp_out = Dataset(file_path, 'w', format='NETCDF4')
+        
+        wfde5_init_mon = rootgrp_list[0]
+        # Create dimensions
+        lat = rootgrp_out.createDimension('lat',
+                                          len(wfde5_init_mon.dimensions['lat']))
+        lon = rootgrp_out.createDimension('lon',
+                                          len(wfde5_init_mon.dimensions['lon']))
+        # Create variables
+        latitudes = rootgrp_out.createVariable('lat', 'f8', ('lat'))
+        longitudes = rootgrp_out.createVariable('lon', 'f8', ('lon'))
+        mean_var = rootgrp_out.createVariable(var, 'f8', ('lat', 'lon'))
+        
+        # Add attributes
+        latitudes.standard_name = wfde5_init_mon.variables['lat'].standard_name
+        latitudes.units = wfde5_init_mon.variables['lat'].units
+        latitudes.axis = wfde5_init_mon.variables['lat'].axis
+        latitudes.long_name = wfde5_init_mon.variables['lat'].long_name
+        
+        longitudes.standard_name = wfde5_init_mon.variables['lon'].standard_name
+        longitudes.units = wfde5_init_mon.variables['lon'].units
+        longitudes.axis = wfde5_init_mon.variables['lon'].axis
+        longitudes.long_name = wfde5_init_mon.variables['lon'].long_name
+        
+        mean_var.long_name = wfde5_init_mon.variables[var].long_name
+        mean_var.standard_name = wfde5_init_mon.variables[var].standard_name
+        mean_var.units = wfde5_init_mon.variables[var].units
+        
+        # Write data
+        latitudes[:,:] = wfde5_init_mon.variables['lat'][:]
+        longitudes[:,:] = wfde5_init_mon.variables['lon'][:]
+        
+        print('Computing WFDE5 temporal mean "%s"...' % var)
+        # Initialize temporal mean numpy masked array
+        wfde5_time_sum = np.ma.zeros(wfde_init_mon.variables[var][0].shape)
+        for i, wfde5_month in enumerate(rootgrp_list):
+            wfde5_time_sum += np.ma.mean(wfde5_month.variables[var][:], axis=0)
+        mean_var[:,:] = wfde5_time_sum / float(i + 1)
+        
+        rootgrp_out.close()
+    
+    # Open and return temporal mean dataset
+    return(Dataset(file_path, 'r'))
 
 def close_rootgrps(rootgrps):
     """ Close files in WFDE5 rootgrp list
@@ -124,7 +175,21 @@ def test():
 
 def run():
     #clean_data()
-    test()
+    #test()
+    data = WFDE5()
+    data.get_tair()
+    mean_temperature = get_temporal_mean(data.t_air, 'Tair', compute=True)
+    close_rootgrps(data.t_air)
+    
+    data.get_rainf()
+    mean_rainf = get_temporal_mean(data.rainf, 'Rainf', compute = True)
+    close_rootgrps(data.rainf)
+    
+    data.get_snowf()
+    mean_snowf = get_temporal_mean(data.snowf, 'Snowf', compute=True)
+    close_rootgrps(data.snowf)
+    
+    ipdb.set_trace()
     
 def main():
     run()
