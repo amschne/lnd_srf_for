@@ -115,12 +115,12 @@ def get_temporal_mean(rootgrp_list, var, compute=True, results_dir='results'):
         mean_var.units = wfde5_init_mon.variables[var].units
         
         # Write data
-        latitudes[:,:] = wfde5_init_mon.variables['lat'][:]
-        longitudes[:,:] = wfde5_init_mon.variables['lon'][:]
+        latitudes[:] = wfde5_init_mon.variables['lat'][:]
+        longitudes[:] = wfde5_init_mon.variables['lon'][:]
         
         print('Computing WFDE5 temporal mean "%s"...' % var)
         # Initialize temporal mean numpy masked array
-        wfde5_time_sum = np.ma.zeros(wfde_init_mon.variables[var][0].shape)
+        wfde5_time_sum = np.ma.zeros(wfde5_init_mon.variables[var][0].shape)
         for i, wfde5_month in enumerate(rootgrp_list):
             wfde5_time_sum += np.ma.mean(wfde5_month.variables[var][:], axis=0)
         mean_var[:,:] = wfde5_time_sum / float(i + 1)
