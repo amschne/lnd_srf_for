@@ -46,13 +46,15 @@ class CoordinateSpace(object):
         proj = Transformer.from_crs(self.proj_crs.geodetic_crs, self.proj_crs)
         self.transform = proj.transform
 
-def nh_horizontal_comparison(map_lat_min=15, map_lon_0=-80,
+def nh_horizontal_comparison(map_lon_min=-180, map_lon_max=180, map_lat_min=15,
+                             map_lat_max=90, map_lat_0=90.0,
+                             map_lon_0=-80,
                              lon_lines = np.arange(-180, 180, 30),
                              lat_lines = np.arange(-90, 90, 30)):
     """
     """
     map_proj = ccrs.LambertAzimuthalEqualArea(central_longitude=map_lon_0,
-                                              central_latitude=90.0,
+                                              central_latitude=map_lat_0,
                                               false_easting=0.0,
                                               false_northing=0.0)
                              
@@ -66,7 +68,8 @@ def nh_horizontal_comparison(map_lat_min=15, map_lon_0=-80,
     geo_axes4 = plt.subplot(nrows, ncols, 4, projection=map_proj)
     axes = [geo_axes1, geo_axes2, geo_axes3, geo_axes4]
     for i, ax in enumerate(axes):
-        ax.set_extent((-180, 180, map_lat_min, 90), crs=ccrs.PlateCarree())
+        ax.set_extent((map_lon_min, map_lon_max, map_lat_min, map_lat_max),
+                      crs=ccrs.PlateCarree())
         ax.add_feature(cfeature.LAND, color='#555759')
         ax.add_feature(cfeature.OCEAN, color='#555759')
         
