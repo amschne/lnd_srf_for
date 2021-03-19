@@ -131,64 +131,43 @@ def compare_temperature(compute_means=True, cmap='cet_CET_L8', vmin=-7, vmax=37,
         for i, ax in enumerate(axes):
             # Add evelvation contours
             dem.draw_contours(ax, path.join('data_clean', "gimpdem_90m_v01.1.nc"))
-            
-        # Colorbar
-        fig = plt.gcf()
-        cruncep_cbar = fig.colorbar(cruncep_quad_mesh,
-                                    ax=axes[0], orientation='vertical')
-        cruncep_cbar.set_label('Temperature ($^{\circ}$ C)')
-    
-        wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
-                                    ax=axes[1], orientation='vertical')
-        wfde5_cbar.set_label('Temperature ($^{\circ}$ C)')
-    
-        diffs_cbar = fig.colorbar(diffs_quad_mesh,
-                                  ax=axes[2], orientation='vertical')
-        diffs_cbar.set_label('Difference (K)')
-    
-        rel_cbar = fig.colorbar(rel_diffs_quad_mesh,
-                                  ax=axes[3], orientation='vertical')
-        rel_cbar.set_label(r'Difference ($\%$)')
     
         # Set the figure title
         plt.suptitle('Greenland mean 1980 to 1990 surface air temperature')
-    
-        # Save results
-        print('Writing results')
-        plt.savefig(path.join('results', 'greenland_tair_cruncep_vs_wfde5_.png'),
-                    dpi=300)
     
     else:
         for i, ax in enumerate(axes):
             # Add evelvation contours
             coordinate_space.draw_elevation_contours(ax)
-
-        # Colorbar
-        fig = plt.gcf()
-        cruncep_cbar = fig.colorbar(cruncep_quad_mesh,
-                                    ax=axes[0:2], orientation='horizontal')
-        cruncep_cbar.set_label('Temperature ($^{\circ}$ C)')
-    
-        '''
-        wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
-                                    ax=axes[1], orientation='horizontal')
-        wfde5_cbar.set_label('Temperature ($^{\circ}$ C)')
-        '''    
-    
-        diffs_cbar = fig.colorbar(diffs_quad_mesh,
-                                  ax=axes[2], orientation='horizontal')
-        diffs_cbar.set_label('Difference (K)')
-    
-        rel_cbar = fig.colorbar(rel_diffs_quad_mesh,
-                                  ax=axes[3], orientation='horizontal')
-        rel_cbar.set_label(r'Difference ($\%$)')
-    
-
         # Set the figure title
         plt.suptitle('Northern Hemisphere mean 1980 to 1990 surface air temperature')
+
+    # Colorbar
+    fig = plt.gcf()
+    cruncep_cbar = fig.colorbar(cruncep_quad_mesh,
+                                ax=axes[0:2], orientation='horizontal')
+    cruncep_cbar.set_label('Temperature ($^{\circ}$ C)')
+
+    '''
+    wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
+                                ax=axes[1], orientation='horizontal')
+    wfde5_cbar.set_label('Temperature ($^{\circ}$ C)')
+    '''    
+
+    diffs_cbar = fig.colorbar(diffs_quad_mesh,
+                              ax=axes[2], orientation='horizontal')
+    diffs_cbar.set_label('Difference (K)')
+
+    rel_cbar = fig.colorbar(rel_diffs_quad_mesh,
+                              ax=axes[3], orientation='horizontal')
+    rel_cbar.set_label(r'Difference ($\%$)')
     
-        # Save results
-        print('Writing results')
+    # Save results
+    print('Writing results')
+    if greenland:
+        plt.savefig(path.join('results', 'greenland_tair_cruncep_vs_wfde5_.png'),
+                    dpi=300)
+    else:
         plt.savefig(path.join('results', 'nh_tair_cruncep_vs_wfde5.png'),
                     dpi=300)
     
@@ -298,62 +277,44 @@ def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=0, vmax=180,
         for i, ax in enumerate(axes):
             # Add evelvation contours
             dem.draw_contours(ax, path.join('data_clean', "gimpdem_90m_v01.1.nc"))
-
-        # Colorbar
-        fig = plt.gcf()
-        cruncep_cbar = fig.colorbar(cruncep_quad_mesh,
-                            ax=axes[0], orientation='vertical')
-        cruncep_cbar.set_label('Precipitation (cm H$_2$O yr$^{-1}$)')
-        
-        wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
-                            ax=axes[1], orientation='vertical')
-        wfde5_cbar.set_label('Precipitation (cm H$_2$O yr$^{-1}$)')
-        
-        diffs_cbar = fig.colorbar(diffs_quad_mesh,
-                            ax=axes[2], orientation='vertical')
-        diffs_cbar.set_label('Difference (cm H$_2$O yr$^{-1}$)')
-    
-        rel_cbar = fig.colorbar(rel_diffs_quad_mesh,
-                            ax=axes[3], orientation='vertical')
-        rel_cbar.set_label(r'Difference ($\%$)')
-
+            
         # Set the figure title
         plt.suptitle('Greenland mean 1980 to 1990 precipitation')
-    
-        # Save results
-        print('Writing results')
-        plt.savefig(path.join('results', 'greenland_precip_cruncep_vs_wfde5.png'),
-                    dpi=300)
-    
+            
     else:
         # Add evelvation contours
         for i, ax in enumerate(axes):
             coordinate_space.draw_elevation_contours(ax)
 
-        # Colorbar
-        fig = plt.gcf()
-        cruncep_cbar = fig.colorbar(cruncep_quad_mesh,
-                            ax=axes[0:2], orientation='horizontal')
-        cruncep_cbar.set_label('Precipitation rate (cm H$_2$O yr$^{-1}$)')
-        '''
-        wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
-                            ax=axes[1], orientation='horizontal')
-        wfde5_cbar.set_label('Precipitation (cm H$_2$O yr$^{-1}$)')
-        '''
-        diffs_cbar = fig.colorbar(diffs_quad_mesh,
-                            ax=axes[2], orientation='horizontal')
-        diffs_cbar.set_label('Difference (cm H$_2$O yr$^{-1}$)')
-    
-        rel_cbar = fig.colorbar(rel_diffs_quad_mesh,
-                            ax=axes[3], orientation='horizontal')
-        rel_cbar.set_label(r'Difference ($\%$)')
-
         # Set the figure title
         plt.suptitle('Northern Hemisphere mean 1980 to 1990 precipitation')
     
-        # Save results
-        print('Writing results')
-        plt.savefig(path.join('results', 'nh_precip_cruncep_vs_wfde5.png'), dpi=300)
+    # Colorbar
+    fig = plt.gcf()
+    cruncep_cbar = fig.colorbar(cruncep_quad_mesh,
+                        ax=axes[0:2], orientation='horizontal')
+    cruncep_cbar.set_label('Precipitation rate (cm H$_2$O yr$^{-1}$)')
+    '''
+    wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
+                        ax=axes[1], orientation='horizontal')
+    wfde5_cbar.set_label('Precipitation (cm H$_2$O yr$^{-1}$)')
+    '''
+    diffs_cbar = fig.colorbar(diffs_quad_mesh,
+                        ax=axes[2], orientation='horizontal')
+    diffs_cbar.set_label('Difference (cm H$_2$O yr$^{-1}$)')
+
+    rel_cbar = fig.colorbar(rel_diffs_quad_mesh,
+                        ax=axes[3], orientation='horizontal')
+    rel_cbar.set_label(r'Difference ($\%$)')
+
+    # Save results
+    print('Writing results')
+    if Greenland:
+        plt.savefig(path.join('results', 'greenland_precip_cruncep_vs_wfde5.png'),
+                    dpi=300)
+    else:
+        plt.savefig(path.join('results', 'nh_precip_cruncep_vs_wfde5.png'),
+                    dpi=300)
     
     # Close figure and files
     plt.close()
