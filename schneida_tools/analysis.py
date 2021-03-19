@@ -19,7 +19,7 @@ def set_map_titles(axes):
     axes[0].set_title('CRUNCEP7')
     axes[1].set_title('WFDE5')
     axes[2].set_title('CRUNCEP7 - WFDE5')
-    axes[3].set_title(r'(100 $\times$ (CRUNCEP7 - WFDE5) / WFDE5')
+    axes[3].set_title('((CRUNCEP7 - WFDE5)\n/ WFDE5) ' + r'$\times$ 100')
 
 def compare_temperature(compute_means=True, cmap='cet_CET_L8', vmin=-7, vmax=37):
     """
@@ -71,17 +71,17 @@ def compare_temperature(compute_means=True, cmap='cet_CET_L8', vmin=-7, vmax=37)
     diffs_quad_mesh = axes[2].pcolor(
                     cruncep_mean_t_rootgrp.variables['LONGXY'][:],
                     cruncep_mean_t_rootgrp.variables['LATIXY'][:],
-                    np.ma.clip(time_mean_tc_diffs, -14, 14),
+                    np.ma.clip(time_mean_tc_diffs, -2, 2),
                     shading='nearest',
-                    cmap='cet_CET_L4', vmin=-14, vmax=14,
+                    cmap='cet_CET_D4', vmin=-2, vmax=2,
                     transform=ccrs.PlateCarree())
                     
     rel_diffs_quad_mesh = axes[3].pcolor(
                     cruncep_mean_t_rootgrp.variables['LONGXY'][:],
                     cruncep_mean_t_rootgrp.variables['LATIXY'][:],
-                    np.ma.clip(100. * time_mean_tc_diffs_rel, -5, 5),
+                    np.ma.clip(100. * time_mean_tc_diffs_rel, -0.5, 0.5),
                     shading='nearest',
-                    cmap='cet_CET_L4', vmin=-5, vmax=5,
+                    cmap='cet_CET_D4', vmin=-0.5, vmax=0.5,
                     transform=ccrs.PlateCarree())
 
     # Add evelvation contours
@@ -91,20 +91,22 @@ def compare_temperature(compute_means=True, cmap='cet_CET_L8', vmin=-7, vmax=37)
     # Colorbar
     fig = plt.gcf()
     cruncep_cbar = fig.colorbar(cruncep_quad_mesh,
-                                ax=axes[0], orientation='horizontal')
+                                ax=axes[0:2], orientation='horizontal')
     cruncep_cbar.set_label('Temperature ($^{\circ}$ C)')
     
+    '''
     wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
                                 ax=axes[1], orientation='horizontal')
     wfde5_cbar.set_label('Temperature ($^{\circ}$ C)')
+    '''    
     
     diffs_cbar = fig.colorbar(diffs_quad_mesh,
                               ax=axes[2], orientation='horizontal')
-    diffs_cbar.set_label('Temperature ($^{\circ}$ C)')
+    diffs_cbar.set_label('Difference (K)')
     
     rel_cbar = fig.colorbar(rel_diffs_quad_mesh,
                               ax=axes[3], orientation='horizontal')
-    diffs_cbar.set_label('Percent')
+    rel_cbar.set_label(r'Difference ($\%$)')
     
 
     # Set the figure title
@@ -116,13 +118,13 @@ def compare_temperature(compute_means=True, cmap='cet_CET_L8', vmin=-7, vmax=37)
     
     # Close figure and files
     plt.close()
-    wfde5.close_rootgrps(wfde5_data.t_air)
     cruncep_mean_t_rootgrp.close()
+    wfde5_mean_t_rootgrp.close()
     
-def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=-180, vmax=180):
+def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=0, vmax=180):
     """
     """
-    # Get CRUNCEP temporal mean temperature
+    # Get CRUNCEP temporal mean precipitation
     cruncep_data = cruncep.CRUNCEP7()
     cruncep_data.get_precip()
     cruncep_mean_precip_rootgrp = cruncep.get_temporal_mean(cruncep_data.precip_rootgrp,
@@ -133,20 +135,20 @@ def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=-180, vmax=180):
     cruncep_time_mean_precip = (60. * 60. * 24. * 365.25 *
                         cruncep_mean_precip_rootgrp.variables['PRECTmms'][:]) / 10.
     
-    # Get WFDE5 temporal mean temperature
+    # Get WFDE5 temporal mean precipitation
     wfde5_data = wfde5.WFDE5()
-    wfde5_data.get_rainf()
-    wfde5_data.get_snowf()
-
     # WFDE5 rainfall
+    wfde5_data.get_rainf()
     wfde5_mean_rainf_rootgrp = wfde5.get_temporal_mean(wfde5_data.rainf,
                                                        'Rainf',
                                                        compute=compute_means)
+    wfde5.close_rootgrps(wfde5_data.rainf)
     # WFDE5 snowfall
+    wfde5_data.get_snowf()
     wfde5_mean_snowf_rootgrp = wfde5.get_temporal_mean(wfde5_data.snowf,
                                                        'Snowf',
                                                        compute=compute_means)
-    
+    wfde5.close_rootgrps(wfde5_data.snowf)
     # Integrate total precip, convert to cm / yr., and shift WFDE5 data
     # toCRUNCEP grid
     wfde5_time_mean_precip = np.roll((60.* 60. * 24. * 365.25 *
@@ -181,16 +183,16 @@ def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=-180, vmax=180):
     diffs_quad_mesh = axes[2].pcolor(
                     cruncep_mean_precip_rootgrp.variables['LONGXY'][:],
                     cruncep_mean_precip_rootgrp.variables['LATIXY'][:],
-                    np.ma.clip(time_mean_precip_diffs, -5, 5),
+                    np.ma.clip(time_mean_precip_diffs, -50, 50),
                     shading='nearest',
-                    cmap='cet_CET_D6_r', vmin=-5, vmax=5,
+                    cmap='cet_CET_D6_r', vmin=-50, vmax=50,
                     transform=ccrs.PlateCarree())
     rel_diffs_quad_mesh = axes[3].pcolor(
                     cruncep_mean_precip_rootgrp.variables['LONGXY'][:],
                     cruncep_mean_precip_rootgrp.variables['LATIXY'][:],
-                    np.ma.clip(100.*time_mean_precip_diffs_rel, -5, 5),
+                    np.ma.clip(100.*time_mean_precip_diffs_rel, -50, 50),
                     shading='nearest',
-                    cmap='cet_CET_D6_r', vmin=-5, vmax=5,
+                    cmap='cet_CET_D6_r', vmin=-50, vmax=50,
                     transform=ccrs.PlateCarree())
 
     # Add evelvation contours
@@ -200,20 +202,20 @@ def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=-180, vmax=180):
     # Colorbar
     fig = plt.gcf()
     cruncep_cbar = fig.colorbar(cruncep_quad_mesh,
-                        ax=axes[0], orientation='horizontal')
+                        ax=axes[0:2], orientation='horizontal')
     cruncep_cbar.set_label('Precipitation rate (cm H$_2$O yr$^{-1}$)')
-    
+    '''
     wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
                         ax=axes[1], orientation='horizontal')
-    wfde5_cbar.set_label('Precipitation rate (cm H$_2$O yr$^{-1}$)')
-    
+    wfde5_cbar.set_label('Precipitation (cm H$_2$O yr$^{-1}$)')
+    '''
     diffs_cbar = fig.colorbar(diffs_quad_mesh,
                         ax=axes[2], orientation='horizontal')
-    diffs_cbar.set_label('Precipitation rate (cm H$_2$O yr$^{-1}$)')
+    diffs_cbar.set_label('Difference (cm H$_2$O yr$^{-1}$)')
     
     rel_cbar = fig.colorbar(rel_diffs_quad_mesh,
                         ax=axes[3], orientation='horizontal')
-    cbar.set_label('Percent')
+    rel_cbar.set_label(r'Difference ($\%$)')
 
     # Set the figure title
     plt.suptitle('Northern Hemisphere mean 1980 to 1990 precipitation')
@@ -224,8 +226,8 @@ def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=-180, vmax=180):
     
     # Close figure and files
     plt.close()
-    wfde5.close_rootgrps(wfde5_data.rainf)
-    wfde5.close_rootgrps(wfde5_data.snowf)
+    wfde5_mean_rainf_rootgrp.close()
+    wfde5_mean_snowf_rootgrp.close()
     cruncep_mean_precip_rootgrp.close()
     
 def test():
