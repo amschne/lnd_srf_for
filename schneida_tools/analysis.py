@@ -15,12 +15,29 @@ from schneida_tools import gris_dem
 import ipdb
 
 TFRZ = 273.15 # K
+GRIS_EXTENT = (-90, 0, 45, 90) 
+NH_EXTENT = (-360, 0, 0, 90)
 
 def set_map_titles(axes):
     axes[0].set_title('CRUNCEP7')
     axes[1].set_title('WFDE5')
     axes[2].set_title('CRUNCEP7 - WFDE5')
     axes[3].set_title('((CRUNCEP7 - WFDE5)\n/ WFDE5) ' + r'$\times$ 100')
+    
+def mask_vals(self, longxy, latixy, var_arr, greenland=False):
+    """ Mask areas outside map domain
+    """
+    if Greenland:
+        extent = GRIS_EXTENT
+    else:
+        extent = NH_EXTENT
+        
+    np.ma.masked_where(longxy < 360 + extent[0], var_arr, copy=False)
+    np.ma.masked_where(longxy > 360 + extent[1], var_arr, copy=False)
+    np.ma.masked_where(latixy < extent[2], var_arr, copy=False)
+    np.ma.masked_where(latixy > extent[3], var_arr, copy=False)
+
+    return var_arr
 
 def compare_temperature(compute_means=True, cmap='cet_CET_L8', vmin=-7, vmax=37,
                         greenland=False):
@@ -65,38 +82,52 @@ def compare_temperature(compute_means=True, cmap='cet_CET_L8', vmin=-7, vmax=37,
     set_map_titles(axes)
 
     # Map data
-    cruncep_quad_mesh = axes[0].pcolor(
-                    cruncep_mean_t_rootgrp.variables['LONGXY'][:],
-                    cruncep_mean_t_rootgrp.variables['LATIXY'][:],
-                    np.ma.clip(cruncep_time_mean_tc, vmin, vmax),
-                    shading='nearest',
-                    cmap=cmap, vmin=vmin, vmax=vmax,
-                    transform=ccrs.PlateCarree())
-    wfde5_quad_mesh = axes[1].pcolor(
-                    cruncep_mean_t_rootgrp.variables['LONGXY'][:],
-                    cruncep_mean_t_rootgrp.variables['LATIXY'][:],
-                    np.ma.clip(wfde5_time_mean_tc, vmin, vmax),
-                    shading='nearest',
-                    cmap=cmap, vmin=vmin, vmax=vmax,
-                    transform=ccrs.PlateCarree())
-    diffs_quad_mesh = axes[2].pcolor(
-                    cruncep_mean_t_rootgrp.variables['LONGXY'][:],
-                    cruncep_mean_t_rootgrp.variables['LATIXY'][:],
-                    np.ma.clip(time_mean_tc_diffs, -2, 2),
-                    shading='nearest',
-                    cmap='cet_CET_D4', vmin=-2, vmax=2,
-                    transform=ccrs.PlateCarree())
+    longxy = cruncep_mean_t_rootgrp.variables['LONGXY'][:]
+    latixy = cruncep_mean_t_rootgrp.variables['LATIXY'][:]
+    
+    cruncep_quad_mesh = axes[0].pcolor(longxy, latixy,
+                                       np.ma.clip(mask_vals(longxy,
+                                                            latixy,
+                                                            cruncep_time_mean_tc,
+                                                            greenland=greenland),
+                                                  vmin, vmax),
+                                       shading='nearest', cmap=cmap, 
+                                       vmin=vmin, vmax=vmax,
+                                       transform=ccrs.PlateCarree())
+    
+    wfde5_quad_mesh = axes[1].pcolor(longxy, latixy,
+                                     np.ma.clip(mask_vals(longxy,
+                                                          latixy,
+                                                          wfde5_time_mean_tc,
+                                                          greenland=greenland),
+                                                vmin, vmax),
+                                     shading='nearest', cmap=cmap,
+                                     vmin=vmin, vmax=vmax,
+                                     transform=ccrs.PlateCarree())
+    
+    diffs_quad_mesh = axes[2].pcolor(longxy, latixy,
+                                     np.ma.clip(mask_vals(longxy,
+                                                          latxy,
+                                                          time_mean_tc_diffs,
+                                                          greenland=greenland),
+                                                -2, 2),
+                                     shading='nearest', cmap='cet_CET_D4',
+                                     vmin=-2, vmax=2,
+                                     transform=ccrs.PlateCarree())
                     
-    rel_diffs_quad_mesh = axes[3].pcolor(
-                    cruncep_mean_t_rootgrp.variables['LONGXY'][:],
-                    cruncep_mean_t_rootgrp.variables['LATIXY'][:],
-                    np.ma.clip(100. * time_mean_tc_diffs_rel, -0.5, 0.5),
-                    shading='nearest',
-                    cmap='cet_CET_D4', vmin=-0.5, vmax=0.5,
-                    transform=ccrs.PlateCarree())
+    rel_diffs_quad_mesh = axes[3].pcolor(longxy, latixy,
+                                         np.ma.clip(100. *
+                                                    mask_vals(longxy,
+                                                              latixy,
+                                                              time_mean_tc_diffs_rel,
+                                                              greenland=greenland),
+                                                    -0.5, 0.5),
+                                         shading='nearest', cmap='cet_CET_D4',
+                                         vmin=-0.5, vmax=0.5,
+                                         transform=ccrs.PlateCarree())
 
     if greenland:
-        dem = GrISDEM(path.join('data_raw','gimpdem_90m_v01.1.tif'))
+        dem = gris_dem.GrISDEM(path.join('data_raw','gimpdem_90m_v01.1.tif'))
         for i, ax in enumerate(axes):
             # Add evelvation contours
             dem.draw_contours(ax, path.join('data_clean', "gimpdem_90m_v01.1.nc"))
@@ -221,38 +252,49 @@ def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=0, vmax=180,
 
     # Map data
     print('Mapping precipitation data to figure...')
-    cruncep_quad_mesh = axes[0].pcolor(
-                    cruncep_mean_precip_rootgrp.variables['LONGXY'][:],
-                    cruncep_mean_precip_rootgrp.variables['LATIXY'][:],
-                    np.ma.clip(cruncep_time_mean_precip, vmin, vmax),
-                    shading='nearest',
-                    cmap=cmap, vmin=vmin, vmax=vmax,
-                    transform=ccrs.PlateCarree())
-    wfde5_quad_mesh = axes[1].pcolor(
-                    cruncep_mean_precip_rootgrp.variables['LONGXY'][:],
-                    cruncep_mean_precip_rootgrp.variables['LATIXY'][:],
-                    np.ma.clip(wfde5_time_mean_precip, vmin, vmax),
-                    shading='nearest',
-                    cmap=cmap, vmin=vmin, vmax=vmax,
-                    transform=ccrs.PlateCarree())
-    diffs_quad_mesh = axes[2].pcolor(
-                    cruncep_mean_precip_rootgrp.variables['LONGXY'][:],
-                    cruncep_mean_precip_rootgrp.variables['LATIXY'][:],
-                    np.ma.clip(time_mean_precip_diffs, -50, 50),
-                    shading='nearest',
-                    cmap='cet_CET_D6_r', vmin=-50, vmax=50,
-                    transform=ccrs.PlateCarree())
-    rel_diffs_quad_mesh = axes[3].pcolor(
-                    cruncep_mean_precip_rootgrp.variables['LONGXY'][:],
-                    cruncep_mean_precip_rootgrp.variables['LATIXY'][:],
-                    np.ma.clip(100.*time_mean_precip_diffs_rel, -50, 50),
-                    shading='nearest',
-                    cmap='cet_CET_D6_r', vmin=-50, vmax=50,
-                    transform=ccrs.PlateCarree())
+    longxy = cruncep_mean_precip_rootgrp.variables['LONGXY'][:]
+    latixy = cruncep_mean_precip_rootgrp.variables['LATIXY'][:]
+    
+    cruncep_quad_mesh = axes[0].pcolor(longxy, latixy,
+                                       np.ma.clip(mask_vals(longxy, latixy,
+                                                            cruncep_time_mean_precip,
+                                                            greenland=greenland),
+                                                  vmin, vmax),
+                                       shading='nearest', cmap=cmap,
+                                       vmin=vmin, vmax=vmax,
+                                       transform=ccrs.PlateCarree())
+                                       
+    wfde5_quad_mesh = axes[1].pcolor(longxy, latixy,
+                                     np.ma.clip(mask_vals(longxy, latixy,
+                                                          wfde5_time_mean_precip,
+                                                          greenland=greenland),
+                                                vmin, vmax),
+                                     shading='nearest', cmap=cmap,
+                                     vmin=vmin, vmax=vmax,
+                                     transform=ccrs.PlateCarree())
+    
+    diffs_quad_mesh = axes[2].pcolor(longxy, latixy,
+                                     np.ma.clip(mask_vals(longxy, latixy,
+                                                          time_mean_precip_diffs,
+                                                          greenland=greenland),
+                                                -50, 50),
+                                     shading='nearest', cmap='cet_CET_D6_r',
+                                     vmin=-50, vmax=50,
+                                     transform=ccrs.PlateCarree())
+                                     
+    rel_diffs_quad_mesh = axes[3].pcolor(longxy, latixy,
+                                         np.ma.clip(100. *
+                                                    mask_vals(longxy, latixy,
+                                                              time_mean_precip_diffs_rel,
+                                                              greenland=greenland),
+                                                    -50, 50),
+                                         shading='nearest', cmap='cet_CET_D6_r',
+                                         vmin=-50, vmax=50,
+                                         transform=ccrs.PlateCarree())
                     
     if greenland:
         # Add evelvation contours
-        dem = GrISDEM(path.join('data_raw','gimpdem_90m_v01.1.tif'))
+        dem = gris_dem.GrISDEM(path.join('data_raw','gimpdem_90m_v01.1.tif'))
         for i, ax in enumerate(axes):
             # Add evelvation contours
             dem.draw_contours(ax, path.join('data_clean', "gimpdem_90m_v01.1.nc"))
@@ -324,10 +366,10 @@ def test():
     wfde5.test()
 
 def run():
-    #compare_temperature(compute_means=False)
     compare_temperature(compute_means=False, greenland = True, vmin=-32, vmax=6)
-    #compare_precip(compute_means=False)
-    compare_temperature(compute_means=False, greenland = True, vmin=0, vmax=150)
+    compare_precip(compute_means=False, greenland = True, vmin=0, vmax=150)
+    compare_temperature(compute_means=False)
+    compare_precip(compute_means=False)
 
 def main():
     run()
