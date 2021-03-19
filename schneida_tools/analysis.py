@@ -309,7 +309,7 @@ def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=0, vmax=180,
 
     # Save results
     print('Writing results')
-    if Greenland:
+    if greenland:
         plt.savefig(path.join('results', 'greenland_precip_cruncep_vs_wfde5.png'),
                     dpi=300)
     else:
