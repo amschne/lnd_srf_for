@@ -24,10 +24,10 @@ def set_map_titles(axes):
     axes[2].set_title('CRUNCEP7 - WFDE5')
     axes[3].set_title('((CRUNCEP7 - WFDE5)\n/ WFDE5) ' + r'$\times$ 100')
     
-def mask_vals(self, longxy, latixy, var_arr, greenland=False):
+def mask_vals(longxy, latixy, var_arr, greenland=False):
     """ Mask areas outside map domain
     """
-    if Greenland:
+    if greenland:
         extent = GRIS_EXTENT
     else:
         extent = NH_EXTENT
@@ -107,7 +107,7 @@ def compare_temperature(compute_means=True, cmap='cet_CET_L8', vmin=-7, vmax=37,
     
     diffs_quad_mesh = axes[2].pcolor(longxy, latixy,
                                      np.ma.clip(mask_vals(longxy,
-                                                          latxy,
+                                                          latixy,
                                                           time_mean_tc_diffs,
                                                           greenland=greenland),
                                                 -2, 2),
@@ -198,7 +198,7 @@ def compare_temperature(compute_means=True, cmap='cet_CET_L8', vmin=-7, vmax=37,
     wfde5_mean_t_rootgrp.close()
     
 def compare_precip(compute_means=True, cmap='cet_CET_L6', vmin=0, vmax=180,
-                   Greenland=False):
+                   greenland=False):
     """
     """
     # Get CRUNCEP temporal mean precipitation
