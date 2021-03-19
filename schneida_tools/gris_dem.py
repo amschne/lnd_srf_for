@@ -33,6 +33,11 @@ class GrISDEM(object):
             warnings.warn('GDAL failed to open %s' % filename)
         self.cmap = cmap
         self.wide = wide
+        
+        org_crs = CRS.from_epsg(EPSG_NSIDC)
+        self.spatial2coordinate(self.dataset.GetSpatialRef())
+        self.transformer = Transformer.from_crs(org_crs, self.proj_crs)
+        self.prepare_cartopy()
                 
     def draw_contours(self, ax, filename, globe=None):
         """
@@ -84,16 +89,11 @@ class GrISDEM(object):
         except AttributeError:
             warnings.warn('Can not initialize cartopy CRS. Returning "globe" '
             'instead.')
-            self.cart_crs = globe
+            self.globe = globe
         
     def setup_map(self, central_longitude=-42.1, wide=False):
         """ Setup the map projection
         """
-        org_crs = CRS.from_epsg(EPSG_NSIDC)
-        self.spatial2coordinate(self.dataset.GetSpatialRef())
-        self.transformer = Transformer.from_crs(org_crs, self.proj_crs)
-        globe = self.prepare_cartopy()
-        
         if True:
             ax = plt.axes(projection=ccrs.LambertAzimuthalEqualArea(
                             central_longitude=central_longitude,
