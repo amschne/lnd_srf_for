@@ -58,6 +58,7 @@ class GrISDEM(object):
                    vmin=-3207,vmax=3207,
                    label='GIMP DEM',
                    transform=ccrs.PlateCarree())
+        ax.readshapefile('greenland_coast', 'coast', color=(0.5, 0.5, 0.5))
                    
         gimpdem.close()
                    
