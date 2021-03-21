@@ -23,38 +23,45 @@ from schneida_tools import gris_dem
 SECTOR = 0
 
 def contourf_smb(dates, lat, lon, smb_mm_day):
-    smb_m_yr = (365.25 * smb_mm_day[:]) / 1000.
-    dem = gris_dem.GrISDEM(path.join('data_raw','gimpdem_90m_v01.1.tif'))
+    #smb_m_yr = (365.25 * smb_mm_day[:]) / 1000.
+    dem = gris_dem.GrISDEM(os.path.join('data_raw','gimpdem_90m_v01.1.tif'))
     for t, date in enumerate(dates):
         
         #fig, ax = plt.subplots()
         mp = dem.setup_map()
-        mp.add_feature(cfeature.LAND, color='#555759')
-        mp.add_feature(cfeature.OCEAN, color='#555759')
-        coll = mp.pcolor(lon[:], lat[:],
-                         np.clip(smb_m_yr[t,SECTOR], -3, 3),
-                         shading='nearest',
-                         cmap=ListedColormap(cc.diverging_bkr_55_10_c35),
-                         vmin=-3, vmax=3,
-                         transform=ccrs.PlateCarree())
-        dem.draw_contours(ax, path.join('data_clean', "gimpdem_90m_v01.1.nc"))
+        mp.add_feature(cfeature.LAND, color='white')#'#555759')
+        mp.add_feature(cfeature.OCEAN, color='white')#'#555759')
+        if int(date) != 2012121088 and int(date) != 2012110976 and int(date) != 2012020736 and int(date) != 2012022016 and int(date) != 2012022784: # problem spots
+            coll = mp.contourf(lon[:], lat[:],
+                           np.clip(smb_mm_day[t,SECTOR], -7.99, 7.99),
+                           levels=np.arange(-8, 8.1, 1),
+                           cmap='cet_CET_D10',
+                           vmin=-8, vmax=8,
+                           transform=ccrs.PlateCarree())
+            dem.draw_contours(mp, os.path.join('data_clean', "gimpdem_90m_v01.1.nc"))
 
-        '''
-        mp.readshapefile('greenland_coast', 'coast',
+            '''
+            mp.readshapefile('greenland_coast', 'coast',
                      color='#C6BEB5')
-        mp.drawmapscale(-36, 62, -45, 70, 20, barstyle='simple', units='km',
+            mp.drawmapscale(-36, 62, -45, 70, 20, barstyle='simple', units='km',
                         fontsize=9, yoffset=None, labelstyle='simple',
                         fontcolor='white', fillcolor1='k', fillcolor2='w',
                         linewidth=0.5)
-        '''             
-        cbar = fig.colorbar(coll, ax=np,
-                            orientation = 'vertical',
-                            ticks=np.arange(-3, 3.1, 1))
-        cbar.set_label('Surface mass balance (m w.eq. yr$^{-1}$)')
-        plt.title('%d' % date)
-        
-        plt.savefig(os.path.join('results','graphics','smb_%s_sector%d.png')
+            '''             
+            fig = plt.gcf()
+            cbar = fig.colorbar(coll, ax=mp,
+                            orientation = 'horizontal',
+                            ticks=np.arange(-8, 9, 2),
+                            boundaries=np.arange(-8,9,1),
+                            values=np.arange(-7.5, 8, 1))
+            cbar.set_label('SMB (mm w.eq. / day)')
+            year = str(date)[:4]
+            mon = str(date)[4:6]
+            plt.title('%s-%s' % (year, mon))
+         
+            plt.savefig(os.path.join('results','graphics','smb_%s_sector%d.png')
                     % (date, SECTOR), dpi=300)
+      
         plt.close()
 
 def get_data(input_dir, start_year, stop_year):
@@ -81,7 +88,8 @@ def get_args():
     return args
 
 def run(verbose=True):
-    plt.style.use(uci_darkblue)
+    plt.style.use('agu_half_vertical')
+    plt.style.use('uci_darkblue')
     args = get_args()
     data_stream = get_data(args.input_dir, args.start_year, args.stop_year)
     
