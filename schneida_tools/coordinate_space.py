@@ -46,13 +46,34 @@ class CoordinateSpace(object):
         proj = Transformer.from_crs(self.proj_crs.geodetic_crs, self.proj_crs)
         self.transform = proj.transform
 
-def nh_horizontal_comparison(map_lon_min=-180, map_lon_max=180, map_lat_min=15,
-                             map_lat_max=90, map_lat_0=90.0,
-                             map_lon_0=-80,
-                             lon_lines = np.arange(-180, 180, 30),
-                             lat_lines = np.arange(-90, 90, 30)):
+def four_map_horizontal_comparison(greenland=False,
+                                   antarctica=False,
+                                   lon_lines = np.arange(-180, 180, 30),
+                                   lat_lines = np.arange(-90, 90, 30)):
+    """ Uses the Lambert Azimuthal Equal Area map projection
     """
-    """
+    if greenland:
+        map_lon_min = -55
+        map_lon_max=-29
+        map_lat_min=59
+        map_lat_max=84
+        map_lat_0=71.4
+        map_lon_0=-42.1
+    elif antarctica:
+        map_lon_min = -180
+        map_lon_max=180
+        map_lat_min=-90
+        map_lat_max=-65
+        map_lat_0=-90
+        map_lon_0=0
+    else: # Northern hempiphere
+        map_lon_min=-180
+        map_lon_max=180
+        map_lat_min=15
+        map_lat_max=90
+        map_lat_0=90.0
+        map_lon_0=-80
+        
     map_proj = ccrs.LambertAzimuthalEqualArea(central_longitude=map_lon_0,
                                               central_latitude=map_lat_0,
                                               false_easting=0.0,
@@ -77,8 +98,9 @@ def nh_horizontal_comparison(map_lon_min=-180, map_lon_max=180, map_lat_min=15,
         
 def draw_elevation_contours(ax, elevation_levels=np.arange(0,8849,1500),
                             vmin=-7500, vmax=7500):
-    """ Add evelvation contours using WFDE5 data
+    """ Add elevation contours using WFDE5 data
     """
+    print('Drawing elevation contours using WFDE5 data')
     rootgrp = Dataset(path.join('data_raw', 'ASurf_WFDE5_CRU_v1.1.nc'))
     ax.contour(rootgrp.variables['lon'][:], rootgrp.variables['lat'][:],
                np.ma.filled(rootgrp.variables['ASurf'][:], fill_value=0),
@@ -88,7 +110,7 @@ def draw_elevation_contours(ax, elevation_levels=np.arange(0,8849,1500),
                transform=ccrs.PlateCarree())
 
 def test():
-    axes = nh_horizontal_comparison()
+    axes = four_map_horizontal_comparison()
     for i, ax in enumerate(axes):
         draw_elevation_contours(ax)
         
