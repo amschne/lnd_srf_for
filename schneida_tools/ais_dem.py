@@ -64,7 +64,7 @@ class AisDem(object):
     def draw_contours(self, ax, filename=os.path.join('data_clean',
                                                       "krigged_dem_nsidc.nc"),
                       errormap=os.path.join('data_clean', "krigged_dem_errormap_nsidc.nc"),
-                      downsample=1,
+                      downsample=10,
                       cmap=ListedColormap(cc.linear_grey_0_100_c0)):
         aisdem = Dataset(filename)
         aisdem_errormap = Dataset(errormap)
@@ -129,7 +129,7 @@ class AisDem(object):
         ax1 = plt.axes(projection=ccrs.LambertAzimuthalEqualArea(
                        central_longitude=0.0, central_latitude=-90))
         # Limit the map to -60 degrees latitude and below.
-        ax1.set_extent([-180, 180, -90, -62], ccrs.PlateCarree())
+        ax1.set_extent([-180, 180, -90, -65], ccrs.PlateCarree())
 
         return ax1
     

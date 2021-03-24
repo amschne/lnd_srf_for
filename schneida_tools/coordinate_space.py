@@ -63,7 +63,7 @@ def four_map_horizontal_comparison(greenland=False,
         map_lon_min = -180
         map_lon_max=180
         map_lat_min=-90
-        map_lat_max=-62
+        map_lat_max=-65
         map_lat_0=-90
         map_lon_0=0
     else: # Northern hempiphere

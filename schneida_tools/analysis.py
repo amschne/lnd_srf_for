@@ -16,9 +16,9 @@ from schneida_tools import ais_dem
 import ipdb
 
 TFRZ = 273.15 # K
-GRIS_EXTENT = (-90, 15, 45, 90)
-NH_EXTENT = (-360, 0, 0, 90)
-AIS_EXTENT = ((-360, 0, -90, -45))
+GRIS_EXTENT = (0, 360, 45, 90)
+NH_EXTENT = (0, 360, -30, 90)
+AIS_EXTENT = (0, 360, -90, -45)
 
 def set_map_titles(axes):
     axes[0].set_title('CRUNCEP7')
@@ -36,10 +36,10 @@ def mask_vals(longxy, latixy, var_arr, greenland=False, antarctica=False):
     else:
         extent = NH_EXTENT
         
-    np.ma.masked_where(longxy < 360 + extent[0], var_arr, copy=False)
-    np.ma.masked_where(longxy > 360 + extent[1], var_arr, copy=False)
-    np.ma.masked_where(latixy < extent[2], var_arr, copy=False)
-    np.ma.masked_where(latixy > extent[3], var_arr, copy=False)
+    var_arr = np.ma.masked_where(longxy < extent[0], var_arr)
+    var_arr = np.ma.masked_where(longxy > extent[1], var_arr)
+    var_arr = np.ma.masked_where(latixy < extent[2], var_arr)
+    var_arr = np.ma.masked_where(latixy > extent[3], var_arr)
     
     return var_arr
 
@@ -86,7 +86,7 @@ class Analysis(object):
         longxy = cruncep_mean_t_rootgrp.variables['LONGXY'][:]
         latixy = cruncep_mean_t_rootgrp.variables['LATIXY'][:]
     
-        cruncep_quad_mesh = axes[0].pcolor(longxy, latixy,
+        cruncep_quad_mesh = axes[0].pcolormesh(longxy.data, latixy.data,
                                            np.ma.clip(mask_vals(longxy,
                                                                 latixy,
                                                                 cruncep_time_mean_tc,
@@ -97,7 +97,7 @@ class Analysis(object):
                                            vmin=degc_min, vmax=degc_max,
                                            transform=ccrs.PlateCarree())
     
-        wfde5_quad_mesh = axes[1].pcolor(longxy, latixy,
+        wfde5_quad_mesh = axes[1].pcolormesh(longxy.data, latixy.data,
                                          np.ma.clip(mask_vals(longxy,
                                                               latixy,
                                                               wfde5_time_mean_tc,
@@ -108,7 +108,7 @@ class Analysis(object):
                                          vmin=degc_min, vmax=degc_max,
                                          transform=ccrs.PlateCarree())
     
-        diffs_quad_mesh = axes[2].pcolor(longxy, latixy,
+        diffs_quad_mesh = axes[2].pcolormesh(longxy.data, latixy.data,
                                          np.ma.clip(mask_vals(longxy,
                                                               latixy,
                                                               time_mean_tc_diffs,
@@ -119,7 +119,7 @@ class Analysis(object):
                                          vmin=-10, vmax=10,
                                          transform=ccrs.PlateCarree())
                     
-        rel_diffs_quad_mesh = axes[3].pcolor(longxy, latixy,
+        rel_diffs_quad_mesh = axes[3].pcolormesh(longxy.data, latixy.data,
                                              np.ma.clip(100. *
                                                         mask_vals(longxy,
                                                                   latixy,
@@ -130,7 +130,6 @@ class Analysis(object):
                                              shading='nearest', cmap='cet_CET_D4',
                                              vmin=-5, vmax=5,
                                              transform=ccrs.PlateCarree())
-
         # Colorbar
         fig = plt.gcf()
         cruncep_cbar = fig.colorbar(cruncep_quad_mesh,
@@ -160,8 +159,7 @@ class Analysis(object):
     
             # Set the figure title
             plt.suptitle('Greenland mean 1980 to 1990 surface air temperature')
-            plt.savefig(path.join('results', 'greenland_tair_cruncep_vs_wfde5.png'),
-                        dpi=300)
+            savefig_name = path.join('results', 'greenland_tair_cruncep_vs_wfde5.png')
         elif self.antarctica:
             # Add elevation contours
             dem = ais_dem.AisDem()
@@ -171,17 +169,17 @@ class Analysis(object):
                 
             # Set the figure title
             plt.suptitle('Antarctica mean 1980 to 1990 surface air temperature')
-            plt.savefig(path.join('results', 'antarctica_tair_cruncep_vs_wfde5.png'),
-                        dpi=300)
+            savefig_name = path.join('results', 'antarctica_tair_cruncep_vs_wfde5.png')
         else:
             for i, ax in enumerate(axes):
                 # Add elevation contours
                 coordinate_space.draw_elevation_contours(ax)
             # Set the figure title
             plt.suptitle('Northern Hemisphere mean 1980 to 1990 surface air temperature')
-            plt.savefig(path.join('results', 'nh_tair_cruncep_vs_wfde5.png'),
-                        dpi=300)
-    
+            savefig_name = path.join('results', 'nh_tair_cruncep_vs_wfde5.png')
+        
+        print('Writing temperature maps to %s' % savefig_name)
+        plt.savefig(savefig_name, dpi=300)
         # Close figure and files
         plt.close()
         cruncep_mean_t_rootgrp.close()
@@ -237,7 +235,7 @@ class Analysis(object):
         longxy = cruncep_mean_precip_rootgrp.variables['LONGXY'][:]
         latixy = cruncep_mean_precip_rootgrp.variables['LATIXY'][:]
     
-        cruncep_quad_mesh = axes[0].pcolor(longxy, latixy,
+        cruncep_quad_mesh = axes[0].pcolormesh(longxy.data, latixy.data,
                                            np.ma.clip(mask_vals(longxy, latixy,
                                                                 cruncep_time_mean_precip,
                                                                 greenland=self.greenland,
@@ -247,7 +245,7 @@ class Analysis(object):
                                            vmin=cm_per_year_min, vmax=cm_per_year_max,
                                            transform=ccrs.PlateCarree())
                                        
-        wfde5_quad_mesh = axes[1].pcolor(longxy, latixy,
+        wfde5_quad_mesh = axes[1].pcolormesh(longxy.data, latixy.data,
                                          np.ma.clip(mask_vals(longxy, latixy,
                                                               wfde5_time_mean_precip,
                                                               greenland=self.greenland,
@@ -257,7 +255,7 @@ class Analysis(object):
                                          vmin=cm_per_year_min, vmax=cm_per_year_max,
                                          transform=ccrs.PlateCarree())
     
-        diffs_quad_mesh = axes[2].pcolor(longxy, latixy,
+        diffs_quad_mesh = axes[2].pcolormesh(longxy.data, latixy.data,
                                          np.ma.clip(mask_vals(longxy, latixy,
                                                               time_mean_precip_diffs,
                                                               greenland=self.greenland,
@@ -267,7 +265,7 @@ class Analysis(object):
                                          vmin=-50, vmax=50,
                                          transform=ccrs.PlateCarree())
                                      
-        rel_diffs_quad_mesh = axes[3].pcolor(longxy, latixy,
+        rel_diffs_quad_mesh = axes[3].pcolormesh(longxy.data, latixy.data,
                                              np.ma.clip(100. *
                                                         mask_vals(longxy, latixy,
                                                                   time_mean_precip_diffs_rel,
@@ -277,7 +275,6 @@ class Analysis(object):
                                              shading='nearest', cmap='cet_CET_D6_r',
                                              vmin=-50, vmax=50,
                                              transform=ccrs.PlateCarree())
-    
         # Colorbar
         fig = plt.gcf()
         cruncep_cbar = fig.colorbar(cruncep_quad_mesh,
@@ -307,8 +304,7 @@ class Analysis(object):
             
             # Set the figure title
             plt.suptitle('Greenland mean 1980 to 1990 precipitation')
-            plt.savefig(path.join('results', 'greenland_precip_cruncep_vs_wfde5.png'),
-                        dpi=300)
+            savefig_name = path.join('results', 'greenland_precip_cruncep_vs_wfde5.png')
         elif self.antarctica:
             # Add elevation contours
             dem = ais_dem.AisDem()
@@ -317,8 +313,7 @@ class Analysis(object):
                 dem.draw_contours(ax)
             # Set the figure title
             plt.suptitle('Antarctica mean 1980 to 1990 precipitation')
-            plt.savefig(path.join('results', 'antarctica_precip_cruncep_vs_wfde5.png'),
-                        dpi=300)
+            savefig_name = path.join('results', 'antarctica_precip_cruncep_vs_wfde5.png')
         else:
             # Add elevation contours
             for i, ax in enumerate(axes):
@@ -326,9 +321,10 @@ class Analysis(object):
 
             # Set the figure title
             plt.suptitle('Northern Hemisphere mean 1980 to 1990 precipitation')
-            plt.savefig(path.join('results', 'nh_precip_cruncep_vs_wfde5.png'),
-                        dpi=300)
-    
+            savefig_name = path.join('results', 'nh_precip_cruncep_vs_wfde5.png')
+        
+        print('Writing precipitation maps to %s' % savefig_name)
+        plt.savefig(savefig_name, dpi=300)
         # Close figure and files
         plt.close()
         wfde5_mean_rainf_rootgrp.close()
