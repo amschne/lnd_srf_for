@@ -24,7 +24,7 @@ SECTOR = 0
 
 def contourf_smb(dates, lat, lon, smb_mm_day):
     #smb_m_yr = (365.25 * smb_mm_day[:]) / 1000.
-    dem = gris_dem.GrISDEM(os.path.join('data_raw','gimpdem_90m_v01.1.tif'))
+    dem = gris_dem.GrisDEM()
     for t, date in enumerate(dates):
         
         #fig, ax = plt.subplots()
@@ -38,7 +38,7 @@ def contourf_smb(dates, lat, lon, smb_mm_day):
                            cmap='cet_CET_D10',
                            vmin=-8, vmax=8,
                            transform=ccrs.PlateCarree())
-            dem.draw_contours(mp, os.path.join('data_clean', "gimpdem_90m_v01.1.nc"))
+            dem.draw_contours(mp)
 
             '''
             mp.readshapefile('greenland_coast', 'coast',
@@ -59,8 +59,10 @@ def contourf_smb(dates, lat, lon, smb_mm_day):
             mon = str(date)[4:6]
             plt.title('%s-%s' % (year, mon))
          
-            plt.savefig(os.path.join('results','graphics','smb_%s_sector%d.png')
-                    % (date, SECTOR), dpi=300)
+            savefig_name = os.path.join('results','graphics','smb_%s_sector%d.png'
+                                        % (date, SECTOR))
+            print('Writing figure to %s' % savefig_name)
+            plt.savefig(savefig_name, dpi=300)
       
         plt.close()
 
