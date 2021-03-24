@@ -24,9 +24,8 @@ import colorcet as cc
 WSG_84 = 4326
 EPSG_NSIDC = 3413
 
-class GrISDEM(object):
-    def __init__(self, filename,
-                 cmap=ListedColormap(cc.linear_grey_0_100_c0),
+class GrisDEM(object):
+    def __init__(self, filename=path.join('data_raw','gimpdem_90m_v01.1.tif'),
                  wide=False):
         self.dataset = gdal.Open(filename, gdal.GA_ReadOnly)
         if not self.dataset:
@@ -39,7 +38,9 @@ class GrISDEM(object):
         self.transformer = Transformer.from_crs(org_crs, self.proj_crs)
         self.prepare_cartopy()
                 
-    def draw_contours(self, ax, filename, globe=None):
+    def draw_contours(self, ax, filename=path.join('data_clean',
+                                                   "gimpdem_90m_v01.1.nc"),
+                      cmap=ListedColormap(cc.linear_grey_0_100_c0)):
         """
         """
         downsample=np.gcd(self.dataset.RasterXSize, self.dataset.RasterYSize)
@@ -51,11 +52,11 @@ class GrISDEM(object):
         ax.contour(lons, lats,
                    gimpdem.variables['Band1'][::downsample,::downsample],
                    levels=np.arange(0, 3207, 500),
-                   cmap=self.cmap,
+                   cmap=cmap,
                    linewidths=0.5,
                    linestyles='solid',
                    alpha=1.0,
-                   vmin=-3207,vmax=3207,
+                   vmin=-4000,vmax=4000,
                    label='GIMP DEM',
                    transform=ccrs.PlateCarree())
                    
@@ -91,13 +92,14 @@ class GrISDEM(object):
             'instead.')
             self.globe = globe
         
-    def setup_map(self, central_longitude=-42.1, wide=False):
+    def setup_map(self, central_longitude=-42.1, central_latitude=71.4,
+                  wide=False):
         """ Setup the map projection
         """
         if True:
             ax = plt.axes(projection=ccrs.LambertAzimuthalEqualArea(
                             central_longitude=central_longitude,
-                            central_latitude=71.4))
+                            central_latitude=central_latitude))
         else:    
             ax = plt.axes(projection=ccrs.AlbersEqualArea(central_longitude=
                                                       central_longitude, 
@@ -144,10 +146,10 @@ class GrISDEM(object):
 def run():
     #plt.style.use('agu_half_vertical')
     plt.style.use('gmd_movie_frame')
-    test = GrISDEM(path.join('data_raw','gimpdem_90m_v01.1.tif'))
+    test = GrISDEM()
     test.print_dataset_info()
     ax = test.setup_map()
-    test.draw_contours(ax, path.join('data_clean', "gimpdem_90m_v01.1.nc"))
+    test.draw_contours(ax)
     
     plt.show()
 
