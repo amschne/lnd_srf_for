@@ -24,7 +24,6 @@ class AisDem(object):
         self.dataset = gdal.Open(filename, gdal.GA_ReadOnly)
         if not self.dataset:
             warnings.warn('GDAL failed to open %s' % filename)
-        self.cmap=cmap
         
         #org_crs = CRS.from_epsg(EPSG_NSIDC)
         org_crs=CRS.from_proj4("+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 "
@@ -120,7 +119,7 @@ class AisDem(object):
             'instead.')
             self.globe = globe
     
-    def setup_map(self, krigged_dem, krigged_dem_errormap):
+    def setup_map(self):
         """ Draw elevation contours on the map background
         """
         
@@ -137,7 +136,7 @@ class AisDem(object):
 def write_netcdf():
     ds = gdal.Translate('krigged_dem_errormap_nsidc.nc', 'krigged_dem_errormap_nsidc.bin', format='NetCDF')
 
-def run():
+def test():
     test = AisDem()
     test.print_dataset_info()
     #write_netcdf()
@@ -145,6 +144,9 @@ def run():
     test.draw_contours(ax)
     
     plt.show()
+
+def run():
+    test()
 
 def main():
     run()

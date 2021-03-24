@@ -30,7 +30,6 @@ class GrisDEM(object):
         self.dataset = gdal.Open(filename, gdal.GA_ReadOnly)
         if not self.dataset:
             warnings.warn('GDAL failed to open %s' % filename)
-        self.cmap = cmap
         self.wide = wide
         
         org_crs = CRS.from_epsg(EPSG_NSIDC)
@@ -143,15 +142,18 @@ class GrisDEM(object):
             print("Band has a color table with {} "
                   "entries".format(band.GetRasterColorTable().GetCount()))
     
-def run():
+def test():
     #plt.style.use('agu_half_vertical')
     plt.style.use('gmd_movie_frame')
-    test = GrISDEM()
+    test = GrisDEM()
     test.print_dataset_info()
     ax = test.setup_map()
     test.draw_contours(ax)
     
     plt.show()
+
+def run():
+    test()
 
 def main():
     run()

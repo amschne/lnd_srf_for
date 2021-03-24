@@ -2,6 +2,7 @@
 
 from schneida_tools import coordinate_space
 from schneida_tools import gris_dem
+from schneida_tools import ais_dem
 
 def run():
     coordinate_space.test()
@@ -11,5 +12,5 @@ def run():
 def main():
     run()
 
-if __name__=='__main__:'
+if __name__=='__main__':
     main()

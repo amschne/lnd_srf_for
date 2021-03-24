@@ -92,9 +92,9 @@ class Analysis(object):
                                                                 cruncep_time_mean_tc,
                                                                 greenland=self.greenland,
                                                                 antarctica=self.antarctica),
-                                                      vmin, vmax),
+                                                      degc_min, degc_max),
                                            shading='nearest', cmap=cmap, 
-                                           vmin=vmin, vmax=vmax,
+                                           vmin=degc_min, vmax=degc_max,
                                            transform=ccrs.PlateCarree())
     
         wfde5_quad_mesh = axes[1].pcolor(longxy, latixy,
@@ -103,9 +103,9 @@ class Analysis(object):
                                                               wfde5_time_mean_tc,
                                                               greenland=self.greenland,
                                                               antarctica=self.antarctica),
-                                                    vmin, vmax),
+                                                    degc_min, degc_max),
                                          shading='nearest', cmap=cmap,
-                                         vmin=vmin, vmax=vmax,
+                                         vmin=degc_min, vmax=degc_max,
                                          transform=ccrs.PlateCarree())
     
         diffs_quad_mesh = axes[2].pcolor(longxy, latixy,
@@ -114,9 +114,9 @@ class Analysis(object):
                                                               time_mean_tc_diffs,
                                                               greenland=self.greenland,
                                                               antarctica=self.antarctica),
-                                                    -2, 2),
+                                                    -10, 10),
                                          shading='nearest', cmap='cet_CET_D4',
-                                         vmin=-2, vmax=2,
+                                         vmin=-10, vmax=10,
                                          transform=ccrs.PlateCarree())
                     
         rel_diffs_quad_mesh = axes[3].pcolor(longxy, latixy,
@@ -126,9 +126,9 @@ class Analysis(object):
                                                                   time_mean_tc_diffs_rel,
                                                                   greenland=self.greenland,
                                                                   antarctica=self.antarctica),
-                                                        -0.5, 0.5),
+                                                        -5, 5),
                                              shading='nearest', cmap='cet_CET_D4',
-                                             vmin=-0.5, vmax=0.5,
+                                             vmin=-5, vmax=5,
                                              transform=ccrs.PlateCarree())
 
         # Colorbar
@@ -228,7 +228,7 @@ class Analysis(object):
         time_mean_precip_diffs_rel = time_mean_precip_diffs / wfde5_time_mean_precip
     
         # Setup maps
-        axes = coordinate_space.four_map_horizontal_comparison(greenland=self.greenland
+        axes = coordinate_space.four_map_horizontal_comparison(greenland=self.greenland,
                                                                antarctica=self.antarctica)
         set_map_titles(axes)
 
@@ -242,9 +242,9 @@ class Analysis(object):
                                                                 cruncep_time_mean_precip,
                                                                 greenland=self.greenland,
                                                                 antarctica=self.antarctica),
-                                                      vmin, vmax),
+                                                      cm_per_year_min, cm_per_year_max),
                                            shading='nearest', cmap=cmap,
-                                           vmin=vmin, vmax=vmax,
+                                           vmin=cm_per_year_min, vmax=cm_per_year_max,
                                            transform=ccrs.PlateCarree())
                                        
         wfde5_quad_mesh = axes[1].pcolor(longxy, latixy,
@@ -252,9 +252,9 @@ class Analysis(object):
                                                               wfde5_time_mean_precip,
                                                               greenland=self.greenland,
                                                               antarctica=self.antarctica),
-                                                    vmin, vmax),
+                                                    cm_per_year_min, cm_per_year_max),
                                          shading='nearest', cmap=cmap,
-                                         vmin=vmin, vmax=vmax,
+                                         vmin=cm_per_year_min, vmax=cm_per_year_max,
                                          transform=ccrs.PlateCarree())
     
         diffs_quad_mesh = axes[2].pcolor(longxy, latixy,
@@ -311,7 +311,7 @@ class Analysis(object):
                         dpi=300)
         elif self.antarctica:
             # Add elevation contours
-            dem = ais_dem.AisDEM()
+            dem = ais_dem.AisDem()
             for i, ax in enumerate(axes):
                 # Add elevation contours
                 dem.draw_contours(ax)
@@ -343,19 +343,21 @@ def run():
     # Greenland analysis
     greenland_analysis = Analysis(compute_means=False,
                                   greenland=True)
-    greenland_analysis.compare_temperature(degc_min=-50, degc_max=0)
+    greenland_analysis.compare_temperature(degc_min=-50, degc_max=0,
+                                           cmap='cet_CET_L7')
     greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
     
     # Antarctica analysis
     antarctica_analysis = Analysis(compute_means=False,
                                    antarctica=True)
-    antarctica_analysis.compare_temperature(degc_min=-50, degc_max=0)
+    antarctica_analysis.compare_temperature(degc_min=-50, degc_max=0,
+                                            cmap='cet_CET_L7')
     antarctica_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
     
     # Northern hemisphere analysis
     northern_hemisphere_analysis = Analysis(compute_means=False)
     northern_hemisphere_analysis.compare_temperature()
-    northern_hemipshere_analysis.compare_precip()
+    northern_hemisphere_analysis.compare_precip()
 
 def main():
     run()
