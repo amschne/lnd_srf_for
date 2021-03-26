@@ -29,6 +29,14 @@ def get_args():
                         help='Path to top level directory where clean WFDE5 '
                              'data is stored.')
     
+    # SUMup analysis parameters
+    parser.add_argument('--sumup_start_year', type=int,
+                        default=1980,
+                        help='First year to include in SUMup analysis')
+    parser.add_argument('--sumup_stop_year', type=int,
+                        default=1990,
+                        help='First year to exclude in SUMup analysis')
+    
     args = parser.parse_args()
     
     return args
