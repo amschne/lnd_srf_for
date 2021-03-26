@@ -12,6 +12,8 @@
     https://doi.org/10.5194/essd-10-1959-2018, 2018.
 """
 
+from os import path
+
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -210,7 +212,7 @@ def grid_sumup2wfde5():
     axes[0,0].errorbar(sumup_mean_accum_gris, cruncep_mean_precip_gris_sample,
                        yerr=get_yerrs(cruncep_gris_errors),
                        fmt='x', color='white', ls='')
-    axes[0,0].text(65, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$'
+    axes[0,0].text(60, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$'
                             % (np.around(gris_correlations[0,2]**2, decimals=4),
                                np.around(np.mean(np.abs(cruncep_gris_errors)),
                                          decimals=2)))
@@ -218,7 +220,7 @@ def grid_sumup2wfde5():
     axes[0,1].errorbar(sumup_mean_accum_ais, cruncep_mean_precip_ais_sample,
                        yerr=get_yerrs(cruncep_ais_errors),
                        fmt='x', color='white', ls='')
-    axes[0,1].text(65, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$'
+    axes[0,1].text(60, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$'
                             % (np.around(ais_correlations[0,2]**2, decimals=4),
                                np.around(np.mean(np.abs(cruncep_ais_errors)),
                                          decimals=2)))
@@ -226,7 +228,7 @@ def grid_sumup2wfde5():
     axes[1,0].errorbar(sumup_mean_accum_gris, wfde5_mean_precip_gris_sample,
                        yerr=get_yerrs(wfde5_gris_errors),
                        fmt='x', color='white', ls='')
-    axes[1,0].text(65, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$'
+    axes[1,0].text(60, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$'
                             % (np.around(gris_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(wfde5_gris_errors)),
                                          decimals=2)))
@@ -234,11 +236,11 @@ def grid_sumup2wfde5():
     axes[1,1].errorbar(sumup_mean_accum_ais, wfde5_mean_precip_ais_sample,
                        yerr=get_yerrs(wfde5_ais_errors),
                        fmt='x', color='white', ls='')
-    axes[1,1].text(65, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$'
+    axes[1,1].text(60, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$'
                             % (np.around(ais_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(wfde5_ais_errors)),
                                          decimals=2)))
-    plt.show()
+    plt.savefig(path.join('results', 'cruncep_wfde5_sumup_gris_ais_precip.pdf'))
     
 def covariance(sample_matrix):
     sample_means = sample_matrix.mean(axis=1)
@@ -282,7 +284,7 @@ def test():
 
 def run():
     #test()
-    plt.style.use('gmd_movie_frame')
+    plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
     #plt.style.use('hofmann')
     grid_sumup2wfde5()
 
