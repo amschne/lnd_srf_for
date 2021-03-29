@@ -317,7 +317,7 @@ class Analysis(object):
         
         return axes
         
-    def close_mean_precip_rootgrps():
+    def close_mean_precip_rootgrps(self):
         self.wfde5_mean_rainf_rootgrp.close()
         self.wfde5_mean_snowf_rootgrp.close()
         self.cruncep_mean_precip_rootgrp.close()
@@ -343,15 +343,17 @@ def run():
     greenland_analysis.close_mean_t_rootgrps()
 
     # Precipitation
+    (sumup_gris, sumup_ais) = verify_precip.grid_sumup2wfde5()
     axes = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
     # Get and plot SUMup locations
-    (sumup_gris, sumup_ais) = verify_precip.grid_sumup2wfde5()
     axes[0].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                     cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
-                    vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='white')
+                    vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='white',
+                    transform=ccrs.PlateCarree())
     axes[1].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                     cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
-                    vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='white')
+                    vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='white',
+                    transform=ccrs.PlateCarree())
     
     # Set the figure title
     plt.suptitle('Greenland mean 1980 to 1990 precipitation')
@@ -380,12 +382,14 @@ def run():
     # Precipitation
     axes = antarctica_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
     # Get and plot SUMup locations
-    axes[0].scatter(sumup_gris[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
+    axes[0].scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
                     cmap=antarctica_analysis.precip_cmap, vmin=antarctica_analysis.precip_cm_per_year_min,
-                    vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='white')
+                    vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='white',
+                    transform=ccrs.PlateCarree())
     axes[1].scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
                     cmap=antarctica_analysis.precip_cmap, vmin=antarctica_analysis.precip_cm_per_year_min,
-                    vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='white')
+                    vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='white',
+                    transform=ccrs.PlateCarree())
     
     # Set the figure title
     plt.suptitle('Antarctica mean 1980 to 1990 precipitation')

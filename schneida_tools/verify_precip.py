@@ -277,6 +277,7 @@ def grid_sumup2wfde5(xlim=150, ylim=150):
                                          decimals=2),
                                len(wfde5_ais_errors)))
     plt.savefig(path.join('results', 'cruncep_wfde5_sumup_gris_ais_precip.pdf'))
+    plt.close()
     
     return((lat_gris_sample, lon_gris_sample, sumup_mean_accum_gris, gris_n_samples),
            (lat_ais_sample, lon_ais_sample, sumup_mean_accum_ais, ais_n_samples))
