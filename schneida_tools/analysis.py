@@ -12,6 +12,7 @@ from schneida_tools import wfde5
 from schneida_tools import coordinate_space
 from schneida_tools import gris_dem
 from schneida_tools import ais_dem
+from schneida_tools import verify_precip
 
 import ipdb
 
@@ -150,16 +151,13 @@ class Analysis(object):
                                   ax=axes[3], orientation='horizontal')
         rel_cbar.set_label(r'Difference ($\%$)')
     
-        # Draw contours and save results
+        # Draw contours
         if self.greenland:
             dem = gris_dem.GrisDEM()
             for i, ax in enumerate(axes):
                 # Add elevation contours
                 dem.draw_contours(ax)
     
-            # Set the figure title
-            plt.suptitle('Greenland mean 1980 to 1990 surface air temperature')
-            savefig_name = path.join('results', 'greenland_tair_cruncep_vs_wfde5.png')
         elif self.antarctica:
             # Add elevation contours
             dem = ais_dem.AisDem()
@@ -167,23 +165,19 @@ class Analysis(object):
                 # Add elevation contours
                 dem.draw_contours(ax)
                 
-            # Set the figure title
-            plt.suptitle('Antarctica mean 1980 to 1990 surface air temperature')
-            savefig_name = path.join('results', 'antarctica_tair_cruncep_vs_wfde5.png')
         else:
             for i, ax in enumerate(axes):
                 # Add elevation contours
                 coordinate_space.draw_elevation_contours(ax)
-            # Set the figure title
-            plt.suptitle('Northern Hemisphere mean 1980 to 1990 surface air temperature')
-            savefig_name = path.join('results', 'nh_tair_cruncep_vs_wfde5.png')
         
-        print('Writing temperature maps to %s' % savefig_name)
-        plt.savefig(savefig_name, dpi=300)
-        # Close figure and files
-        plt.close()
-        cruncep_mean_t_rootgrp.close()
-        wfde5_mean_t_rootgrp.close()
+        self.cruncep_mean_t_rootgrp = cruncep_mean_t_rootgrp
+        self.wfde5_mean_t_rootgrp = wfde5_mean_t_rootgrp
+        
+        return(axes)
+        
+    def close_mean_t_rootgrps(self):
+        self.cruncep_mean_t_rootgrp.close()
+        self.wfde5_mean_t_rootgrp.close()
     
     def compare_precip(self, cmap='cet_CET_L6', cm_per_year_min=0,
                        cm_per_year_max=180):
@@ -302,35 +296,32 @@ class Analysis(object):
                 # Add evelvation contours
                 dem.draw_contours(ax)
             
-            # Set the figure title
-            plt.suptitle('Greenland mean 1980 to 1990 precipitation')
-            savefig_name = path.join('results', 'greenland_precip_cruncep_vs_wfde5.png')
         elif self.antarctica:
             # Add elevation contours
             dem = ais_dem.AisDem()
             for i, ax in enumerate(axes):
                 # Add elevation contours
                 dem.draw_contours(ax)
-            # Set the figure title
-            plt.suptitle('Antarctica mean 1980 to 1990 precipitation')
-            savefig_name = path.join('results', 'antarctica_precip_cruncep_vs_wfde5.png')
+
         else:
             # Add elevation contours
             for i, ax in enumerate(axes):
                 coordinate_space.draw_elevation_contours(ax)
 
-            # Set the figure title
-            plt.suptitle('Northern Hemisphere mean 1980 to 1990 precipitation')
-            savefig_name = path.join('results', 'nh_precip_cruncep_vs_wfde5.png')
+        self.wfde5_mean_rainf_rootgrp = wfde5_mean_rainf_rootgrp
+        self.wfde5_mean_snowf_rootgrp = wfde5_mean_snowf_rootgrp
+        self.cruncep_mean_precip_rootgrp = cruncep_mean_precip_rootgrp
+        self.precip_cmap = cmap
+        self.precip_cm_per_year_min = cm_per_year_min
+        self.precip_cm_per_year_max = cm_per_year_max
         
-        print('Writing precipitation maps to %s' % savefig_name)
-        plt.savefig(savefig_name, dpi=300)
-        # Close figure and files
-        plt.close()
-        wfde5_mean_rainf_rootgrp.close()
-        wfde5_mean_snowf_rootgrp.close()
-        cruncep_mean_precip_rootgrp.close()
-    
+        return axes
+        
+    def close_mean_precip_rootgrps():
+        self.wfde5_mean_rainf_rootgrp.close()
+        self.wfde5_mean_snowf_rootgrp.close()
+        self.cruncep_mean_precip_rootgrp.close()
+        
 def test():
     cruncep.test()
     wfde5.test()
@@ -339,22 +330,93 @@ def run():
     # Greenland analysis
     greenland_analysis = Analysis(compute_means=False,
                                   greenland=True)
-    greenland_analysis.compare_temperature(degc_min=-50, degc_max=0,
+    # Temperature
+    axes = greenland_analysis.compare_temperature(degc_min=-50, degc_max=0,
                                            cmap='cet_CET_L7')
-    greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
+    # Set the figure title
+    plt.suptitle('Greenland mean 1980 to 1990 surface air temperature')
+    savefig_name = path.join('results', 'greenland_tair_cruncep_vs_wfde5.png')
+    print('Writing temperature maps to %s' % savefig_name)
+    plt.savefig(savefig_name, dpi=300)
+    # Close figure and files
+    plt.close()
+    greenland_analysis.close_mean_t_rootgrps()
+
+    # Precipitation
+    axes = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
+    # Get and plot SUMup locations
+    (sumup_gris, sumup_ais) = verify_precip.grid_sumup2wfde5()
+    axes[0].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+                    cmap=self.precip_cmap, vmin=self.precip_cm_per_year_min,
+                    vmax=self.precip_cm_per_year_max, edgecolors='white')
+    axes[1].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+                    cmap=self.precip_cmap, vmin=self.precip_cm_per_year_min,
+                    vmax=self.precip_cm_per_year_max, edgecolors='white')
+    
+    # Set the figure title
+    plt.suptitle('Greenland mean 1980 to 1990 precipitation')
+    savefig_name = path.join('results', 'greenland_precip_cruncep_vs_wfde5.png')
+    print('Writing precipitation maps to %s' % savefig_name)
+    plt.savefig(savefig_name, dpi=300)
+    # Close figure and files
+    plt.close()
+    greenland_analysis.close_mean_precip_rootgrps()
     
     # Antarctica analysis
     antarctica_analysis = Analysis(compute_means=False,
                                    antarctica=True)
-    antarctica_analysis.compare_temperature(degc_min=-50, degc_max=0,
-                                            cmap='cet_CET_L7')
-    antarctica_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
+    # Temperature
+    axes = antarctica_analysis.compare_temperature(degc_min=-50, degc_max=0,
+                                                   cmap='cet_CET_L7')
+    # Set the figure title
+    plt.suptitle('Antarctica mean 1980 to 1990 surface air temperature')
+    savefig_name = path.join('results', 'antarctica_tair_cruncep_vs_wfde5.png')
+    print('Writing temperature maps to %s' % savefig_name)
+    plt.savefig(savefig_name, dpi=300)
+    # Close figure and files
+    plt.close()
+    antarctica_analysis.close_mean_t_rootgrps()
+    
+    # Precipitation
+    axes = antarctica_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
+    # Get and plot SUMup locations
+    axes[0].scatter(sumup_gris[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
+                    cmap=self.precip_cmap, vmin=self.precip_cm_per_year_min,
+                    vmax=self.precip_cm_per_year_max, edgecolors='white')
+    axes[1].scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
+                    cmap=self.precip_cmap, vmin=self.precip_cm_per_year_min,
+                    vmax=self.precip_cm_per_year_max, edgecolors='white')
+    
+    # Set the figure title
+    plt.suptitle('Antarctica mean 1980 to 1990 precipitation')
+    savefig_name = path.join('results', 'antarctica_precip_cruncep_vs_wfde5.png')
+    plt.savefig(savefig_name, dpi=300)
+    # Close figure and files
+    plt.close()
+    antarctica_analysis.close_mean_precip_rootgrps()
     
     # Northern hemisphere analysis
     northern_hemisphere_analysis = Analysis(compute_means=False)
-    northern_hemisphere_analysis.compare_temperature()
-    northern_hemisphere_analysis.compare_precip()
-
+    axes = northern_hemisphere_analysis.compare_temperature()
+    # Set the figure title
+    plt.suptitle('Northern Hemisphere mean 1980 to 1990 surface air temperature')
+    savefig_name = path.join('results', 'nh_tair_cruncep_vs_wfde5.png')
+    print('Writing temperature maps to %s' % savefig_name)
+    plt.savefig(savefig_name, dpi=300)
+    # Close figure and files
+    plt.close()
+    northern_hemipshere_analysis.close_mean_t_rootgrps()
+    
+    # Precipitation
+    axes = northern_hemisphere_analysis.compare_precip()
+    # Set the figure title
+    plt.suptitle('Northern Hemisphere mean 1980 to 1990 precipitation')
+    savefig_name = path.join('results', 'nh_precip_cruncep_vs_wfde5.png')
+    plt.savefig(savefig_name, dpi=300)
+    # Close figure and files
+    plt.close()
+    northern_hemipshere_analysis.close_mean_precip_rootgrps()
+    
 def main():
     run()
 

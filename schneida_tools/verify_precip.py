@@ -69,7 +69,7 @@ def get_cruncep_temporal_means():
         
     return cruncep_mean_precip_rootgrp
     
-def grid_sumup2wfde5():
+def grid_sumup2wfde5(xlim=150, ylim=150):
     """ Loop through measurements and filter out:
         1. Measurements outside time period of analysis
         2. All measurements that are not from ice cores
@@ -94,6 +94,8 @@ def grid_sumup2wfde5():
           % (args.sumup_start_year, args.sumup_stop_year))
     valid_wfde5_lat_idx = dict()
     valid_wfde5_lon_idx = dict()
+    valid_sumup_lat = dict()
+    valid_sumup_lon = dict()
     valid_sumup_accum = dict()
     valid_sumup_error = dict()
     valid_sumup_elev = dict()
@@ -118,11 +120,13 @@ def grid_sumup2wfde5():
             valid_wfde5_lat_idx[key] = wfde5_lat_idx
             valid_wfde5_lon_idx[key] = wfde5_lon_idx
             
+            valid_sumup_lat[key] = list()
+            valid_sumup_lon[key] = list()
             valid_sumup_accum[key] = list()
             valid_sumup_error[key] = list()
             valid_sumup_elev[key] = list()
             
-            # Adjust sumup coordinate arrays
+            # Adjust sumup grid coordinate arrays
             grid_sumup_lat[i] = wfde5_lat
             grid_sumup_lon[i] = wfde5_lon
             
@@ -136,11 +140,19 @@ def grid_sumup2wfde5():
         valid_sumup_accum[key].append(float(sumup_rootgrp.variables['Accumulation'][sumup_i]))
         valid_sumup_error[key].append(float(sumup_rootgrp.variables['Error'][sumup_i]))
         valid_sumup_elev[key].append(float(sumup_rootgrp.variables['Elevation'][sumup_i]))
+        valid_sumup_lat[key].append(float(sumup_rootgrp.variables['Latitude'][sumup_i]))
+        valid_sumup_lon[key].append(float(sumup_rootgrp.variables['Longitude'][sumup_i]))
+        if False:
+            print(float(sumup_rootgrp.variables['Latitude'][sumup_i]),
+                  float(sumup_rootgrp.variables['Longitude'][sumup_i]),
+                  float(sumup_rootgrp.variables['Accumulation'][sumup_i]))
 
     # Setup sample lists
     print('Separating results for Greenland and Antartica')
     lat_gris_sample = list()
     lon_gris_sample = list()
+    gris_n_samples = list()
+    ais_n_samples = list()
     lat_ais_sample = list()
     lon_ais_sample = list()
     wfde5_mean_precip_gris_sample = list()
@@ -156,8 +168,18 @@ def grid_sumup2wfde5():
             wfde5_lon_idx = valid_wfde5_lon_idx[key]
             if wfde5_mean_snowf_rootgrp.variables['lat'][wfde5_lat_idx] > 0 and wfde5_mean_snowf_rootgrp.variables['lon'][wfde5_lon_idx] < 0:
                 # Greenland
-                lat_gris_sample.append(wfde5_mean_snowf_rootgrp.variables['lat'][wfde5_lat_idx])
-                lon_gris_sample.append(wfde5_mean_snowf_rootgrp.variables['lon'][wfde5_lon_idx])
+                if False:
+                    # Store WFDE5 grid points
+                    lat_gris_sample.append(wfde5_mean_snowf_rootgrp.variables['lat'][wfde5_lat_idx])
+                    lon_gris_sample.append(wfde5_mean_snowf_rootgrp.variables['lon'][wfde5_lon_idx])
+                else:
+                    # Store median SUMup locations
+                    sumup_median_lat = np.ma.median(valid_sumup_lat[key])
+                    sumup_median_lon = np.ma.median(valid_sumup_lon[key])
+                    lat_gris_sample.append(sumup_median_lat)
+                    lon_gris_sample.append(sumup_median_lon)
+                
+                gris_n_samples.append(len(valid_sumup_lat[key]))
                 # Convert sumup accumulation rate from m per year to cm per year
                 sumup_mean_accum_gris.append(100. * sumup_mean_accum)
                 wfde5_mean_precip_gris_sample.append(wfde5_mean_precip[wfde5_lat_idx,
@@ -166,8 +188,18 @@ def grid_sumup2wfde5():
                                                                            wfde5_lon_idx])
             elif wfde5_mean_snowf_rootgrp.variables['lat'][wfde5_lat_idx] < 0:
                 # Antarctica
-                lat_ais_sample.append(wfde5_mean_snowf_rootgrp.variables['lat'][wfde5_lat_idx])
-                lon_ais_sample.append(wfde5_mean_snowf_rootgrp.variables['lon'][wfde5_lon_idx])
+                if False:
+                    # Store WFDE5 grid points
+                    lat_ais_sample.append(wfde5_mean_snowf_rootgrp.variables['lat'][wfde5_lat_idx])
+                    lon_ais_sample.append(wfde5_mean_snowf_rootgrp.variables['lon'][wfde5_lon_idx])
+                else:
+                    # Store median SUMup locations
+                    sumup_median_lat = np.ma.median(valid_sumup_lat[key])
+                    sumup_median_lon = np.ma.median(valid_sumup_lon[key])
+                    lat_ais_sample.append(sumup_median_lat)
+                    lon_ais_sample.append(sumup_median_lon)
+                
+                ais_n_samples.append(len(valid_sumup_lat[key]))
                 # Convert sumup accumulation rate from m per year to cm per year
                 sumup_mean_accum_ais.append(100. * sumup_mean_accum)
                 wfde5_mean_precip_ais_sample.append(wfde5_mean_precip[wfde5_lat_idx,
@@ -192,7 +224,7 @@ def grid_sumup2wfde5():
     
     # Scatter data
     fig, axes = plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
-    fig.suptitle('Mean 1980 to 1990 reanalysis precipitation vs. accumulation measurements')
+    fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
     axes[0,0].set_title('Greenland')
     axes[0,1].set_title('Antarctica')
     axes[0,0].set_ylabel('CRUNCEP7\nprecipitation rate (cm H$_2$O yr$^{-1}$)')
@@ -200,47 +232,54 @@ def grid_sumup2wfde5():
     axes[1,0].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
     axes[1,1].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
     
-    axes[0,0].set_ylim(0, 105)
-    axes[0,0].set_xlim(0, 105)
+    axes[0,0].set_ylim(0, ylim)
+    axes[0,0].set_xlim(0, xlim)
     
     for i in range(2):
         for j in range(2):
-            axes[i,j].set_ylim(0, 105)
-            axes[i,j].set_xlim(0, 105)
-            axes[i,j].plot([0,105], [0,105], color='#C6BEB5')
+            axes[i,j].set_ylim(0, ylim)
+            axes[i,j].set_xlim(0, xlim)
+            axes[i,j].plot([0,xlim], [0,ylim], color='#C6BEB5')
             
     axes[0,0].errorbar(sumup_mean_accum_gris, cruncep_mean_precip_gris_sample,
                        yerr=get_yerrs(cruncep_gris_errors),
                        fmt='x', color='white', ls='')
-    axes[0,0].text(60, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$'
+    axes[0,0].text(0.67*xlim, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
                             % (np.around(gris_correlations[0,2]**2, decimals=4),
                                np.around(np.mean(np.abs(cruncep_gris_errors)),
-                                         decimals=2)))
+                                         decimals=2),
+                               len(cruncep_gris_errors)))
                        
     axes[0,1].errorbar(sumup_mean_accum_ais, cruncep_mean_precip_ais_sample,
                        yerr=get_yerrs(cruncep_ais_errors),
                        fmt='x', color='white', ls='')
-    axes[0,1].text(60, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$'
+    axes[0,1].text(0.67*xlim, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
                             % (np.around(ais_correlations[0,2]**2, decimals=4),
                                np.around(np.mean(np.abs(cruncep_ais_errors)),
-                                         decimals=2)))
+                                         decimals=2),
+                               len(cruncep_ais_errors)))
                        
     axes[1,0].errorbar(sumup_mean_accum_gris, wfde5_mean_precip_gris_sample,
                        yerr=get_yerrs(wfde5_gris_errors),
                        fmt='x', color='white', ls='')
-    axes[1,0].text(60, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$'
+    axes[1,0].text(0.67*xlim, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
                             % (np.around(gris_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(wfde5_gris_errors)),
-                                         decimals=2)))
+                                         decimals=2),
+                                len(wfde5_gris_errors)))
                        
     axes[1,1].errorbar(sumup_mean_accum_ais, wfde5_mean_precip_ais_sample,
                        yerr=get_yerrs(wfde5_ais_errors),
                        fmt='x', color='white', ls='')
-    axes[1,1].text(60, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$'
+    axes[1,1].text(0.67*xlim, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
                             % (np.around(ais_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(wfde5_ais_errors)),
-                                         decimals=2)))
+                                         decimals=2),
+                               len(wfde5_ais_errors)))
     plt.savefig(path.join('results', 'cruncep_wfde5_sumup_gris_ais_precip.pdf'))
+    
+    return((lat_gris_sample, lon_gris_sample, sumup_mean_accum_gris, gris_n_samples),
+           (lat_ais_sample, lon_ais_sample, sumup_mean_accum_ais, ais_n_samples))
     
 def covariance(sample_matrix):
     sample_means = sample_matrix.mean(axis=1)
@@ -286,7 +325,8 @@ def run():
     #test()
     plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
     #plt.style.use('hofmann')
-    grid_sumup2wfde5()
+    (sumup_gris, sumup_ais) = grid_sumup2wfde5()
+    ipdb.set_trace()
 
 def main():
     run()
