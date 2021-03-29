@@ -347,11 +347,11 @@ def run():
     # Get and plot SUMup locations
     (sumup_gris, sumup_ais) = verify_precip.grid_sumup2wfde5()
     axes[0].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
-                    cmap=self.precip_cmap, vmin=self.precip_cm_per_year_min,
-                    vmax=self.precip_cm_per_year_max, edgecolors='white')
+                    cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
+                    vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='white')
     axes[1].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
-                    cmap=self.precip_cmap, vmin=self.precip_cm_per_year_min,
-                    vmax=self.precip_cm_per_year_max, edgecolors='white')
+                    cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
+                    vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='white')
     
     # Set the figure title
     plt.suptitle('Greenland mean 1980 to 1990 precipitation')
@@ -381,11 +381,11 @@ def run():
     axes = antarctica_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
     # Get and plot SUMup locations
     axes[0].scatter(sumup_gris[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
-                    cmap=self.precip_cmap, vmin=self.precip_cm_per_year_min,
-                    vmax=self.precip_cm_per_year_max, edgecolors='white')
+                    cmap=antarctica_analysis.precip_cmap, vmin=antarctica_analysis.precip_cm_per_year_min,
+                    vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='white')
     axes[1].scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
-                    cmap=self.precip_cmap, vmin=self.precip_cm_per_year_min,
-                    vmax=self.precip_cm_per_year_max, edgecolors='white')
+                    cmap=antarctica_analysis.precip_cmap, vmin=antarctica_analysis.precip_cm_per_year_min,
+                    vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='white')
     
     # Set the figure title
     plt.suptitle('Antarctica mean 1980 to 1990 precipitation')
