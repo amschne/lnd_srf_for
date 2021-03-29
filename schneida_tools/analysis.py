@@ -349,10 +349,12 @@ def run():
     axes[0].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                     cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
                     vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='white',
+                    linewidths=0.5,
                     transform=ccrs.PlateCarree())
     axes[1].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                     cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
                     vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='white',
+                    linewidths=0.5,
                     transform=ccrs.PlateCarree())
     
     # Set the figure title
@@ -385,10 +387,12 @@ def run():
     axes[0].scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
                     cmap=antarctica_analysis.precip_cmap, vmin=antarctica_analysis.precip_cm_per_year_min,
                     vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='white',
+                    linewidths=0.5,
                     transform=ccrs.PlateCarree())
     axes[1].scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
                     cmap=antarctica_analysis.precip_cmap, vmin=antarctica_analysis.precip_cm_per_year_min,
                     vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='white',
+                    linewidths=0.5,
                     transform=ccrs.PlateCarree())
     
     # Set the figure title
@@ -409,7 +413,7 @@ def run():
     plt.savefig(savefig_name, dpi=300)
     # Close figure and files
     plt.close()
-    northern_hemipshere_analysis.close_mean_t_rootgrps()
+    northern_hemisphere_analysis.close_mean_t_rootgrps()
     
     # Precipitation
     axes = northern_hemisphere_analysis.compare_precip()
@@ -419,7 +423,7 @@ def run():
     plt.savefig(savefig_name, dpi=300)
     # Close figure and files
     plt.close()
-    northern_hemipshere_analysis.close_mean_precip_rootgrps()
+    northern_hemisphere_analysis.close_mean_precip_rootgrps()
     
 def main():
     run()
