@@ -79,7 +79,7 @@ def four_map_horizontal_comparison(greenland=False,
                                               false_easting=0.0,
                                               false_northing=0.0)
                              
-    plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
+    #plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
     
     nrows=1
     ncols=4

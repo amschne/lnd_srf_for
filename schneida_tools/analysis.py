@@ -327,6 +327,8 @@ def test():
     wfde5.test()
 
 def run():
+    plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
+    plt.style.use('uci_darkblue')
     # Greenland analysis
     greenland_analysis = Analysis(compute_means=False,
                                   greenland=True)
