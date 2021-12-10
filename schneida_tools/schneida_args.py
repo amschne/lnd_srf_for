@@ -19,6 +19,21 @@ def get_args():
     parser.add_argument('--cruncep_solar_dir', default='Solar6Hrly')
     parser.add_argument('--cruncep_tphwl_dir', default='TPHWL6Hrly')
     
+    # GSWP3 data info
+    parser.add_argument('--gswp3_raw_data_path',
+                        default=path.join('data_raw',
+                          'atm_forcing.datm7.GSWP3.0.5d.v1.c170516'),
+                        help='Path to top level directory where raw GSWP3 '
+                             'data is stored.')
+    parser.add_argument('--gswp3_clean_data_path',
+                        default=path.join('data_clean',
+                        'atm_forcing.datm7.GSWP3.0.5d.v1.c170516'),
+                        help='Path to top level directory where clean GSWP3 '
+                             'data is stored.')
+    parser.add_argument('--gswp3_precip_dir', default='Precip')
+    parser.add_argument('--gswp3_solar_dir', default='Solar')
+    parser.add_argument('--gswp3_tphwl_dir', default='TPHWL')
+    
     # WFDE5 data info
     parser.add_argument('--wfde5_raw_data_path',
                         default=path.join('data_raw', 'wfde5'),
