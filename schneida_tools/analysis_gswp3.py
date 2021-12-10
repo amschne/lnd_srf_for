@@ -7,7 +7,7 @@ import cartopy.crs as ccrs
 from matplotlib import pyplot as plt
 import colorcet as cc
 
-from schneida_tools import cruncep
+from schneida_tools import gswp3
 from schneida_tools import wfde5
 from schneida_tools import coordinate_space
 from schneida_tools import gris_dem
@@ -22,10 +22,10 @@ NH_EXTENT = (0, 360, -30, 90)
 AIS_EXTENT = (0, 360, -90, -45)
 
 def set_map_titles(axes):
-    axes[0].set_title('CRUNCEP7')
+    axes[0].set_title('GSWP3')
     axes[1].set_title('WFDE5')
-    axes[2].set_title('CRUNCEP7 - WFDE5')
-    axes[3].set_title('((CRUNCEP7 - WFDE5)\n/ WFDE5) ' + r'$\times$ 100')
+    axes[2].set_title('GSWP3 - WFDE5')
+    axes[3].set_title('((GSWP3 - WFDE5)\n/ WFDE5) ' + r'$\times$ 100')
 
 def mask_vals(longxy, latixy, var_arr, greenland=False, antarctica=False):
     """ Mask areas outside map domain
@@ -53,15 +53,15 @@ class Analysis(object):
     def compare_temperature(self, cmap='cet_CET_L8', degc_min=-7, degc_max=37):
         """
         """
-        # Get CRUNCEP temporal mean temperature
-        cruncep_data = cruncep.CRUNCEP7()
-        cruncep_data.get_tphwl()
-        cruncep_mean_t_rootgrp = cruncep.get_temporal_mean(cruncep_data.tphwl_rootgrp,
+        # Get GSWP3 temporal mean temperature
+        gswp3_data = gswp3.GSWP3()
+        gswp3_data.get_tphwl()
+        gswp3_mean_t_rootgrp = gswp3.get_temporal_mean(gswp3_data.tphwl_rootgrp,
                                                            'TBOT',
                                                            compute=self.compute_means)
-        cruncep_data.tphwl_rootgrp.close()
+        gswp3_data.tphwl_rootgrp.close()
         # Convert from K to degrees C
-        cruncep_time_mean_tc = -TFRZ + cruncep_mean_t_rootgrp.variables['TBOT'][:]
+        gswp3_time_mean_tc = -TFRZ + gswp3_mean_t_rootgrp.variables['TBOT'][:]
     
         # Get WFDE5 temporal mean temperature
         wfde5_data = wfde5.WFDE5()
@@ -74,7 +74,7 @@ class Analysis(object):
                                      360, axis=1)
         # Calculate difference
         print('Computing temperature differences...')
-        time_mean_tc_diffs = cruncep_time_mean_tc - wfde5_time_mean_tc
+        time_mean_tc_diffs = gswp3_time_mean_tc - wfde5_time_mean_tc
         time_mean_tc_diffs_rel = time_mean_tc_diffs / (wfde5_time_mean_tc + TFRZ)
     
         # Setup maps
@@ -84,13 +84,13 @@ class Analysis(object):
         set_map_titles(axes)
         print('Mapping temperature data to figure...')
         # Map data
-        longxy = cruncep_mean_t_rootgrp.variables['LONGXY'][:]
-        latixy = cruncep_mean_t_rootgrp.variables['LATIXY'][:]
+        longxy = gswp3_mean_t_rootgrp.variables['LONGXY'][:]
+        latixy = gswp3_mean_t_rootgrp.variables['LATIXY'][:]
     
-        cruncep_quad_mesh = axes[0].pcolormesh(longxy.data, latixy.data,
+        gswp3_quad_mesh = axes[0].pcolormesh(longxy.data, latixy.data,
                                            np.ma.clip(mask_vals(longxy,
                                                                 latixy,
-                                                                cruncep_time_mean_tc,
+                                                                gswp3_time_mean_tc,
                                                                 greenland=self.greenland,
                                                                 antarctica=self.antarctica),
                                                       degc_min, degc_max),
@@ -133,9 +133,9 @@ class Analysis(object):
                                              transform=ccrs.PlateCarree())
         # Colorbar
         fig = plt.gcf()
-        cruncep_cbar = fig.colorbar(cruncep_quad_mesh,
+        gswp3_cbar = fig.colorbar(gswp3_quad_mesh,
                                     ax=axes[0:2], orientation='horizontal')
-        cruncep_cbar.set_label('Temperature ($^{\circ}$ C)')
+        gswp3_cbar.set_label('Temperature ($^{\circ}$ C)')
 
         '''
         wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
@@ -170,29 +170,29 @@ class Analysis(object):
                 # Add elevation contours
                 coordinate_space.draw_elevation_contours(ax)
         
-        self.cruncep_mean_t_rootgrp = cruncep_mean_t_rootgrp
+        self.gswp3_mean_t_rootgrp = gswp3_mean_t_rootgrp
         self.wfde5_mean_t_rootgrp = wfde5_mean_t_rootgrp
         
         return(axes)
         
     def close_mean_t_rootgrps(self):
-        self.cruncep_mean_t_rootgrp.close()
+        self.gswp3_mean_t_rootgrp.close()
         self.wfde5_mean_t_rootgrp.close()
     
     def compare_precip(self, cmap='cet_CET_L6_r', cm_per_year_min=0,
                        cm_per_year_max=180):
         """
         """
-        # Get CRUNCEP temporal mean precipitation
-        cruncep_data = cruncep.CRUNCEP7()
-        cruncep_data.get_precip()
-        cruncep_mean_precip_rootgrp = cruncep.get_temporal_mean(cruncep_data.precip_rootgrp,
+        # Get GSWP3 temporal mean precipitation
+        gswp3_data = gswp3.GSWP3()
+        gswp3_data.get_precip()
+        gswp3_mean_precip_rootgrp = gswp3.get_temporal_mean(gswp3_data.precip_rootgrp,
                                                                 'PRECTmms',
                                                               compute=self.compute_means)
-        cruncep_data.precip_rootgrp.close()
+        gswp3_data.precip_rootgrp.close()
         # mm H2O / sec -> cm H2O / yr.
-        cruncep_time_mean_precip = (60. * 60. * 24. * 365.25 *
-                            cruncep_mean_precip_rootgrp.variables['PRECTmms'][:]) / 10.
+        gswp3_time_mean_precip = (60. * 60. * 24. * 365.25 *
+                            gswp3_mean_precip_rootgrp.variables['PRECTmms'][:]) / 10.
     
         # Get WFDE5 temporal mean precipitation
         wfde5_data = wfde5.WFDE5()
@@ -216,7 +216,7 @@ class Analysis(object):
                                  360, axis=1)
         # Calculate difference
         print('Computing precipitation differences...')
-        time_mean_precip_diffs = cruncep_time_mean_precip - wfde5_time_mean_precip
+        time_mean_precip_diffs = gswp3_time_mean_precip - wfde5_time_mean_precip
         time_mean_precip_diffs_rel = time_mean_precip_diffs / wfde5_time_mean_precip
     
         # Setup maps
@@ -226,12 +226,12 @@ class Analysis(object):
 
         # Map data
         print('Mapping precipitation data to figure...')
-        longxy = cruncep_mean_precip_rootgrp.variables['LONGXY'][:]
-        latixy = cruncep_mean_precip_rootgrp.variables['LATIXY'][:]
+        longxy = gswp3_mean_precip_rootgrp.variables['LONGXY'][:]
+        latixy = gswp3_mean_precip_rootgrp.variables['LATIXY'][:]
     
-        cruncep_quad_mesh = axes[0].pcolormesh(longxy.data, latixy.data,
+        gswp3_quad_mesh = axes[0].pcolormesh(longxy.data, latixy.data,
                                            np.ma.clip(mask_vals(longxy, latixy,
-                                                                cruncep_time_mean_precip,
+                                                                gswp3_time_mean_precip,
                                                                 greenland=self.greenland,
                                                                 antarctica=self.antarctica),
                                                       cm_per_year_min, cm_per_year_max),
@@ -271,9 +271,9 @@ class Analysis(object):
                                              transform=ccrs.PlateCarree())
         # Colorbar
         fig = plt.gcf()
-        cruncep_cbar = fig.colorbar(cruncep_quad_mesh,
+        gswp3_cbar = fig.colorbar(gswp3_quad_mesh,
                             ax=axes[0:2], orientation='horizontal')
-        cruncep_cbar.set_label('Precipitation rate (cm H$_2$O yr$^{-1}$)')
+        gswp3_cbar.set_label('Precipitation rate (cm H$_2$O yr$^{-1}$)')
         '''
         wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
                             ax=axes[1], orientation='horizontal')
@@ -310,7 +310,7 @@ class Analysis(object):
 
         self.wfde5_mean_rainf_rootgrp = wfde5_mean_rainf_rootgrp
         self.wfde5_mean_snowf_rootgrp = wfde5_mean_snowf_rootgrp
-        self.cruncep_mean_precip_rootgrp = cruncep_mean_precip_rootgrp
+        self.gswp3_mean_precip_rootgrp = gswp3_mean_precip_rootgrp
         self.precip_cmap = cmap
         self.precip_cm_per_year_min = cm_per_year_min
         self.precip_cm_per_year_max = cm_per_year_max
@@ -320,10 +320,10 @@ class Analysis(object):
     def close_mean_precip_rootgrps(self):
         self.wfde5_mean_rainf_rootgrp.close()
         self.wfde5_mean_snowf_rootgrp.close()
-        self.cruncep_mean_precip_rootgrp.close()
+        self.gswp3_mean_precip_rootgrp.close()
         
 def test():
-    cruncep.test()
+    gswp3.test()
     wfde5.test()
 
 def run():
@@ -340,7 +340,7 @@ def run():
                                            cmap='cet_CET_L7_r')
     # Set the figure title
     plt.suptitle('Greenland mean 1980 to 1990 surface air temperature')
-    savefig_name = path.join('results', 'greenland_tair_cruncep_vs_wfde5.png')
+    savefig_name = path.join('results', 'greenland_tair_gswp3_vs_wfde5.png')
     print('Writing temperature maps to %s' % savefig_name)
     plt.savefig(savefig_name, dpi=300)
     # Close figure and files
@@ -364,7 +364,7 @@ def run():
     
     # Set the figure title
     plt.suptitle('Greenland mean 1980 to 1990 precipitation')
-    savefig_name = path.join('results', 'greenland_precip_cruncep_vs_wfde5.png')
+    savefig_name = path.join('results', 'greenland_precip_gswp3_vs_wfde5.png')
     print('Writing precipitation maps to %s' % savefig_name)
     plt.savefig(savefig_name, dpi=300)
     # Close figure and files
@@ -379,7 +379,7 @@ def run():
                                                    cmap='cet_CET_L7_r')
     # Set the figure title
     plt.suptitle('Antarctica mean 1980 to 1990 surface air temperature')
-    savefig_name = path.join('results', 'antarctica_tair_cruncep_vs_wfde5.png')
+    savefig_name = path.join('results', 'antarctica_tair_gswp3_vs_wfde5.png')
     print('Writing temperature maps to %s' % savefig_name)
     plt.savefig(savefig_name, dpi=300)
     # Close figure and files
@@ -402,7 +402,7 @@ def run():
     
     # Set the figure title
     plt.suptitle('Antarctica mean 1980 to 1990 precipitation')
-    savefig_name = path.join('results', 'antarctica_precip_cruncep_vs_wfde5.png')
+    savefig_name = path.join('results', 'antarctica_precip_gswp3_vs_wfde5.png')
     plt.savefig(savefig_name, dpi=300)
     # Close figure and files
     plt.close()
@@ -413,7 +413,7 @@ def run():
     axes = northern_hemisphere_analysis.compare_temperature()
     # Set the figure title
     plt.suptitle('Northern Hemisphere mean 1980 to 1990 surface air temperature')
-    savefig_name = path.join('results', 'nh_tair_cruncep_vs_wfde5.png')
+    savefig_name = path.join('results', 'nh_tair_gswp3_vs_wfde5.png')
     print('Writing temperature maps to %s' % savefig_name)
     plt.savefig(savefig_name, dpi=300)
     # Close figure and files
@@ -424,7 +424,7 @@ def run():
     axes = northern_hemisphere_analysis.compare_precip()
     # Set the figure title
     plt.suptitle('Northern Hemisphere mean 1980 to 1990 precipitation')
-    savefig_name = path.join('results', 'nh_precip_cruncep_vs_wfde5.png')
+    savefig_name = path.join('results', 'nh_precip_gswp3_vs_wfde5.png')
     plt.savefig(savefig_name, dpi=300)
     # Close figure and files
     plt.close()

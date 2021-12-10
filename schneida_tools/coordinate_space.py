@@ -91,8 +91,8 @@ def four_map_horizontal_comparison(greenland=False,
     for i, ax in enumerate(axes):
         ax.set_extent((map_lon_min, map_lon_max, map_lat_min, map_lat_max),
                       crs=ccrs.PlateCarree())
-        ax.add_feature(cfeature.LAND, color='#555759')
-        ax.add_feature(cfeature.OCEAN, color='#555759')
+        ax.add_feature(cfeature.LAND, color='#C6BEB5')
+        ax.add_feature(cfeature.OCEAN, color='#C6BEB5')
         
     return axes
         
