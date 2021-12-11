@@ -78,7 +78,7 @@ def get_gswp3_temporal_means():
                                                                 'PRECTmms',
                                                                 compute=False)
     except FileNotFoundError:
-        gswp3_data = gswp3.CRUNCEP7()
+        gswp3_data = gswp3.GSWP3()
         gswp3_data.get_precip()
         gswp3_mean_precip_rootgrp = gswp3.get_temporal_mean(gswp3_data.precip_rootgrp,
                                                                 'PRECTmms')
@@ -250,7 +250,7 @@ def grid_sumup2wfde5(xlim=150, ylim=150):
     ais_sample_matrix = np.array([sumup_mean_accum_ais,
                                   wfde5_mean_precip_ais_sample,
                                   cruncep_mean_precip_ais_sample,
-                                  gswp3_mean_precip_ais_sample]])
+                                  gswp3_mean_precip_ais_sample])
     
     gris_covariances, gris_correlations = covariance(gris_sample_matrix)
     ais_covariances, ais_correlations = covariance(ais_sample_matrix)
@@ -284,7 +284,7 @@ def grid_sumup2wfde5(xlim=150, ylim=150):
     axes[0,0].errorbar(sumup_mean_accum_gris, cruncep_mean_precip_gris_sample,
                        yerr=get_yerrs(cruncep_gris_errors),
                        fmt='x', color='#0064A4', ls='')
-    axes[0,0].text(0.5*xlim, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
+    axes[0,0].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
                             % (np.around(gris_correlations[0,2]**2, decimals=4),
                                np.around(np.mean(np.abs(cruncep_gris_errors)),
                                          decimals=2),
@@ -293,7 +293,7 @@ def grid_sumup2wfde5(xlim=150, ylim=150):
     axes[1,0].errorbar(sumup_mean_accum_ais, cruncep_mean_precip_ais_sample,
                        yerr=get_yerrs(cruncep_ais_errors),
                        fmt='x', color='#0064A4', ls='')
-    axes[1,0].text(0.5*xlim, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
+    axes[1,0].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
                             % (np.around(ais_correlations[0,2]**2, decimals=4),
                                np.around(np.mean(np.abs(cruncep_ais_errors)),
                                          decimals=2),
@@ -302,7 +302,7 @@ def grid_sumup2wfde5(xlim=150, ylim=150):
     axes[0,1].errorbar(sumup_mean_accum_gris, gswp3_mean_precip_gris_sample,
                        yerr=get_yerrs(gswp3_gris_errors),
                        fmt='x', color='#0064A4', ls='')
-    axes[0,1].text(0.5*xlim, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
+    axes[0,1].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
                             % (np.around(gris_correlations[0,3]**2, decimals=4),
                                np.around(np.mean(np.abs(gswp3_gris_errors)),
                                          decimals=2),
@@ -311,7 +311,7 @@ def grid_sumup2wfde5(xlim=150, ylim=150):
     axes[1,1].errorbar(sumup_mean_accum_ais, gswp3_mean_precip_ais_sample,
                        yerr=get_yerrs(gswp3_ais_errors),
                        fmt='x', color='#0064A4', ls='')
-    axes[1,1].text(0.5*xlim, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
+    axes[1,1].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
                             % (np.around(ais_correlations[0,3]**2, decimals=4),
                                np.around(np.mean(np.abs(gswp3_ais_errors)),
                                          decimals=2),
@@ -320,7 +320,7 @@ def grid_sumup2wfde5(xlim=150, ylim=150):
     axes[0,2].errorbar(sumup_mean_accum_gris, wfde5_mean_precip_gris_sample,
                        yerr=get_yerrs(wfde5_gris_errors),
                        fmt='x', color='#0064A4', ls='')
-    axes[0,2].text(0.5*xlim, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
+    axes[0,2].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
                             % (np.around(gris_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(wfde5_gris_errors)),
                                          decimals=2),
@@ -329,12 +329,12 @@ def grid_sumup2wfde5(xlim=150, ylim=150):
     axes[1,2].errorbar(sumup_mean_accum_ais, wfde5_mean_precip_ais_sample,
                        yerr=get_yerrs(wfde5_ais_errors),
                        fmt='x', color='#0064A4', ls='')
-    axes[1,2].text(0.5*xlim, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
+    axes[1,2].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
                             % (np.around(ais_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(wfde5_ais_errors)),
                                          decimals=2),
                                len(wfde5_ais_errors)))
-    plt.savefig(path.join('results', 'cruncep_wfde5_sumup_gris_ais_precip.pdf'))
+    plt.savefig(path.join('results', 'cruncep_wfde5_sumup_gris_ais_precip.png'), dpi=600)
     plt.close()
     
     return((lat_gris_sample, lon_gris_sample, sumup_mean_accum_gris, gris_n_samples),

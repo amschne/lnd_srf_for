@@ -179,7 +179,9 @@ class Analysis(object):
         self.gswp3_mean_t_rootgrp.close()
         self.wfde5_mean_t_rootgrp.close()
     
-    def compare_precip(self, cmap='cet_CET_L6_r', cm_per_year_min=0,
+    def compare_precip(self,
+                       #cmap='cet_CET_L6_r',
+                       cmap='cet_CET_L7_r', cm_per_year_min=0,
                        cm_per_year_max=180):
         """
         """
@@ -255,7 +257,7 @@ class Analysis(object):
                                                               greenland=self.greenland,
                                                               antarctica=self.antarctica),
                                                     -50, 50),
-                                         shading='nearest', cmap='cet_CET_CBD1_r',
+                                         shading='nearest', cmap='cet_CET_D10',
                                          vmin=-50, vmax=50,
                                          transform=ccrs.PlateCarree())
                                      
@@ -266,7 +268,7 @@ class Analysis(object):
                                                                   greenland=self.greenland,
                                                                   antarctica=self.antarctica),
                                                         -50, 50),
-                                             shading='nearest', cmap='cet_CET_CBD1_r',
+                                             shading='nearest', cmap='cet_CET_D10',
                                              vmin=-50, vmax=50,
                                              transform=ccrs.PlateCarree())
         # Colorbar
@@ -333,11 +335,12 @@ def run():
     '''
     plt.style.use('agu_online_poster_presentation')
     # Greenland analysis
-    greenland_analysis = Analysis(compute_means=True,
+    greenland_analysis = Analysis(compute_means=False,
                                   greenland=True)
     # Temperature
     axes = greenland_analysis.compare_temperature(degc_min=-50, degc_max=0,
-                                           cmap='cet_CET_L7_r')
+                                           #cmap='cet_CET_L7',
+                                            cmap='cet_CET_CBL2')
     # Set the figure title
     plt.suptitle('Greenland mean 1980 to 1990 surface air temperature')
     savefig_name = path.join('results', 'greenland_tair_gswp3_vs_wfde5.png')
@@ -376,7 +379,9 @@ def run():
                                    antarctica=True)
     # Temperature
     axes = antarctica_analysis.compare_temperature(degc_min=-50, degc_max=0,
-                                                   cmap='cet_CET_L7_r')
+                                                   #cmap='cet_CET_L7'
+                                                   cmap='cet_CET_CBL2'
+                                                  )
     # Set the figure title
     plt.suptitle('Antarctica mean 1980 to 1990 surface air temperature')
     savefig_name = path.join('results', 'antarctica_tair_gswp3_vs_wfde5.png')
