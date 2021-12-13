@@ -97,8 +97,8 @@ def four_map_horizontal_comparison(greenland=False,
             ax.hlines(-9*10**5, 4*10**5, 4*10**5 + 250*10**3, colors='black', lw=2)
             ax.text(3*10**5, -8.5*10**5, '250 km')
         elif antarctica:
-            ax.hlines(-2.8*10**6, 1.5*10**6, 1.5*10**6 + 1000*10**3, colors='black', lw=2)
-            ax.text(1.5*10**6, -2.7*10**6, '1000 km')
+            ax.hlines(-2.7*10**6, -1.5*10**6, -1.5*10**6 + 1000*10**3, colors='black', lw=2)
+            ax.text(-1.5*10**6, -2.6*10**6, '1000 km')
         
     return axes
         
