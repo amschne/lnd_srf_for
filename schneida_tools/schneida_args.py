@@ -43,6 +43,16 @@ def get_args():
                         default=path.join('data_clean', 'wfde5'),
                         help='Path to top level directory where clean WFDE5 '
                              'data is stored.')
+                             
+    # ERA5 data info
+    parser.add_argument('--era5_raw_data_path',
+                        default=path.join('data_raw', 'era5'),
+                        help='Path to top level directory where raw ERA5 '
+                             'data is stored.')
+    parser.add_argument('--era5_clean_data_path',
+                        default=path.join('data_clean', 'era5'),
+                        help='Path to top level directory where clean ERA5 '
+                             'data is stored.')
     
     # SUMup analysis parameters
     parser.add_argument('--sumup_start_year', type=int,
