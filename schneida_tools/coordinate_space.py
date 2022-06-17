@@ -16,6 +16,8 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import colorcet as cc
 
+from schneida_tools.schneida_args import get_args
+
 class CoordinateSpace(object):
     def __init__(self, spheroid='WGS84'):
         if spheroid == 'WGS84':
@@ -114,6 +116,25 @@ def draw_elevation_contours(ax, elevation_levels=np.arange(0,8849,1500),
                linewidths=0.5,
                cmap='cet_CET_L1', 
                transform=ccrs.PlateCarree())
+
+def mask_vals(longxy, latixy, var_arr, greenland=False, antarctica=False):
+    """ Mask areas outside map domain
+    """
+    args = get_args()
+    
+    if greenland:
+        extent = args.GRIS_EXTENT
+    elif antarctica:
+        extent = args.AIS_EXTENT 
+    else:
+        extent = args.NH_EXTENT
+        
+    var_arr = np.ma.masked_where(longxy < extent[0], var_arr)
+    var_arr = np.ma.masked_where(longxy > extent[1], var_arr)
+    var_arr = np.ma.masked_where(latixy < extent[2], var_arr)
+    var_arr = np.ma.masked_where(latixy > extent[3], var_arr)
+    
+    return var_arr
 
 def test():
     axes = four_map_horizontal_comparison()

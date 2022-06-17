@@ -1,6 +1,11 @@
 import argparse
 from os import path
 
+TFRZ = 273.15 # K
+GRIS_EXTENT = (-361, 361, 45, 90)
+NH_EXTENT = (-361, 361, -30, 90)
+AIS_EXTENT = (-361, 361, -90, -45)
+
 def get_args():
     parser = argparse.ArgumentParser()
     
@@ -53,6 +58,17 @@ def get_args():
                         default=path.join('data_clean', 'era5'),
                         help='Path to top level directory where clean ERA5 '
                              'data is stored.')
+                             
+    # MERRA2 data info
+    parser.add_argument('--merra2_raw_data_path',
+                        default=path.join('data_raw', 'merra2',
+                                          'MERRA2_MONTHLY', 'M2TMNXFLX.5.12.4'),
+                        help='Path to top level directory where raw MERRA-2 '
+                             'data is stored.')
+    parser.add_argument('--merra2_clean_data_path',
+                        default=path.join('data_clean', 'merra2'),
+                        help='Path to top level directory where clean MERRA-2 '
+                             'data is stored.')
     
     # SUMup analysis parameters
     parser.add_argument('--sumup_start_year', type=int,
@@ -63,5 +79,12 @@ def get_args():
                         help='First year to exclude in SUMup analysis')
     
     args = parser.parse_args()
+    
+    
+    # Add constants to args
+    args.TFRZ = TFRZ
+    args.GRIS_EXTENT = GRIS_EXTENT
+    args.NH_EXTENT = NH_EXTENT
+    args.AIS_EXTENT = AIS_EXTENT
     
     return args

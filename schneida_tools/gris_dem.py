@@ -24,39 +24,34 @@ import colorcet as cc
 WSG_84 = 4326
 EPSG_NSIDC = 3413
 
-class GrisDEM(object):
-    def __init__(self, filename=path.join('data_raw','gimpdem_90m_v01.1.tif'),
+class GrISDEM(object):
+    def __init__(self, filename,
+                 cmap=ListedColormap(cc.linear_grey_0_100_c0),
                  wide=False):
         self.dataset = gdal.Open(filename, gdal.GA_ReadOnly)
         if not self.dataset:
             warnings.warn('GDAL failed to open %s' % filename)
+        self.cmap = cmap
         self.wide = wide
-        
-        org_crs = CRS.from_epsg(EPSG_NSIDC)
-        self.spatial2coordinate(self.dataset.GetSpatialRef())
-        self.transformer = Transformer.from_crs(org_crs, self.proj_crs)
-        self.prepare_cartopy()
                 
-    def draw_contours(self, ax, filename=path.join('data_clean',
-                                                   "gimpdem_90m_v01.1.nc"),
-                      cmap=ListedColormap(cc.linear_grey_0_100_c0)):
-        """
-        """
-        downsample=np.gcd(self.dataset.RasterXSize, self.dataset.RasterYSize)
+    def draw_contours(self, ax, filename, globe=None,
+                      downsample=1):
         gimpdem = Dataset(filename)
+        globe = self.get_transform()
         (xx, yy) = np.meshgrid(gimpdem.variables['x'][::downsample],
                                gimpdem.variables['y'][::downsample])
         (lats, lons) = self.transformer.transform(xx, yy)
         print('Drawing GIMP DEM contours...')
         ax.contour(lons, lats,
-                   gimpdem.variables['Band1'][::downsample,::downsample],
+                   np.ma.masked_where(lons>-1,
+                   gimpdem.variables['Band1'][::downsample,::downsample]),
                    levels=np.arange(0, 3207, 500),
-                   cmap=cmap,
+                   cmap=self.cmap,
                    linewidths=0.5,
                    linestyles='solid',
                    alpha=1.0,
-                   vmin=-4000,vmax=4000,
-                   label='GIMP DEM',
+                   vmin=-500,vmax=3207,
+                   label='GIMP DEM$^1$',
                    transform=ccrs.PlateCarree())
                    
         gimpdem.close()
@@ -89,16 +84,32 @@ class GrisDEM(object):
         except AttributeError:
             warnings.warn('Can not initialize cartopy CRS. Returning "globe" '
             'instead.')
-            self.globe = globe
+            self.cart_crs = globe
         
-    def setup_map(self, central_longitude=-42.1, central_latitude=71.4,
-                  wide=False):
-        """ Setup the map projection
+    def get_transform(self):
+        org_crs = CRS.from_epsg(EPSG_NSIDC)
+        self.spatial2coordinate(self.dataset.GetSpatialRef())
+        self.transformer = Transformer.from_crs(org_crs, self.proj_crs)
+        globe = self.prepare_cartopy()
+        return globe
+    
+    def setup_map(self, gimpdem_latlon,
+                  central_longitude=-42.1, wide=False):
+        """ Draw elevation contours on the map background
         """
         if True:
+            '''
             ax = plt.axes(projection=ccrs.LambertAzimuthalEqualArea(
                             central_longitude=central_longitude,
-                            central_latitude=central_latitude))
+                            central_latitude=71.4))
+            '''
+            ax = plt.axes(projection=ccrs.LambertConformal(
+                               central_longitude=central_longitude,
+                               central_latitude=71.4,
+                               false_easting=0.0, false_northing=0.0,
+                               secant_latitudes=None,
+                               standard_parallels=(83.4,59.4),
+                               globe=None, cutoff=59))
         else:    
             ax = plt.axes(projection=ccrs.AlbersEqualArea(central_longitude=
                                                       central_longitude, 
@@ -107,11 +118,12 @@ class GrisDEM(object):
                                                       globe=None))
         if self.wide:
             ax.set_extent((-55, -29, 54, 84))
-        elif False:    
+        else:    
             ax.set_extent((-61, -29, 59, 84))
-        else:
-            ax.set_extent((-55, -29, 59, 84))
             
+        ax = self.draw_contours(ax, gimpdem_latlon,
+                                downsample=np.gcd(self.dataset.RasterXSize,
+                                                  self.dataset.RasterYSize))
         return ax
     
     def print_dataset_info(self):
@@ -142,18 +154,13 @@ class GrisDEM(object):
             print("Band has a color table with {} "
                   "entries".format(band.GetRasterColorTable().GetCount()))
     
-def test():
+def run():
     #plt.style.use('agu_half_vertical')
-    plt.style.use('gmd_movie_frame')
-    test = GrisDEM()
+    test = GrISDEM(path.join('data_raw','gimpdem_90m_v01.1.tif'))
     test.print_dataset_info()
-    ax = test.setup_map()
-    test.draw_contours(ax)
+    test.setup_map(path.join('data_clean', "gimpdem_90m_v01.1.nc"))
     
     plt.show()
-
-def run():
-    test()
 
 def main():
     run()

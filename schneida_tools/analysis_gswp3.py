@@ -7,6 +7,7 @@ import cartopy.crs as ccrs
 from matplotlib import pyplot as plt
 import colorcet as cc
 
+from schneida_tools.schneida_args import get_args
 from schneida_tools import gswp3
 from schneida_tools import wfde5
 from schneida_tools import coordinate_space
@@ -16,39 +17,18 @@ from schneida_tools import verify_precip
 
 import ipdb
 
-TFRZ = 273.15 # K
-GRIS_EXTENT = (0, 360, 45, 90)
-NH_EXTENT = (0, 360, -30, 90)
-AIS_EXTENT = (0, 360, -90, -45)
-
 def set_map_titles(axes):
     axes[0].set_title('GSWP3')
     axes[1].set_title('WFDE5')
     axes[2].set_title('GSWP3 - WFDE5')
     axes[3].set_title('((GSWP3 - WFDE5)\n/ WFDE5) ' + r'$\times$ 100')
 
-def mask_vals(longxy, latixy, var_arr, greenland=False, antarctica=False):
-    """ Mask areas outside map domain
-    """
-    if greenland:
-        extent = GRIS_EXTENT
-    elif antarctica:
-        extent = AIS_EXTENT 
-    else:
-        extent = NH_EXTENT
-        
-    var_arr = np.ma.masked_where(longxy < extent[0], var_arr)
-    var_arr = np.ma.masked_where(longxy > extent[1], var_arr)
-    var_arr = np.ma.masked_where(latixy < extent[2], var_arr)
-    var_arr = np.ma.masked_where(latixy > extent[3], var_arr)
-    
-    return var_arr
-
 class Analysis(object):
     def __init__(self, compute_means=True, greenland=False, antarctica=False):
         self.compute_means=compute_means
         self.greenland=greenland
         self.antarctica=antarctica
+        self.args = get_args()
         
     def compare_temperature(self, cmap='cet_CET_L8', degc_min=-7, degc_max=37):
         """
@@ -61,7 +41,7 @@ class Analysis(object):
                                                            compute=self.compute_means)
         gswp3_data.tphwl_rootgrp.close()
         # Convert from K to degrees C
-        gswp3_time_mean_tc = -TFRZ + gswp3_mean_t_rootgrp.variables['TBOT'][:]
+        gswp3_time_mean_tc = -self.args.TFRZ + gswp3_mean_t_rootgrp.variables['TBOT'][:]
     
         # Get WFDE5 temporal mean temperature
         wfde5_data = wfde5.WFDE5()
@@ -70,12 +50,12 @@ class Analysis(object):
                                                        compute=self.compute_means)
         wfde5.close_rootgrps(wfde5_data.t_air)
         # Convert to Celcius and shift WFDE5 data to CRUNCEP grid
-        wfde5_time_mean_tc = np.roll(-TFRZ + wfde5_mean_t_rootgrp.variables['Tair'][:],
+        wfde5_time_mean_tc = np.roll(-self.args.TFRZ + wfde5_mean_t_rootgrp.variables['Tair'][:],
                                      360, axis=1)
         # Calculate difference
         print('Computing temperature differences...')
         time_mean_tc_diffs = gswp3_time_mean_tc - wfde5_time_mean_tc
-        time_mean_tc_diffs_rel = time_mean_tc_diffs / (wfde5_time_mean_tc + TFRZ)
+        time_mean_tc_diffs_rel = time_mean_tc_diffs / (wfde5_time_mean_tc + self.args.TFRZ)
     
         # Setup maps
         axes = coordinate_space.four_map_horizontal_comparison(greenland=self.greenland,
@@ -88,7 +68,7 @@ class Analysis(object):
         latixy = gswp3_mean_t_rootgrp.variables['LATIXY'][:]
     
         gswp3_quad_mesh = axes[0].pcolormesh(longxy.data, latixy.data,
-                                           np.ma.clip(mask_vals(longxy,
+                                           np.ma.clip(coordinate_space.mask_vals(longxy,
                                                                 latixy,
                                                                 gswp3_time_mean_tc,
                                                                 greenland=self.greenland,
@@ -99,7 +79,7 @@ class Analysis(object):
                                            transform=ccrs.PlateCarree())
     
         wfde5_quad_mesh = axes[1].pcolormesh(longxy.data, latixy.data,
-                                         np.ma.clip(mask_vals(longxy,
+                                         np.ma.clip(coordinate_space.mask_vals(longxy,
                                                               latixy,
                                                               wfde5_time_mean_tc,
                                                               greenland=self.greenland,
@@ -110,7 +90,7 @@ class Analysis(object):
                                          transform=ccrs.PlateCarree())
     
         diffs_quad_mesh = axes[2].pcolormesh(longxy.data, latixy.data,
-                                         np.ma.clip(mask_vals(longxy,
+                                         np.ma.clip(coordinate_space.mask_vals(longxy,
                                                               latixy,
                                                               time_mean_tc_diffs,
                                                               greenland=self.greenland,
@@ -122,7 +102,7 @@ class Analysis(object):
                     
         rel_diffs_quad_mesh = axes[3].pcolormesh(longxy.data, latixy.data,
                                              np.ma.clip(100. *
-                                                        mask_vals(longxy,
+                                                        coordinate_space.mask_vals(longxy,
                                                                   latixy,
                                                                   time_mean_tc_diffs_rel,
                                                                   greenland=self.greenland,
@@ -151,24 +131,7 @@ class Analysis(object):
                                   ax=axes[3], orientation='horizontal')
         rel_cbar.set_label(r'Difference ($\%$)')
     
-        # Draw contours
-        if self.greenland:
-            dem = gris_dem.GrisDEM()
-            for i, ax in enumerate(axes):
-                # Add elevation contours
-                dem.draw_contours(ax)
-    
-        elif self.antarctica:
-            # Add elevation contours
-            dem = ais_dem.AisDem()
-            for i, ax in enumerate(axes):
-                # Add elevation contours
-                dem.draw_contours(ax)
-                
-        else:
-            for i, ax in enumerate(axes):
-                # Add elevation contours
-                coordinate_space.draw_elevation_contours(ax)
+        self.draw_elevation_contours(axes)
         
         self.gswp3_mean_t_rootgrp = gswp3_mean_t_rootgrp
         self.wfde5_mean_t_rootgrp = wfde5_mean_t_rootgrp
@@ -178,6 +141,39 @@ class Analysis(object):
     def close_mean_t_rootgrps(self):
         self.gswp3_mean_t_rootgrp.close()
         self.wfde5_mean_t_rootgrp.close()
+    
+    def draw_elevation_contours(self, axes):
+        """
+        Draw contours
+        """
+        if self.greenland:
+            dem = gris_dem.GrISDEM(path.join('data_raw',
+                                                'gimpdem_90m_v01.1.tif'))
+            #dem.print_dataset_info()
+            for i, ax in enumerate(axes):
+                # Add elevation contours
+                dem.draw_contours(ax,
+                                  path.join('data_clean', 'gimpdem_90m_v01.1.nc'),
+                                  downsample=10)
+    
+        elif self.antarctica:
+            # Add elevation contours
+            dem = ais_dem.AisDem(path.join('data_raw', 'krigged_dem_nsidc.bin'))
+            dem.setup_map(path.join('data_clean', "krigged_dem_nsidc.nc"),
+                          path.join('data_clean', "krigged_dem_errormap_nsidc.nc"),
+                          new_map=False)
+            
+            for i, ax in enumerate(axes):
+                # Add elevation contours
+                dem.draw_contours(ax, path.join('data_clean',
+                                                   'krigged_dem_nsidc.nc'),
+                                  path.join('data_clean',
+                                               'krigged_dem_errormap_nsidc.nc'))
+                
+        else:
+            for i, ax in enumerate(axes):
+                # Add elevation contours
+                coordinate_space.draw_elevation_contours(ax)
     
     def compare_precip(self,
                        #cmap='cet_CET_L6_r',
@@ -232,7 +228,7 @@ class Analysis(object):
         latixy = gswp3_mean_precip_rootgrp.variables['LATIXY'][:]
     
         gswp3_quad_mesh = axes[0].pcolormesh(longxy.data, latixy.data,
-                                           np.ma.clip(mask_vals(longxy, latixy,
+                                           np.ma.clip(coordinate_space.mask_vals(longxy, latixy,
                                                                 gswp3_time_mean_precip,
                                                                 greenland=self.greenland,
                                                                 antarctica=self.antarctica),
@@ -242,7 +238,7 @@ class Analysis(object):
                                            transform=ccrs.PlateCarree())
                                        
         wfde5_quad_mesh = axes[1].pcolormesh(longxy.data, latixy.data,
-                                         np.ma.clip(mask_vals(longxy, latixy,
+                                         np.ma.clip(coordinate_space.mask_vals(longxy, latixy,
                                                               wfde5_time_mean_precip,
                                                               greenland=self.greenland,
                                                               antarctica=self.antarctica),
@@ -252,7 +248,7 @@ class Analysis(object):
                                          transform=ccrs.PlateCarree())
     
         diffs_quad_mesh = axes[2].pcolormesh(longxy.data, latixy.data,
-                                         np.ma.clip(mask_vals(longxy, latixy,
+                                         np.ma.clip(coordinate_space.mask_vals(longxy, latixy,
                                                               time_mean_precip_diffs,
                                                               greenland=self.greenland,
                                                               antarctica=self.antarctica),
@@ -263,7 +259,7 @@ class Analysis(object):
                                      
         rel_diffs_quad_mesh = axes[3].pcolormesh(longxy.data, latixy.data,
                                              np.ma.clip(100. *
-                                                        mask_vals(longxy, latixy,
+                                                        coordinate_space.mask_vals(longxy, latixy,
                                                                   time_mean_precip_diffs_rel,
                                                                   greenland=self.greenland,
                                                                   antarctica=self.antarctica),
@@ -289,26 +285,7 @@ class Analysis(object):
                             ax=axes[3], orientation='horizontal')
         rel_cbar.set_label(r'Difference ($\%$)')
 
-        # Save results
-        if self.greenland:
-            # Add elevation contours
-            print('Drawing Greenland ')
-            dem = gris_dem.GrisDEM()
-            for i, ax in enumerate(axes):
-                # Add evelvation contours
-                dem.draw_contours(ax)
-            
-        elif self.antarctica:
-            # Add elevation contours
-            dem = ais_dem.AisDem()
-            for i, ax in enumerate(axes):
-                # Add elevation contours
-                dem.draw_contours(ax)
-
-        else:
-            # Add elevation contours
-            for i, ax in enumerate(axes):
-                coordinate_space.draw_elevation_contours(ax)
+        self.draw_elevation_contours(axes)
 
         self.wfde5_mean_rainf_rootgrp = wfde5_mean_rainf_rootgrp
         self.wfde5_mean_snowf_rootgrp = wfde5_mean_snowf_rootgrp
