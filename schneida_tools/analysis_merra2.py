@@ -29,7 +29,7 @@ class Analysis(object):
         self.antarctica=antarctica
         self.args = get_args()
 
-    def compare_temperature(self, cmap='cet_CET_L8', degc_min=-7, degc_max=37):
+    def compare_temperature(self, cmap='cet_CET_CBTL1_r', degc_min=-7, degc_max=37):
         # Get MERRA-2 temporal mean temperature
         merra2_data = merra2.MERRA2()
         merra2_data.get_tair()
@@ -110,7 +110,7 @@ def run():
     ax = greenland_analysis.compare_temperature(degc_min=-50, degc_max=0,
                                            #cmap='cet_CET_L7',
                                            #cmap='cet_CET_CBL2'
-                                           cmap='cet_CET_L17')
+                                           cmap='cet_CET_L12')
     # Set the figure title
     plt.suptitle('Greenland mean 1980 to 1990 surface air temperature')
     savefig_name = path.join('results', 'greenland_tair_merra2.png')
@@ -127,7 +127,7 @@ def run():
     ax = antarctica_analysis.compare_temperature(degc_min=-50, degc_max=0,
                                                    #cmap='cet_CET_L7'
                                                    #cmap='cet_CET_CBL2'
-                                                   cmap='cet_CET_L17'
+                                                   cmap='cet_CET_L12'
                                                   )
     # Set the figure title
     plt.suptitle('Antarctica mean 1980 to 1990 surface air temperature')

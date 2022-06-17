@@ -29,7 +29,8 @@ def set_map_titles(axes):
 
 def setup_map(greenland=False, antarctica=False,
               lon_lines = np.arange(-180, 180, 30),
-              lat_lines = np.arange(-90, 90, 30)):
+              lat_lines = np.arange(-90, 90, 30),
+              scale_bar_color='black'):
     """ Uses the Lambert Azimuthal Equal Area map projection
     """
     if greenland:
@@ -53,7 +54,7 @@ def setup_map(greenland=False, antarctica=False,
         map_lon_0=0
         
         y_val=-2.6*10**6
-        x0=1.48*10**6
+        x0=1.5*10**6
         scale_length=1000*10**3
         
     else: # Northern hempiphere
@@ -81,14 +82,14 @@ def setup_map(greenland=False, antarctica=False,
     geo_ax.add_feature(cfeature.OCEAN, color='#C6BEB5')
     
     if greenland or antarctica: # plot scale bar
-        geo_ax.hlines(y_val, x0, x0 + scale_length, colors='white', lw=2)
+        geo_ax.hlines(y_val, x0, x0 + scale_length, colors=scale_bar_color, lw=2)
         geo_ax.vlines([x0, x0 + scale_length], y_val,
-                      y_val + 0.2*scale_length, colors='white')
+                      y_val + 0.2*scale_length, colors=scale_bar_color)
     
         if greenland:
-            geo_ax.text(x0 + 0.5*10**5, y_val + 0.7*10**5, '500 km', color='white')
+            geo_ax.text(x0 + 0.5*10**5, y_val + 0.7*10**5, '500 km', color=scale_bar_color)
         elif antarctica:
-            geo_ax.text(x0+0.05*10**6, y_val + 0.2*10**6, '1000 km', color='white')
+            geo_ax.text(x0+0.025*10**6, y_val + 0.1*10**6, '1000 km', color=scale_bar_color)
         
     return geo_ax
 
