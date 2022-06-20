@@ -9,9 +9,12 @@ import fnmatch
 import numpy as np
 from netCDF4 import Dataset
 
-from schneida_tools.schneida_args import get_args
+from schneida_args import get_args
 
 import ipdb
+
+SURF_AIR_TEMP= 'TLML'
+TOT_PREC = 'PRECTOT'
 
 class MERRA2(object):
     def __init__(self, first_year=1980, last_year=1989):
@@ -104,11 +107,11 @@ def run():
     #test()
     data = MERRA2()
     data.get_tair()
-    mean_temperature = get_temporal_mean(data.t_air, 'TLML', compute=True)
+    mean_temperature = get_temporal_mean(data.t_air, SURF_AIR_TEMP, compute=True)
     close_rootgrps(data.t_air)
     
     data.get_precip()
-    mean_precip = get_temporal_mean(data.precip, 'PRECTOT', compute=True)
+    mean_precip = get_temporal_mean(data.precip, TOT_PREC, compute=True)
     close_rootgrps(data.precip)
     
 def main():
