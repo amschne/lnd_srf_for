@@ -111,7 +111,7 @@ class Analysis(object):
         self.merra2_mean_t_rootgrp.close()
     def compare_precip(self,
                        #cmap='cet_CET_L6_r',
-                       cmap='cet_CET_L17', cm_per_year_min=0,
+                       cmap='cet_CET_L7_r', cm_per_year_min=0,
                        cm_per_year_max=180):
         """
         """
@@ -308,7 +308,7 @@ def run(debug=False):
         
     if rank==4:
         # Precipitation
-        ax = northern_hemisphere_analysis.compare_precip()
+        ax = northern_hemisphere_analysis.compare_precip(cmap='cet_CET_L1_r')
         # Set the figure title
         plt.suptitle('Northern Hemisphere mean 1980 to 1990 precipitation')
         savefig_name = path.join('results', 'nh_precip_merra2.png')
