@@ -101,10 +101,11 @@ class AisDem(object):
                    np.ma.masked_where(lons >= 180,
                    aisdem_errormap.variables['Band1'][::downsample,::downsample]),
                    levels=np.arange(0, 4070, 500),
-                   cmap=self.cmap,
+                   #cmap=self.cmap,
+                   colors='black',
                    linewidths=0.5,
                    linestyles='solid',
-                   alpha=1.0,
+                   alpha=0.5,
                    vmin=-500,vmax=4000,
                    label='AIS DEM$^1$',
                    transform=ccrs.PlateCarree())

@@ -55,8 +55,8 @@ def setup_map(greenland=False, antarctica=False,
         map_lon_0=-42.1
         
         y_val = -1200. * 10**3
-        x0 = 250. * 10**3
-        scale_length = 250. * 10**3
+        x0 = 150. * 10**3
+        scale_length = 500. * 10**3
         
     elif antarctica:
         map_lon_min = -180
@@ -100,7 +100,7 @@ def setup_map(greenland=False, antarctica=False,
                       y_val + 0.1*scale_length, colors=scale_bar_color)
     
         if greenland:
-            geo_ax.text(x0, y_val + 0.5*10**5, '250 km', color=scale_bar_color)
+            geo_ax.text(x0+50*10**3, y_val + 0.5*10**5, '500 km', color=scale_bar_color)
         elif antarctica:
             geo_ax.text(x0+0.025*10**6, y_val + 0.1*10**6, '1000 km', color=scale_bar_color)
         
@@ -366,13 +366,14 @@ class Analysis(object):
         latixy=util.add_cyclic_point(latixy)
         era5_time_mean_precip=util.add_cyclic_point(era5_time_mean_precip)
         era5_quad_mesh = ax.contourf(longxy, latixy,
-                                     coordinate_space.mask_vals(longxy,
+                                     np.ma.clip(coordinate_space.mask_vals(longxy,
                                                                 latixy,
                                                         era5_time_mean_precip,
                                                      greenland=self.greenland,
                                                      antarctica=self.antarctica),
-                                        levels=int((cm_per_year_max-cm_per_year_min)/5),
-                                        extend='both',
+                                            cm_per_year_min, cm_per_year_max),
+                                        levels=int((cm_per_year_max-cm_per_year_min)/5.),
+                                        #extend='both',
                                         cmap=cmap,
                                         vmin=cm_per_year_min, vmax=cm_per_year_max,
                                         transform=ccrs.PlateCarree())
@@ -407,7 +408,10 @@ class Analysis(object):
         '''
         era5_cbar = fig.colorbar(era5_quad_mesh,
                             ax=ax, orientation='vertical')
-        era5_cbar.set_label('precipitation (cm w.eq. yr$^{-1}$)')
+        era5_cbar.set_ticks(np.arange(cm_per_year_min, cm_per_year_max+1, 20),)
+                            #labels=np.arange(cm_per_year_min, cm_per_year_max+1, 20))
+        #era5_cbar.set_ticks(np.arange(cm_per_year_min, cm_per_year_max, 5), minor=True)
+        era5_cbar.set_label('precipitation rate (cm w.eq. yr$^{-1}$)')
         '''
         diffs_cbar = fig.colorbar(diffs_quad_mesh,
                             ax=axes[2], orientation='horizontal')
@@ -447,6 +451,7 @@ def run(debug=False):
         plt.style.use('agu_online_poster_presentation')
         plt.style.use('uci_blue')
     '''
+    #plt.style.use('agu_online_poster_presentation')
     if debug:
         rank=0
     else:
@@ -478,7 +483,7 @@ def run(debug=False):
         # Precipitation
         (sumup_gris, sumup_ais) = verify_precip.grid_sumup2era5()
         comm.send(sumup_ais, dest=3)
-        ax = greenland_analysis.compare_precip(cm_per_year_min=0., cm_per_year_max=150.)
+        ax = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
         # Get and plot SUMup locations
         ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                         cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
@@ -493,7 +498,8 @@ def run(debug=False):
                         transform=ccrs.PlateCarree())
         '''
         # Set the figure title
-        plt.suptitle('Greenland mean 1980 to 1990 precipitation')
+        plt.suptitle('Mean 1980 to 1990 total precipitation rate')
+        ax.set_title('Greenland')
         savefig_name = path.join('results', 'greenland_precip_era5.png')
         print('Writing precipitation maps to %s' % savefig_name)
         plt.savefig(savefig_name, dpi=600)
@@ -535,7 +541,8 @@ def run(debug=False):
                         transform=ccrs.PlateCarree())
         '''
         # Set the figure title
-        plt.suptitle('Antarctica mean 1980 to 1990 precipitation')
+        plt.suptitle('Mean 1980 to 1990 total precipitation rate')
+        ax.set_title('Antarctica')
         savefig_name = path.join('results', 'antarctica_precip_era5.png')
         plt.savefig(savefig_name, dpi=600)
         # Close figure and files

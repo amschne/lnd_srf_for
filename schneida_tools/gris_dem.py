@@ -46,10 +46,11 @@ class GrISDEM(object):
                    np.ma.masked_where(lons>-1,
                    gimpdem.variables['Band1'][::downsample,::downsample]),
                    levels=np.arange(0, 3207, 500),
-                   cmap=self.cmap,
+                   #cmap=self.cmap,
+                   colors='black',
                    linewidths=0.5,
                    linestyles='solid',
-                   alpha=1.0,
+                   alpha=0.5,
                    vmin=-500,vmax=3207,
                    label='GIMP DEM$^1$',
                    transform=ccrs.PlateCarree())
