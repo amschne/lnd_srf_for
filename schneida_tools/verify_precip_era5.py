@@ -244,11 +244,14 @@ def grid_sumup2era5(xlim=150, ylim=150):
                        color='#0064A4',
                        #color='white',
                        ls='')
-    axes[0,0].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
-                            % (np.around(gris_correlations[0,1]**2, decimals=4),
+    axes[0,0].text(0.5*xlim-13, 5, '$n$ = %d\nr$^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+                            % (len(era5_gris_errors),
+                               np.around(gris_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(era5_gris_errors)),
                                          decimals=2),
-                               len(era5_gris_errors)))
+                               np.around(np.mean(era5_gris_errors),
+                                         decimals=2),
+                               ))
                        
     axes[1,0].errorbar(sumup_mean_accum_ais, era5_mean_precip_ais_sample,
                        yerr=get_yerrs(era5_ais_errors),
@@ -256,11 +259,14 @@ def grid_sumup2era5(xlim=150, ylim=150):
                        color='#0064A4',
                        #color='white',
                        ls='')
-    axes[1,0].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
-                            % (np.around(ais_correlations[0,1]**2, decimals=4),
+    axes[1,0].text(0.5*xlim-13, 5, '$n$ = %d\nr$^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+                            % (len(era5_ais_errors),
+                               np.around(ais_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(era5_ais_errors)),
                                          decimals=2),
-                               len(era5_ais_errors)))
+                               np.around(np.mean(era5_ais_errors),
+                                         decimals=2),
+                               ))
     '''                           
     axes[0,1].errorbar(sumup_mean_accum_gris, gswp3_mean_precip_gris_sample,
                        yerr=get_yerrs(gswp3_gris_errors),
