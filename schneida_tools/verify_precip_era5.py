@@ -213,15 +213,24 @@ def grid_sumup2era5(xlim=140, ylim=140):
     gris_covariances, gris_correlations = covariance(gris_sample_matrix)
     ais_covariances, ais_correlations = covariance(ais_sample_matrix)
     
-    fig, axes = plt.subplots(nrows=1, ncols=2, sharex=True, sharey=True)
-    axes[0].set_title('Greenland')
-    axes[1].set_title('Antarctica')
-    axes[0].hist2d(sumup_mean_accum_gris, era5_mean_precip_gris_sample, bins=int(xlim/10.),
-                   range=[[0,xlim],[0,ylim]], density=True, weights=None, cmap='cet_linear_wcmr_100_45_c42')
-    axes[1].hist2d(sumup_mean_accum_ais, era5_mean_precip_ais_sample, bins=int(xlim/10.),
-                   range=[[0,xlim],[0,ylim]], density=True, weights=None, cmap='cet_linear_wcmr_100_45_c42')
-    plt.savefig(path.join('results', 'hist_era5_sumup_gris_ais_precip.png'), dpi=600)
+    #fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, sharey=True)
+    #axes[0].set_title('Greenland')
+    #axes[1].set_title('Antarctica')
+    h_gris, xedges_gris, yedges_gris, image_gris= plt.hist2d(sumup_mean_accum_gris,
+                                    era5_mean_precip_gris_sample, bins=int(xlim/5.),
+                                    range=[[0,xlim],[0,ylim]], density=True,
+                                    cmap='cet_linear_worb_100_25_c53')
+    h_ais, xedges_ais, yedges_ais, image_ais = plt.hist2d(sumup_mean_accum_ais,
+                                     era5_mean_precip_ais_sample, bins=int(xlim/5.),
+                                     range=[[0,xlim],[0,ylim]], density=True,
+                                     cmap='cet_linear_worb_100_25_c53')
+    #plt.savefig(path.join('results', 'hist_era5_sumup_gris_ais_precip.png'), dpi=600)
     plt.close()
+    xvals_gris = xedges_gris[:-1] + np.diff(xedges_gris)/2.
+    yvals_gris = yedges_gris[:-1] + np.diff(yedges_gris)/2.
+    
+    xvals_ais = xedges_ais[:-1] + np.diff(xedges_ais)/2.
+    yvals_ais = yedges_ais[:-1] + np.diff(yedges_ais)/2.
     # Scatter data
     fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, sharey=True)
     #fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
@@ -230,8 +239,8 @@ def grid_sumup2era5(xlim=140, ylim=140):
     axes[1].set_title('Antarctica')
     #axes[0,1].set_title('GSWP3')
     #axes[0,2].set_title('WFDE5')
-    axes[0].set_ylabel('ERA5 precipitation rate (cm w.eq. yr$^{-1}$)')
-    axes[1].set_ylabel('ERA5 precipitation rate (cm w.eq. yr$^{-1}$)')
+    axes[0].set_ylabel('ERA5 precipitation (cm w.eq. yr$^{-1}$)')
+    axes[1].set_ylabel('ERA5 precipitation (cm w.eq. yr$^{-1}$)')
     axes[1].set_xlabel('SUMup accumulation rate (cm w.eq. yr$^{-1}$)')
     #axes[1,1].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
     #axes[1,2].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
@@ -239,24 +248,17 @@ def grid_sumup2era5(xlim=140, ylim=140):
     axes[0].set_ylim(0, ylim)
     axes[0].set_xlim(0, xlim)
     
-    for i in range(2):
-        #for j in range(2):
-        axes[i].set_ylim(0, ylim)
-        axes[i].set_xlim(0, xlim)
-        axes[i].plot([0,xlim], [0,ylim], color='#555759')
-        axes[i].set_xticks(np.arange(0,xlim+1,20))
-        axes[i].set_xticks(np.arange(0,xlim,5), minor=True)
-        axes[i].set_yticks(np.arange(0,ylim+1,20))
-        axes[i].set_yticks(np.arange(0,ylim,5), minor=True)
-        axes[i].tick_params(axis='both', which='both', top=True, right=True)
-            
+    '''        
     axes[0].errorbar(sumup_mean_accum_gris, era5_mean_precip_gris_sample,
                        yerr=get_yerrs(era5_gris_errors),
                        fmt='x',
                        color='#0064A4',
                        #color='white',
                        ls='')
-    axes[0].text(0.5*xlim, 5, '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+    '''
+    p_gris = axes[0].contourf(xvals_gris, yvals_gris, h_gris, levels=100, cmap='cet_linear_worb_100_25_c53',
+                     vmin=0)
+    axes[0].text(xlim/28., ylim - ylim/3., '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(era5_gris_errors),
                                np.around(gris_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(era5_gris_errors)),
@@ -264,14 +266,17 @@ def grid_sumup2era5(xlim=140, ylim=140):
                                np.around(np.mean(era5_gris_errors),
                                          decimals=2),
                                ))
-                       
+    '''                   
     axes[1].errorbar(sumup_mean_accum_ais, era5_mean_precip_ais_sample,
                        yerr=get_yerrs(era5_ais_errors),
                        fmt='x',
                        color='#0064A4',
                        #color='white',
                        ls='')
-    axes[1].text(0.5*xlim, 5, '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+    '''
+    p_ais = axes[1].contourf(xvals_ais, yvals_ais, h_ais, levels=100, cmap='cet_linear_worb_100_25_c53',
+                     vmin=0)
+    axes[1].text(xlim/28., ylim - ylim/3., '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(era5_ais_errors),
                                np.around(ais_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(era5_ais_errors)),
@@ -279,6 +284,18 @@ def grid_sumup2era5(xlim=140, ylim=140):
                                np.around(np.mean(era5_ais_errors),
                                          decimals=2),
                                ))
+    fig.colorbar(p_gris, ax=axes[0])
+    fig.colorbar(p_ais, ax=axes[1])
+    for i in range(2):
+        #for j in range(2):
+        axes[i].set_ylim(0, ylim)
+        axes[i].set_xlim(0, xlim)
+        axes[i].plot([0,xlim], [0,ylim], color='#555759', marker='None')
+        axes[i].set_xticks(np.arange(0,xlim+1,20))
+        axes[i].set_xticks(np.arange(0,xlim,5), minor=True)
+        axes[i].set_yticks(np.arange(0,ylim+1,20))
+        axes[i].set_yticks(np.arange(0,ylim,5), minor=True)
+        axes[i].tick_params(axis='both', which='both', top=True, right=True)
     '''                           
     axes[0,1].errorbar(sumup_mean_accum_gris, gswp3_mean_precip_gris_sample,
                        yerr=get_yerrs(gswp3_gris_errors),
@@ -316,7 +333,7 @@ def grid_sumup2era5(xlim=140, ylim=140):
                                          decimals=2),
                                len(wfde5_ais_errors)))
     '''
-    plt.savefig(path.join('results', 'era5_sumup_gris_ais_precip.png'), dpi=600)
+    plt.savefig(path.join('results', 'p_era5_sumup_gris_ais_precip.png'), dpi=600)
     plt.close()
     
     return((lat_gris_sample, lon_gris_sample, sumup_mean_accum_gris, gris_n_samples),
