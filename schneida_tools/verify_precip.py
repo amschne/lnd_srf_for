@@ -86,7 +86,7 @@ def get_gswp3_temporal_means():
         
     return gswp3_mean_precip_rootgrp
     
-def grid_sumup2wfde5(xlim=150, ylim=150):
+def grid_sumup2wfde5(xlim=140, ylim=140):
     """ Loop through measurements and filter out:
         1. Measurements outside time period of analysis
         2. All measurements that are not from ice cores
@@ -255,91 +255,209 @@ def grid_sumup2wfde5(xlim=150, ylim=150):
     gris_covariances, gris_correlations = covariance(gris_sample_matrix)
     ais_covariances, ais_correlations = covariance(ais_sample_matrix)
     
+    p_array_cruncep = compute_joint_distribution(sumup_mean_accum_gris,
+                                                 sumup_mean_accum_ais,
+                                                 cruncep_mean_precip_gris_sample,
+                                                 cruncep_mean_precip_ais_sample,
+                                                 xlim=xlim, ylim=ylim)
+    p_array_wfde5 = compute_joint_distribution(sumup_mean_accum_gris,
+                                               sumup_mean_accum_ais,
+                                               wfde5_mean_precip_gris_sample,
+                                               wfde5_mean_precip_ais_sample,
+                                               xlim=xlim, ylim=ylim)
+                                               
+    p_array_gswp3 = compute_joint_distribution(sumup_mean_accum_gris,
+                                               sumup_mean_accum_ais,
+                                               gswp3_mean_precip_gris_sample,
+                                               gswp3_mean_precip_ais_sample,
+                                               xlim=xlim, ylim=ylim)
+    
     # Scatter data
-    fig, axes = plt.subplots(nrows=2, ncols=3, sharex=True, sharey=True)
-    fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
-    axes[0,0].set_title('CRUNCEP7')
-    axes[0,1].set_title('GSWP3')
-    axes[0,2].set_title('WFDE5')
-    axes[0,0].set_ylabel('Greenland ice sheet\nprecipitation rate (cm H$_2$O yr$^{-1}$)')
-    axes[1,0].set_ylabel('Antarctic ice sheet\nprecipitation rate (cm H$_2$O yr$^{-1}$)')
-    axes[1,0].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
-    axes[1,1].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
-    axes[1,2].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
+    fig, axes = plt.subplots(nrows=2, ncols=3, sharex=True, sharey=False)
+    #fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
+    axes[0,0].set_title('Greenland')
+    axes[0,0].set_ylabel('CRUNCEPv7 precipitation (cm w.eq. yr$^{-1}$)')
+    axes[1,0].set_title('Antarctica')
+    axes[1,0].set_ylabel('CRUNCEPv7 precipitation (cm w.eq. yr$^{-1}$)')
     
-    axes[0,0].set_ylim(0, ylim)
-    axes[0,0].set_xlim(0, xlim)
+    axes[0,1].set_title('Greenland')
+    axes[0,1].set_ylabel('GSWP3 precipitation (cm w.eq. yr$^{-1}$)')
+    axes[1,1].set_title('Antarctica')
+    axes[1,1].set_ylabel('GSWP3 precipitation (cm w.eq. yr$^{-1}$)')
     
+    axes[0,1].set_title('Greenland')
+    axes[0,1].set_ylabel('WFDE5 precipitation (cm w.eq. yr$^{-1}$)')
+    axes[1,1].set_title('Antarctica')
+    axes[1,1].set_ylabel('WFDE5 precipitation (cm w.eq. yr$^{-1}$)')
+    
+    axes[1,0].set_xlabel('SUMup accumulation rate (cm w.eq. yr$^{-1}$)')
+    axes[1,1].set_xlabel('SUMup accumulation rate (cm w.eq. yr$^{-1}$)')
+    axes[1,2].set_xlabel('SUMup accumulation rate (cm w.eq. yr$^{-1}$)')
+            
+    '''
+    axes[0,0].errorbar(sumup_mean_accum_gris, cruncep_mean_precip_gris_sample,
+                       yerr=get_yerrs(cruncep_gris_errors),
+                       fmt='x', color='#0064A4', ls='')
+    '''
+    p_gris_cruncep = axes[0,0].contourf(p_array_cruncep[0][0], p_array_cruncep[0][1],
+                                p_array_cruncep[0][2], levels=100,
+                                cmap='cet_linear_worb_100_25_c53',
+                                vmin=0)
+    # gris_correlations[0,2]
+    axes[0,0].text(xlim/28., ylim - ylim/3.,
+          '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+                   % (len(cruncep_gris_errors),
+                      np.around(gris_correlations[0,2]**2, decimals=4),
+                      np.around(np.mean(np.abs(cruncep_gris_errors)),
+                                decimals=2),
+                      np.around(np.mean(cruncep_gris_errors),
+                                         decimals=2),
+                        ))
+                       
+    '''
+    axes[1,0].errorbar(sumup_mean_accum_ais, cruncep_mean_precip_ais_sample,
+                       yerr=get_yerrs(cruncep_ais_errors),
+                       fmt='x', color='#0064A4', ls='')
+    '''
+    
+    p_ais_cruncep = axes[1,0].contourf(p_array_cruncep[1][0], p_array_cruncep[1][1],
+                                p_array_cruncep[1][2], levels=100,
+                                cmap='cet_linear_worb_100_25_c53',
+                                vmin=0)
+    
+    #ais_correlaitons[0,2]
+    axes[1,0].text(xlim/28., ylim - ylim/3.,
+          '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+                   % (len(cruncep_ais_errors),
+                      np.around(ais_correlations[0,2]**2, decimals=4),
+                      np.around(np.mean(np.abs(cruncep_ais_errors)),
+                                decimals=2),
+                      np.around(np.mean(cruncep_ais_errors),
+                                         decimals=2),
+                        ))
+    '''                           
+    axes[0,1].errorbar(sumup_mean_accum_gris, gswp3_mean_precip_gris_sample,
+                       yerr=get_yerrs(gswp3_gris_errors),
+                       fmt='x', color='#0064A4', ls='')
+    '''
+    p_gris_gswp3 = axes[0,1].contourf(p_array_gswp3[0][0], p_array_gswp3[0][1],
+                                p_array_gswp3[0][2], levels=100,
+                                cmap='cet_linear_worb_100_25_c53',
+                                vmin=0)
+                                
+    # gris_correlations[0,3]
+    axes[0,1].text(xlim/28., ylim - ylim/3.,
+          '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+                   % (len(gswp3_gris_errors),
+                      np.around(gris_correlations[0,3]**2, decimals=4),
+                      np.around(np.mean(np.abs(gswp3_gris_errors)),
+                                decimals=2),
+                      np.around(np.mean(gswp3_gris_errors),
+                                         decimals=2),
+                        ))
+                       
+    '''
+    axes[1,1].errorbar(sumup_mean_accum_ais, gswp3_mean_precip_ais_sample,
+                       yerr=get_yerrs(gswp3_ais_errors),
+                       fmt='x', color='#0064A4', ls='')
+    '''
+    p_ais_gswp3 = axes[1,1].contourf(p_array_gswp3[1][0], p_array_gswp3[1][1],
+                                p_array_gswp3[1][2], levels=100,
+                                cmap='cet_linear_worb_100_25_c53',
+                                vmin=0)
+    # ais_correlations[0,3]
+    axes[1,1].text(xlim/28., ylim - ylim/3.,
+          '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+                   % (len(gswp3_ais_errors),
+                      np.around(ais_correlations[0,3]**2, decimals=4),
+                      np.around(np.mean(np.abs(gswp3_ais_errors)),
+                                decimals=2),
+                      np.around(np.mean(gswp3_ais_errors),
+                                         decimals=2),
+                        ))
+    '''
+    axes[0,2].errorbar(sumup_mean_accum_gris, wfde5_mean_precip_gris_sample,
+                       yerr=get_yerrs(wfde5_gris_errors),
+                       fmt='x', color='#0064A4', ls='')
+    '''
+
+    p_gris_wfde5 = axes[0,2].contourf(p_array_wfde5[0][0], p_array_wfde5[0][1],
+                                      p_array_wfde5[0][2], levels=100,
+                                      cmap='cet_linear_worb_100_25_c53',
+                                      vmin=0)
+    
+    # gris_correlations[0,1]
+    axes[0,2].text(xlim/28., ylim - ylim/3.,
+          '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+                   % (len(wfde5_gris_errors),
+                      np.around(gris_correlations[0,1]**2, decimals=4),
+                      np.around(np.mean(np.abs(wfde5_gris_errors)),
+                                decimals=2),
+                      np.around(np.mean(wfde5_gris_errors),
+                                         decimals=2),
+                        ))
+                       
+    '''
+    axes[1,2].errorbar(sumup_mean_accum_ais, wfde5_mean_precip_ais_sample,
+                       yerr=get_yerrs(wfde5_ais_errors),
+                       fmt='x', color='#0064A4', ls='')
+    '''
+    p_ais_wfde5 = axes[1,2].contourf(p_array_wfde5[1][0], p_array_wfde5[1][1],
+                                      p_array_wfde5[1][2], levels=100,
+                                      cmap='cet_linear_worb_100_25_c53',
+                                      vmin=0)
+    
+    #ais_correlations[0,1]
+    axes[1,2].text(xlim/28., ylim - ylim/3.,
+          '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+                   % (len(wfde5_ais_errors),
+                      np.around(ais_correlations[0,1]**2, decimals=4),
+                      np.around(np.mean(np.abs(wfde5_ais_errors)),
+                                decimals=2),
+                      np.around(np.mean(wfde5_ais_errors),
+                                         decimals=2),
+                        ))
     for i in range(2):
         for j in range(3):
             axes[i,j].set_ylim(0, ylim)
             axes[i,j].set_xlim(0, xlim)
-            axes[i,j].plot([0,xlim], [0,ylim], color='#555759')
-            axes[i,j].set_xticks(np.arange(0,xlim+1,50))
-            axes[i,j].set_xticks(np.arange(0,xlim,10), minor=True)
-            axes[i,j].set_yticks(np.arange(0,ylim+1,50))
-            axes[i,j].set_yticks(np.arange(0,ylim,10), minor=True)
+            axes[i,j].plot([0,xlim], [0,ylim], color='#555759', marker='None')
+            axes[i,j].set_xticks(np.arange(0,xlim+1,20))
+            axes[i,j].set_xticks(np.arange(0,xlim,5), minor=True)
+            axes[i,j].set_yticks(np.arange(0,ylim+1,20))
+            axes[i,j].set_yticks(np.arange(0,ylim,5), minor=True)
             axes[i,j].tick_params(axis='both', which='both', top=True, right=True)
-            
-    axes[0,0].errorbar(sumup_mean_accum_gris, cruncep_mean_precip_gris_sample,
-                       yerr=get_yerrs(cruncep_gris_errors),
-                       fmt='x', color='#0064A4', ls='')
-    axes[0,0].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
-                            % (np.around(gris_correlations[0,2]**2, decimals=4),
-                               np.around(np.mean(np.abs(cruncep_gris_errors)),
-                                         decimals=2),
-                               len(cruncep_gris_errors)))
-                       
-    axes[1,0].errorbar(sumup_mean_accum_ais, cruncep_mean_precip_ais_sample,
-                       yerr=get_yerrs(cruncep_ais_errors),
-                       fmt='x', color='#0064A4', ls='')
-    axes[1,0].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
-                            % (np.around(ais_correlations[0,2]**2, decimals=4),
-                               np.around(np.mean(np.abs(cruncep_ais_errors)),
-                                         decimals=2),
-                               len(cruncep_ais_errors)))
-                               
-    axes[0,1].errorbar(sumup_mean_accum_gris, gswp3_mean_precip_gris_sample,
-                       yerr=get_yerrs(gswp3_gris_errors),
-                       fmt='x', color='#0064A4', ls='')
-    axes[0,1].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
-                            % (np.around(gris_correlations[0,3]**2, decimals=4),
-                               np.around(np.mean(np.abs(gswp3_gris_errors)),
-                                         decimals=2),
-                               len(gswp3_gris_errors)))
-                       
-    axes[1,1].errorbar(sumup_mean_accum_ais, gswp3_mean_precip_ais_sample,
-                       yerr=get_yerrs(gswp3_ais_errors),
-                       fmt='x', color='#0064A4', ls='')
-    axes[1,1].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
-                            % (np.around(ais_correlations[0,3]**2, decimals=4),
-                               np.around(np.mean(np.abs(gswp3_ais_errors)),
-                                         decimals=2),
-                               len(gswp3_ais_errors)))
-                       
-    axes[0,2].errorbar(sumup_mean_accum_gris, wfde5_mean_precip_gris_sample,
-                       yerr=get_yerrs(wfde5_gris_errors),
-                       fmt='x', color='#0064A4', ls='')
-    axes[0,2].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
-                            % (np.around(gris_correlations[0,1]**2, decimals=4),
-                               np.around(np.mean(np.abs(wfde5_gris_errors)),
-                                         decimals=2),
-                                len(wfde5_gris_errors)))
-                       
-    axes[1,2].errorbar(sumup_mean_accum_ais, wfde5_mean_precip_ais_sample,
-                       yerr=get_yerrs(wfde5_ais_errors),
-                       fmt='x', color='#0064A4', ls='')
-    axes[1,2].text(0.5*xlim-13, 5, 'R$^2$ = %s\nMAE = %s cm yr$^{-1}$\n$n$ = %d'
-                            % (np.around(ais_correlations[0,1]**2, decimals=4),
-                               np.around(np.mean(np.abs(wfde5_ais_errors)),
-                                         decimals=2),
-                               len(wfde5_ais_errors)))
-    plt.savefig(path.join('results', 'cruncep_wfde5_sumup_gris_ais_precip.png'), dpi=600)
+    
+    plt.savefig(path.join('results', 'p_cruncep_wfde5_sumup_gris_ais_precip.png'), dpi=600)
     plt.close()
     
     return((lat_gris_sample, lon_gris_sample, sumup_mean_accum_gris, gris_n_samples),
            (lat_ais_sample, lon_ais_sample, sumup_mean_accum_ais, ais_n_samples))
     
+def compute_joint_distribution(sumup_mean_accum_gris, sumup_mean_accum_ais,
+                               ra_mean_precip_gris_sample, ra_mean_precip_ais_sample,
+                               xlim=140, ylim=140):
+    # Compute join distribution of precipitation renanalyses and SUMup
+    #.accumulation rates
+    h_gris, xedges_gris, yedges_gris, image_gris= plt.hist2d(sumup_mean_accum_gris,
+                                    ra_mean_precip_gris_sample, bins=int(xlim/5.),
+                                    range=[[0,xlim],[0,ylim]], density=True,
+                                    cmap='cet_linear_worb_100_25_c53')
+    h_ais, xedges_ais, yedges_ais, image_ais = plt.hist2d(sumup_mean_accum_ais,
+                                     ra_mean_precip_ais_sample, bins=int(xlim/5.),
+                                     range=[[0,xlim],[0,ylim]], density=True,
+                                     cmap='cet_linear_worb_100_25_c53')
+    plt.close()
+    
+    xvals_gris = xedges_gris[:-1] + np.diff(xedges_gris)/2.
+    yvals_gris = yedges_gris[:-1] + np.diff(yedges_gris)/2.
+    
+    xvals_ais = xedges_ais[:-1] + np.diff(xedges_ais)/2.
+    yvals_ais = yedges_ais[:-1] + np.diff(yedges_ais)/2.
+    
+    return([[xvals_gris, yvals_gris, h_gris],
+            [xvals_ais, yvals_ais, h_ais]])
+
 def covariance(sample_matrix):
     sample_means = sample_matrix.mean(axis=1)
     sample_std = sample_matrix.std(axis=1, ddof=1)

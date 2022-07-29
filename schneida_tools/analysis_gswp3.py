@@ -3,17 +3,21 @@
 from os import path
 
 import numpy as np
+from cartopy import util
+import cartopy.feature as cfeature
 import cartopy.crs as ccrs
 from matplotlib import pyplot as plt
 import colorcet as cc
+from mpi4py import MPI
 
-from schneida_tools.schneida_args import get_args
-from schneida_tools import gswp3
-from schneida_tools import wfde5
-from schneida_tools import coordinate_space
-from schneida_tools import gris_dem
-from schneida_tools import ais_dem
-from schneida_tools import verify_precip
+from schneida_args import get_args
+import gswp3
+import wfde5
+import coordinate_space
+import gris_dem
+import ais_dem
+import verify_precip
+import analysis_era5
 
 import ipdb
 
@@ -30,7 +34,7 @@ class Analysis(object):
         self.antarctica=antarctica
         self.args = get_args()
         
-    def compare_temperature(self, cmap='cet_CET_L8', degc_min=-7, degc_max=37):
+    def compare_temperature(self, cmap='cet_CET_C3_r', degc_min=-7, degc_max=37):
         """
         """
         # Get GSWP3 temporal mean temperature
@@ -58,9 +62,12 @@ class Analysis(object):
         time_mean_tc_diffs_rel = time_mean_tc_diffs / (wfde5_time_mean_tc + self.args.TFRZ)
     
         # Setup maps
-        axes = coordinate_space.four_map_horizontal_comparison(greenland=self.greenland,
+        if True:
+            axes = coordinate_space.four_map_horizontal_comparison(greenland=self.greenland,
                                                                antarctica=self.antarctica)
-            
+        else:
+            ax = analysis_era5.setup_map(greenland=self.greenland,
+                                         antarctica=self.antarctica)
         set_map_titles(axes)
         print('Mapping temperature data to figure...')
         # Map data
@@ -153,8 +160,8 @@ class Analysis(object):
             for i, ax in enumerate(axes):
                 # Add elevation contours
                 dem.draw_contours(ax,
-                                  path.join('data_clean', 'gimpdem_90m_v01.1.nc'),
-                                  downsample=10)
+                              path.join('data_clean', 'gimpdem_90m_v01.1.nc'),
+                              downsample=10)
     
         elif self.antarctica:
             # Add elevation contours
@@ -164,11 +171,11 @@ class Analysis(object):
                           new_map=False)
             
             for i, ax in enumerate(axes):
-                # Add elevation contours
+                #Add elevation contours
                 dem.draw_contours(ax, path.join('data_clean',
-                                                   'krigged_dem_nsidc.nc'),
-                                  path.join('data_clean',
-                                               'krigged_dem_errormap_nsidc.nc'))
+                                               'krigged_dem_nsidc.nc'),
+                              path.join('data_clean',
+                                           'krigged_dem_errormap_nsidc.nc'))
                 
         else:
             for i, ax in enumerate(axes):
@@ -218,15 +225,51 @@ class Analysis(object):
         time_mean_precip_diffs_rel = time_mean_precip_diffs / wfde5_time_mean_precip
     
         # Setup maps
-        axes = coordinate_space.four_map_horizontal_comparison(greenland=self.greenland,
+        if True:
+            axes = coordinate_space.four_map_horizontal_comparison(greenland=self.greenland,
                                                                antarctica=self.antarctica)
-        set_map_titles(axes)
-
+            set_map_titles(axes)
+        else:
+            ax_wfde5 = analysis_era5.setup_map(greenland=self.greenland, antarctica=self.antarctica)
+            ax_gs
         # Map data
         print('Mapping precipitation data to figure...')
         longxy = gswp3_mean_precip_rootgrp.variables['LONGXY'][:]
         latixy = gswp3_mean_precip_rootgrp.variables['LATIXY'][:]
-    
+        # Add cyclic value to arrays
+        longxy=util.add_cyclic_point(longxy)
+        for i in range(longxy.shape[0]):
+            if True:#longxy[i,-1] < 0:
+                # check for negative longitude on right most side,
+                # change to positive
+                longxy[i, -1] +=360
+        latixy=util.add_cyclic_point(latixy)
+        era5_time_mean_precip=util.add_cyclic_point(era5_time_mean_precip)
+        
+        gswp3_quad_mesh = axes[0].contourf(longxy.data, latixy.data,
+                                           np.ma.clip(coordinate_space.mask_vals(longxy, latixy,
+                                                                gswp3_time_mean_precip,
+                                                                greenland=self.greenland,
+                                                                antarctica=self.antarctica),
+                                                      cm_per_year_min, cm_per_year_max),
+                                                levels=int((cm_per_year_max-cm_per_year_min)/5.),
+                                                #extend='both',
+                                                cmap=cmap,
+                                                vmin=cm_per_year_min, vmax=cm_per_year_max,
+                                                transform=ccrs.PlateCarree())
+                                                
+        wfde5_quad_mesh = axes[1].contourf(longxy.data, latixy.data,
+                                         np.ma.clip(coordinate_space.mask_vals(longxy, latixy,
+                                                              wfde5_time_mean_precip,
+                                                              greenland=self.greenland,
+                                                              antarctica=self.antarctica),
+                                                    cm_per_year_min, cm_per_year_max),
+                                levels=int((cm_per_year_max-cm_per_year_min)/5.),
+                                #extend='both',
+                                cmap=cmap,
+                                vmin=cm_per_year_min, vmax=cm_per_year_max,
+                                transform=ccrs.PlateCarree())
+        '''
         gswp3_quad_mesh = axes[0].pcolormesh(longxy.data, latixy.data,
                                            np.ma.clip(coordinate_space.mask_vals(longxy, latixy,
                                                                 gswp3_time_mean_precip,
@@ -246,7 +289,7 @@ class Analysis(object):
                                          shading='nearest', cmap=cmap,
                                          vmin=cm_per_year_min, vmax=cm_per_year_max,
                                          transform=ccrs.PlateCarree())
-    
+        '''
         diffs_quad_mesh = axes[2].pcolormesh(longxy.data, latixy.data,
                                          np.ma.clip(coordinate_space.mask_vals(longxy, latixy,
                                                               time_mean_precip_diffs,
@@ -270,19 +313,19 @@ class Analysis(object):
         # Colorbar
         fig = plt.gcf()
         gswp3_cbar = fig.colorbar(gswp3_quad_mesh,
-                            ax=axes[0:2], orientation='horizontal')
-        gswp3_cbar.set_label('Precipitation rate (cm H$_2$O yr$^{-1}$)')
+                            ax=axes[0:2], orientation='vertical')
+        gswp3_cbar.set_label('precipitation rate (cm w.eq. yr$^{-1}$)')
         '''
         wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
                             ax=axes[1], orientation='horizontal')
         wfde5_cbar.set_label('Precipitation (cm H$_2$O yr$^{-1}$)')
         '''
         diffs_cbar = fig.colorbar(diffs_quad_mesh,
-                            ax=axes[2], orientation='horizontal')
-        diffs_cbar.set_label('Difference (cm H$_2$O yr$^{-1}$)')
+                            ax=axes[2], orientation='vertical')
+        diffs_cbar.set_label('Difference (cm w.eq. yr$^{-1}$)')
 
         rel_cbar = fig.colorbar(rel_diffs_quad_mesh,
-                            ax=axes[3], orientation='horizontal')
+                            ax=axes[3], orientation='vertical')
         rel_cbar.set_label(r'Difference ($\%$)')
 
         self.draw_elevation_contours(axes)
@@ -305,112 +348,130 @@ def test():
     gswp3.test()
     wfde5.test()
 
-def run():
+def run(debug=False):
     '''
     plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
     plt.style.use('uci_darkblue')
     '''
     plt.style.use('agu_online_poster_presentation')
-    # Greenland analysis
+    #plt.style.use('agu_full')
+    #plt.style.use('hofmann_talk')
+    
+    if debug:
+        rank=0
+    else:
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+    
     greenland_analysis = Analysis(compute_means=False,
                                   greenland=True)
-    # Temperature
-    axes = greenland_analysis.compare_temperature(degc_min=-50, degc_max=0,
-                                           #cmap='cet_CET_L7',
-                                            cmap='cet_CET_CBL2')
-    # Set the figure title
-    plt.suptitle('Greenland mean 1980 to 1990 surface air temperature')
-    savefig_name = path.join('results', 'greenland_tair_gswp3_vs_wfde5.png')
-    print('Writing temperature maps to %s' % savefig_name)
-    plt.savefig(savefig_name, dpi=300)
-    # Close figure and files
-    plt.close()
-    greenland_analysis.close_mean_t_rootgrps()
-
-    # Precipitation
-    (sumup_gris, sumup_ais) = verify_precip.grid_sumup2wfde5()
-    axes = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
-    # Get and plot SUMup locations
-    axes[0].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
-                    cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
-                    vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='white',
-                    linewidths=0.5,
-                    transform=ccrs.PlateCarree())
-    axes[1].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
-                    cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
-                    vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='white',
-                    linewidths=0.5,
-                    transform=ccrs.PlateCarree())
-    
-    # Set the figure title
-    plt.suptitle('Greenland mean 1980 to 1990 precipitation')
-    savefig_name = path.join('results', 'greenland_precip_gswp3_vs_wfde5.png')
-    print('Writing precipitation maps to %s' % savefig_name)
-    plt.savefig(savefig_name, dpi=300)
-    # Close figure and files
-    plt.close()
-    greenland_analysis.close_mean_precip_rootgrps()
-    
-    # Antarctica analysis
     antarctica_analysis = Analysis(compute_means=False,
                                    antarctica=True)
-    # Temperature
-    axes = antarctica_analysis.compare_temperature(degc_min=-50, degc_max=0,
-                                                   #cmap='cet_CET_L7'
-                                                   cmap='cet_CET_CBL2'
-                                                  )
-    # Set the figure title
-    plt.suptitle('Antarctica mean 1980 to 1990 surface air temperature')
-    savefig_name = path.join('results', 'antarctica_tair_gswp3_vs_wfde5.png')
-    print('Writing temperature maps to %s' % savefig_name)
-    plt.savefig(savefig_name, dpi=300)
-    # Close figure and files
-    plt.close()
-    antarctica_analysis.close_mean_t_rootgrps()
-    
-    # Precipitation
-    axes = antarctica_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
-    # Get and plot SUMup locations
-    axes[0].scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
-                    cmap=antarctica_analysis.precip_cmap, vmin=antarctica_analysis.precip_cm_per_year_min,
-                    vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='white',
-                    linewidths=0.5,
-                    transform=ccrs.PlateCarree())
-    axes[1].scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
-                    cmap=antarctica_analysis.precip_cmap, vmin=antarctica_analysis.precip_cm_per_year_min,
-                    vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='white',
-                    linewidths=0.5,
-                    transform=ccrs.PlateCarree())
-    
-    # Set the figure title
-    plt.suptitle('Antarctica mean 1980 to 1990 precipitation')
-    savefig_name = path.join('results', 'antarctica_precip_gswp3_vs_wfde5.png')
-    plt.savefig(savefig_name, dpi=300)
-    # Close figure and files
-    plt.close()
-    antarctica_analysis.close_mean_precip_rootgrps()
-    
-    # Northern hemisphere analysis
     northern_hemisphere_analysis = Analysis(compute_means=False)
-    axes = northern_hemisphere_analysis.compare_temperature()
-    # Set the figure title
-    plt.suptitle('Northern Hemisphere mean 1980 to 1990 surface air temperature')
-    savefig_name = path.join('results', 'nh_tair_gswp3_vs_wfde5.png')
-    print('Writing temperature maps to %s' % savefig_name)
-    plt.savefig(savefig_name, dpi=300)
-    # Close figure and files
-    plt.close()
-    northern_hemisphere_analysis.close_mean_t_rootgrps()
     
-    # Precipitation
-    axes = northern_hemisphere_analysis.compare_precip()
-    # Set the figure title
-    plt.suptitle('Northern Hemisphere mean 1980 to 1990 precipitation')
-    savefig_name = path.join('results', 'nh_precip_gswp3_vs_wfde5.png')
-    plt.savefig(savefig_name, dpi=300)
-    # Close figure and files
-    plt.close()
-    northern_hemisphere_analysis.close_mean_precip_rootgrps()
+    # Greenland analysis
+    if rank==0:
+        # Temperature
+        axes = greenland_analysis.compare_temperature(degc_min=-50, degc_max=0,
+                                               #cmap='cet_CET_L7',
+                                                cmap='cet_CET_CBL3_r')
+        # Set the figure title
+        plt.suptitle('Greenland mean 1980 to 1990 surface air temperature')
+        savefig_name = path.join('results', 'greenland_tair_gswp3_vs_wfde5.png')
+        print('Writing temperature maps to %s' % savefig_name)
+        plt.savefig(savefig_name, dpi=600)
+        # Close figure and files
+        plt.close()
+        greenland_analysis.close_mean_t_rootgrps()
+
+    if rank==1:
+        # Precipitation
+        (sumup_gris, sumup_ais) = verify_precip.grid_sumup2wfde5()
+        comm.send(sumup_ais, dest=3)
+        axes = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
+        # Get and plot SUMup locations
+        axes[0].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+                        cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
+                        vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
+                        linewidths=0.5,
+                        transform=ccrs.PlateCarree())
+        axes[1].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+                        cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
+                        vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
+                        linewidths=0.5,
+                        transform=ccrs.PlateCarree())
+    
+        # Set the figure title
+        plt.suptitle('Greenland mean 1980 to 1990 precipitation')
+        savefig_name = path.join('results', 'greenland_precip_gswp3_vs_wfde5.png')
+        print('Writing precipitation maps to %s' % savefig_name)
+        plt.savefig(savefig_name, dpi=600)
+        # Close figure and files
+        plt.close()
+        greenland_analysis.close_mean_precip_rootgrps()
+    
+    # Antarctica analysis
+    if rank==2:
+        # Temperature
+        axes = antarctica_analysis.compare_temperature(degc_min=-50, degc_max=0,
+                                                       #cmap='cet_CET_L7'
+                                                       cmap='cet_CET_CBL2'
+                                                      )
+        # Set the figure title
+        plt.suptitle('Antarctica mean 1980 to 1990 surface air temperature')
+        savefig_name = path.join('results', 'antarctica_tair_gswp3_vs_wfde5.png')
+        print('Writing temperature maps to %s' % savefig_name)
+        plt.savefig(savefig_name, dpi=600)
+        # Close figure and files
+        plt.close()
+        antarctica_analysis.close_mean_t_rootgrps()
+    
+    if rank==3:
+        # Precipitation
+        sumup_ais = comm.recv(source=1)
+        axes = antarctica_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
+        # Get and plot SUMup locations
+        axes[0].scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
+                        cmap=antarctica_analysis.precip_cmap, vmin=antarctica_analysis.precip_cm_per_year_min,
+                        vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='black',
+                        linewidths=0.5,
+                        transform=ccrs.PlateCarree())
+        axes[1].scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
+                        cmap=antarctica_analysis.precip_cmap, vmin=antarctica_analysis.precip_cm_per_year_min,
+                        vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='black',
+                        linewidths=0.5,
+                        transform=ccrs.PlateCarree())
+    
+        # Set the figure title
+        plt.suptitle('Antarctica mean 1980 to 1990 precipitation')
+        savefig_name = path.join('results', 'antarctica_precip_gswp3_vs_wfde5.png')
+        plt.savefig(savefig_name, dpi=600)
+        # Close figure and files
+        plt.close()
+        antarctica_analysis.close_mean_precip_rootgrps()
+    
+    if rank==4:
+        # Northern hemisphere analysis
+        axes = northern_hemisphere_analysis.compare_temperature()
+        # Set the figure title
+        plt.suptitle('Northern Hemisphere mean 1980 to 1990 surface air temperature')
+        savefig_name = path.join('results', 'nh_tair_gswp3_vs_wfde5.png')
+        print('Writing temperature maps to %s' % savefig_name)
+        plt.savefig(savefig_name, dpi=600)
+        # Close figure and files
+        plt.close()
+        northern_hemisphere_analysis.close_mean_t_rootgrps()
+    
+    if rank==5:
+        # Precipitation
+        axes = northern_hemisphere_analysis.compare_precip()
+        # Set the figure title
+        plt.suptitle('Northern Hemisphere mean 1980 to 1990 precipitation')
+        savefig_name = path.join('results', 'nh_precip_gswp3_vs_wfde5.png')
+        plt.savefig(savefig_name, dpi=600)
+        # Close figure and files
+        plt.close()
+        northern_hemisphere_analysis.close_mean_precip_rootgrps()
     
 def main():
     run()

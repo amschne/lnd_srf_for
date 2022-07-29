@@ -95,13 +95,15 @@ def four_map_horizontal_comparison(greenland=False,
                       crs=ccrs.PlateCarree())
         ax.add_feature(cfeature.LAND, color='#C6BEB5')
         ax.add_feature(cfeature.OCEAN, color='#C6BEB5')
-        if greenland:
-            ax.hlines(-9*10**5, 4*10**5, 4*10**5 + 250*10**3, colors='black', lw=2)
-            ax.text(3*10**5, -8.5*10**5, '250 km')
-        elif antarctica:
-            ax.hlines(-2.7*10**6, -1.5*10**6, -1.5*10**6 + 1000*10**3, colors='black', lw=2)
-            ax.text(-1.5*10**6, -2.6*10**6, '1000 km')
-        
+        if greenland or antarctica: # plot scale bar
+            ax.hlines(y_val, x0, x0 + scale_length, colors=scale_bar_color, lw=2)
+            ax.vlines([x0, x0 + scale_length], y_val - 0.1*scale_length,
+                          y_val + 0.1*scale_length, colors=scale_bar_color)
+    
+            if greenland:
+                ax.text(x0+50*10**3, y_val + 0.5*10**5, '500 km', color=scale_bar_color)
+            elif antarctica:
+                ax.text(x0+0.025*10**6, y_val + 0.1*10**6, '1000 km', color=scale_bar_color)
     return axes
         
 def draw_elevation_contours(ax, elevation_levels=np.arange(0,8849,1500),
