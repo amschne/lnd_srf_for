@@ -22,6 +22,7 @@ from schneida_tools import sumup
 from schneida_tools import era5
 #from schneida_tools import cruncep
 #from schneida_tools import gswp3
+import colorcet as cc
 
 import ipdb
     
@@ -41,7 +42,7 @@ def get_era5_temporal_means():
         
     return era5_mean_precip_rootgrp
     
-def grid_sumup2era5(xlim=150, ylim=150):
+def grid_sumup2era5(xlim=140, ylim=140):
     """ Loop through measurements and filter out:
         1. Measurements outside time period of analysis
         2. All measurements that are not from ice cores
@@ -212,39 +213,50 @@ def grid_sumup2era5(xlim=150, ylim=150):
     gris_covariances, gris_correlations = covariance(gris_sample_matrix)
     ais_covariances, ais_correlations = covariance(ais_sample_matrix)
     
+    fig, axes = plt.subplots(nrows=1, ncols=2, sharex=True, sharey=True)
+    axes[0].set_title('Greenland')
+    axes[1].set_title('Antarctica')
+    axes[0].hist2d(sumup_mean_accum_gris, era5_mean_precip_gris_sample, bins=int(xlim/10.),
+                   range=[[0,xlim],[0,ylim]], density=True, weights=None, cmap='cet_linear_wcmr_100_45_c42')
+    axes[1].hist2d(sumup_mean_accum_ais, era5_mean_precip_ais_sample, bins=int(xlim/10.),
+                   range=[[0,xlim],[0,ylim]], density=True, weights=None, cmap='cet_linear_wcmr_100_45_c42')
+    plt.savefig(path.join('results', 'hist_era5_sumup_gris_ais_precip.png'), dpi=600)
+    plt.close()
     # Scatter data
-    fig, axes = plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
-    fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
-    axes[0, 0].set_title('ERA5')
+    fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, sharey=True)
+    #fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
+    #plt.style.use('agu_half_vertical')
+    axes[0].set_title('Greenland')
+    axes[1].set_title('Antarctica')
     #axes[0,1].set_title('GSWP3')
     #axes[0,2].set_title('WFDE5')
-    axes[0, 0].set_ylabel('Greenland ice sheet\nprecipitation rate (cm H$_2$O yr$^{-1}$)')
-    axes[1, 0].set_ylabel('Antarctic ice sheet\nprecipitation rate (cm H$_2$O yr$^{-1}$)')
-    axes[1, 0].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
+    axes[0].set_ylabel('ERA5 precipitation rate (cm w.eq. yr$^{-1}$)')
+    axes[1].set_ylabel('ERA5 precipitation rate (cm w.eq. yr$^{-1}$)')
+    axes[1].set_xlabel('SUMup accumulation rate (cm w.eq. yr$^{-1}$)')
     #axes[1,1].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
     #axes[1,2].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
     
-    axes[0, 0].set_ylim(0, ylim)
-    axes[0, 0].set_xlim(0, xlim)
+    axes[0].set_ylim(0, ylim)
+    axes[0].set_xlim(0, xlim)
     
     for i in range(2):
-        for j in range(2):
-            axes[i,j].set_ylim(0, ylim)
-            axes[i,j].set_xlim(0, xlim)
-            axes[i,j].plot([0,xlim], [0,ylim], color='#555759')
-            axes[i,j].set_xticks(np.arange(0,xlim+1,50))
-            axes[i,j].set_xticks(np.arange(0,xlim,10), minor=True)
-            axes[i,j].set_yticks(np.arange(0,ylim+1,50))
-            axes[i,j].set_yticks(np.arange(0,ylim,10), minor=True)
-            axes[i,j].tick_params(axis='both', which='both', top=True, right=True)
+        #for j in range(2):
+        axes[i].set_ylim(0, ylim)
+        axes[i].set_xlim(0, xlim)
+        axes[i].plot([0,xlim], [0,ylim], color='#555759')
+        axes[i].set_xticks(np.arange(0,xlim+1,20))
+        axes[i].set_xticks(np.arange(0,xlim,5), minor=True)
+        axes[i].set_yticks(np.arange(0,ylim+1,20))
+        axes[i].set_yticks(np.arange(0,ylim,5), minor=True)
+        axes[i].tick_params(axis='both', which='both', top=True, right=True)
             
-    axes[0,0].errorbar(sumup_mean_accum_gris, era5_mean_precip_gris_sample,
+    axes[0].errorbar(sumup_mean_accum_gris, era5_mean_precip_gris_sample,
                        yerr=get_yerrs(era5_gris_errors),
                        fmt='x',
                        color='#0064A4',
                        #color='white',
                        ls='')
-    axes[0,0].text(0.5*xlim-13, 5, '$n$ = %d\nr$^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+    axes[0].text(0.5*xlim, 5, '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(era5_gris_errors),
                                np.around(gris_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(era5_gris_errors)),
@@ -253,13 +265,13 @@ def grid_sumup2era5(xlim=150, ylim=150):
                                          decimals=2),
                                ))
                        
-    axes[1,0].errorbar(sumup_mean_accum_ais, era5_mean_precip_ais_sample,
+    axes[1].errorbar(sumup_mean_accum_ais, era5_mean_precip_ais_sample,
                        yerr=get_yerrs(era5_ais_errors),
                        fmt='x',
                        color='#0064A4',
                        #color='white',
                        ls='')
-    axes[1,0].text(0.5*xlim-13, 5, '$n$ = %d\nr$^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+    axes[1].text(0.5*xlim, 5, '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(era5_ais_errors),
                                np.around(ais_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(era5_ais_errors)),

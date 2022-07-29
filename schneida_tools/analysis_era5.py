@@ -451,7 +451,9 @@ def run(debug=False):
         plt.style.use('agu_online_poster_presentation')
         plt.style.use('uci_blue')
     '''
-    #plt.style.use('agu_online_poster_presentation')
+    plt.style.use('agu_half_vertical')
+    plt.style.use('hofmann_talk')
+    #plt.style.use('grl')
     if debug:
         rank=0
     else:
