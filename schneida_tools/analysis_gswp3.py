@@ -39,20 +39,28 @@ class Analysis(object):
         """
         # Get GSWP3 temporal mean temperature
         gswp3_data = gswp3.GSWP3()
-        gswp3_data.get_tphwl()
+        if self.compute_means:
+            gswp3_data.get_tphwl()
+        else:
+            gswp3_data.tphwl_rootgrp=None
         gswp3_mean_t_rootgrp = gswp3.get_temporal_mean(gswp3_data.tphwl_rootgrp,
                                                            'TBOT',
                                                            compute=self.compute_means)
-        gswp3_data.tphwl_rootgrp.close()
+        if self.compute_means:
+            gswp3_data.tphwl_rootgrp.close()
         # Convert from K to degrees C
         gswp3_time_mean_tc = -self.args.TFRZ + gswp3_mean_t_rootgrp.variables['TBOT'][:]
     
         # Get WFDE5 temporal mean temperature
         wfde5_data = wfde5.WFDE5()
-        wfde5_data.get_tair()
+        if self.compute_means:
+            wfde5_data.get_tair()
+        else:
+            wfde5_data.t_air=None
         wfde5_mean_t_rootgrp = wfde5.get_temporal_mean(wfde5_data.t_air, 'Tair',
                                                        compute=self.compute_means)
-        wfde5.close_rootgrps(wfde5_data.t_air)
+        if self.compute_means:
+            wfde5.close_rootgrps(wfde5_data.t_air)
         # Convert to Celcius and shift WFDE5 data to CRUNCEP grid
         wfde5_time_mean_tc = np.roll(-self.args.TFRZ + wfde5_mean_t_rootgrp.variables['Tair'][:],
                                      360, axis=1)
@@ -190,11 +198,15 @@ class Analysis(object):
         """
         # Get GSWP3 temporal mean precipitation
         gswp3_data = gswp3.GSWP3()
-        gswp3_data.get_precip()
+        if self.compute_means:
+            gswp3_data.get_precip()
+        else:
+            gswp3_data.precip_rootgrp=None
         gswp3_mean_precip_rootgrp = gswp3.get_temporal_mean(gswp3_data.precip_rootgrp,
                                                                 'PRECTmms',
                                                               compute=self.compute_means)
-        gswp3_data.precip_rootgrp.close()
+        if self.compute_means:
+            gswp3_data.precip_rootgrp.close()
         # mm H2O / sec -> cm H2O / yr.
         gswp3_time_mean_precip = (60. * 60. * 24. * 365.25 *
                             gswp3_mean_precip_rootgrp.variables['PRECTmms'][:]) / 10.
@@ -202,17 +214,24 @@ class Analysis(object):
         # Get WFDE5 temporal mean precipitation
         wfde5_data = wfde5.WFDE5()
         # WFDE5 rainfall
-        wfde5_data.get_rainf()
+        if self.compute_means:
+            wfde5_data.get_rainf()
+        else:
+            wfde5_data.rainf=None
         wfde5_mean_rainf_rootgrp = wfde5.get_temporal_mean(wfde5_data.rainf,
                                                            'Rainf',
                                                            compute=self.compute_means)
-        wfde5.close_rootgrps(wfde5_data.rainf)
+        if self.compute_means:
+            wfde5.close_rootgrps(wfde5_data.rainf)
         # WFDE5 snowfall
-        wfde5_data.get_snowf()
+            wfde5_data.get_snowf()
+        else:
+            wfde5_data.snowf=None
         wfde5_mean_snowf_rootgrp = wfde5.get_temporal_mean(wfde5_data.snowf,
                                                            'Snowf',
                                                            compute=self.compute_means)
-        wfde5.close_rootgrps(wfde5_data.snowf)
+        if self.compute_means:
+            wfde5.close_rootgrps(wfde5_data.snowf)
         # Integrate total precip, convert to cm / yr., and shift WFDE5 data
         # toCRUNCEP grid
         wfde5_time_mean_precip = np.roll((60.* 60. * 24. * 365.25 *
@@ -244,8 +263,11 @@ class Analysis(object):
                 # change to positive
                 longxy[i, -1] +=360
         latixy=util.add_cyclic_point(latixy)
-        era5_time_mean_precip=util.add_cyclic_point(era5_time_mean_precip)
-        
+        gswp3_time_mean_precip=util.add_cyclic_point(gswp3_time_mean_precip)
+        wfde5_time_mean_precip=util.add_cyclic_point(wfde5_time_mean_precip)
+        time_mean_precip_diffs=util.add_cyclic_point(time_mean_precip_diffs)
+        time_mean_precip_diffs_rel=util.add_cyclic_point(time_mean_precip_diffs_rel)
+
         gswp3_quad_mesh = axes[0].contourf(longxy.data, latixy.data,
                                            np.ma.clip(coordinate_space.mask_vals(longxy, latixy,
                                                                 gswp3_time_mean_precip,
@@ -289,7 +311,8 @@ class Analysis(object):
                                          shading='nearest', cmap=cmap,
                                          vmin=cm_per_year_min, vmax=cm_per_year_max,
                                          transform=ccrs.PlateCarree())
-        '''
+        
+        
         diffs_quad_mesh = axes[2].pcolormesh(longxy.data, latixy.data,
                                          np.ma.clip(coordinate_space.mask_vals(longxy, latixy,
                                                               time_mean_precip_diffs,
@@ -310,6 +333,7 @@ class Analysis(object):
                                              shading='nearest', cmap='cet_CET_D10',
                                              vmin=-50, vmax=50,
                                              transform=ccrs.PlateCarree())
+        '''
         # Colorbar
         fig = plt.gcf()
         gswp3_cbar = fig.colorbar(gswp3_quad_mesh,
@@ -319,7 +343,7 @@ class Analysis(object):
         wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
                             ax=axes[1], orientation='horizontal')
         wfde5_cbar.set_label('Precipitation (cm H$_2$O yr$^{-1}$)')
-        '''
+        
         diffs_cbar = fig.colorbar(diffs_quad_mesh,
                             ax=axes[2], orientation='vertical')
         diffs_cbar.set_label('Difference (cm w.eq. yr$^{-1}$)')
@@ -327,7 +351,7 @@ class Analysis(object):
         rel_cbar = fig.colorbar(rel_diffs_quad_mesh,
                             ax=axes[3], orientation='vertical')
         rel_cbar.set_label(r'Difference ($\%$)')
-
+        '''
         self.draw_elevation_contours(axes)
 
         self.wfde5_mean_rainf_rootgrp = wfde5_mean_rainf_rootgrp

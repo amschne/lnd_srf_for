@@ -217,11 +217,11 @@ def grid_sumup2era5(xlim=140, ylim=140):
     #axes[0].set_title('Greenland')
     #axes[1].set_title('Antarctica')
     h_gris, xedges_gris, yedges_gris, image_gris= plt.hist2d(sumup_mean_accum_gris,
-                                    era5_mean_precip_gris_sample, bins=int(xlim/5.),
+                                    era5_mean_precip_gris_sample, bins=int(xlim/10.),
                                     range=[[0,xlim],[0,ylim]], density=True,
                                     cmap='cet_linear_worb_100_25_c53')
     h_ais, xedges_ais, yedges_ais, image_ais = plt.hist2d(sumup_mean_accum_ais,
-                                     era5_mean_precip_ais_sample, bins=int(xlim/5.),
+                                     era5_mean_precip_ais_sample, bins=int(xlim/10.),
                                      range=[[0,xlim],[0,ylim]], density=True,
                                      cmap='cet_linear_worb_100_25_c53')
     #plt.savefig(path.join('results', 'hist_era5_sumup_gris_ais_precip.png'), dpi=600)
@@ -256,7 +256,7 @@ def grid_sumup2era5(xlim=140, ylim=140):
                        #color='white',
                        ls='')
     '''
-    p_gris = axes[0].contourf(xvals_gris, yvals_gris, h_gris, levels=100, cmap='cet_linear_worb_100_25_c53',
+    p_gris = axes[0].contourf(xvals_gris, yvals_gris, h_gris.T, levels=100, cmap='cet_linear_worb_100_25_c53',
                      vmin=0)
     axes[0].text(xlim/28., ylim - ylim/3., '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(era5_gris_errors),
@@ -274,7 +274,7 @@ def grid_sumup2era5(xlim=140, ylim=140):
                        #color='white',
                        ls='')
     '''
-    p_ais = axes[1].contourf(xvals_ais, yvals_ais, h_ais, levels=100, cmap='cet_linear_worb_100_25_c53',
+    p_ais = axes[1].contourf(xvals_ais, yvals_ais, h_ais.T, levels=100, cmap='cet_linear_worb_100_25_c53',
                      vmin=0)
     axes[1].text(xlim/28., ylim - ylim/3., '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(era5_ais_errors),

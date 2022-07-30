@@ -51,7 +51,8 @@ class CoordinateSpace(object):
 def four_map_horizontal_comparison(greenland=False,
                                    antarctica=False,
                                    lon_lines = np.arange(-180, 180, 30),
-                                   lat_lines = np.arange(-90, 90, 30)):
+                                   lat_lines = np.arange(-90, 90, 30),
+                                   scale_bar_color='#c6beb5'):
     """ Uses the Lambert Azimuthal Equal Area map projection
     """
     if greenland:
@@ -61,6 +62,11 @@ def four_map_horizontal_comparison(greenland=False,
         map_lat_max=84
         map_lat_0=71.4
         map_lon_0=-42.1
+
+        y_val = -1200. * 10**3
+        x0 = 150. * 10**3
+        scale_length = 500. * 10**3
+
     elif antarctica:
         map_lon_min = -180
         map_lon_max=180
@@ -68,6 +74,10 @@ def four_map_horizontal_comparison(greenland=False,
         map_lat_max=-65
         map_lat_0=-90
         map_lon_0=0
+
+        y_val=-2.6*10**6
+        x0=1.5*10**6
+        scale_length=1000*10**3
     else: # Northern hempiphere
         map_lon_min=-180
         map_lon_max=180

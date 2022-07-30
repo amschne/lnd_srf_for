@@ -276,19 +276,19 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
     fig, axes = plt.subplots(nrows=2, ncols=3, sharex=True, sharey=False)
     #fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
     axes[0,0].set_title('Greenland')
-    axes[0,0].set_ylabel('CRUNCEPv7 precipitation (cm w.eq. yr$^{-1}$)')
+    axes[0,0].set_ylabel('CRUNCEP precipitation (cm w.eq. yr$^{-1}$)')
     axes[1,0].set_title('Antarctica')
-    axes[1,0].set_ylabel('CRUNCEPv7 precipitation (cm w.eq. yr$^{-1}$)')
+    axes[1,0].set_ylabel('CRUNCEP precipitation (cm w.eq. yr$^{-1}$)')
     
     axes[0,1].set_title('Greenland')
     axes[0,1].set_ylabel('GSWP3 precipitation (cm w.eq. yr$^{-1}$)')
     axes[1,1].set_title('Antarctica')
     axes[1,1].set_ylabel('GSWP3 precipitation (cm w.eq. yr$^{-1}$)')
     
-    axes[0,1].set_title('Greenland')
-    axes[0,1].set_ylabel('WFDE5 precipitation (cm w.eq. yr$^{-1}$)')
-    axes[1,1].set_title('Antarctica')
-    axes[1,1].set_ylabel('WFDE5 precipitation (cm w.eq. yr$^{-1}$)')
+    axes[0,2].set_title('Greenland')
+    axes[0,2].set_ylabel('WFDE5 precipitation (cm w.eq. yr$^{-1}$)')
+    axes[1,2].set_title('Antarctica')
+    axes[1,2].set_ylabel('WFDE5 precipitation (cm w.eq. yr$^{-1}$)')
     
     axes[1,0].set_xlabel('SUMup accumulation rate (cm w.eq. yr$^{-1}$)')
     axes[1,1].set_xlabel('SUMup accumulation rate (cm w.eq. yr$^{-1}$)')
@@ -299,8 +299,8 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
                        yerr=get_yerrs(cruncep_gris_errors),
                        fmt='x', color='#0064A4', ls='')
     '''
-    p_gris_cruncep = axes[0,0].contourf(p_array_cruncep[0][0], p_array_cruncep[0][1],
-                                p_array_cruncep[0][2], levels=100,
+    p_gris_cruncep = axes[0,0].contourf(p_array_cruncep['gris'][0], p_array_cruncep['gris'][1],
+                                p_array_cruncep['gris'][2], levels=100,
                                 cmap='cet_linear_worb_100_25_c53',
                                 vmin=0)
     # gris_correlations[0,2]
@@ -320,8 +320,8 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
                        fmt='x', color='#0064A4', ls='')
     '''
     
-    p_ais_cruncep = axes[1,0].contourf(p_array_cruncep[1][0], p_array_cruncep[1][1],
-                                p_array_cruncep[1][2], levels=100,
+    p_ais_cruncep = axes[1,0].contourf(p_array_cruncep['ais'][0], p_array_cruncep['ais'][1],
+                                p_array_cruncep['ais'][2], levels=100,
                                 cmap='cet_linear_worb_100_25_c53',
                                 vmin=0)
     
@@ -340,8 +340,8 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
                        yerr=get_yerrs(gswp3_gris_errors),
                        fmt='x', color='#0064A4', ls='')
     '''
-    p_gris_gswp3 = axes[0,1].contourf(p_array_gswp3[0][0], p_array_gswp3[0][1],
-                                p_array_gswp3[0][2], levels=100,
+    p_gris_gswp3 = axes[0,1].contourf(p_array_gswp3['gris'][0], p_array_gswp3['gris'][1],
+                                p_array_gswp3['gris'][2], levels=100,
                                 cmap='cet_linear_worb_100_25_c53',
                                 vmin=0)
                                 
@@ -361,8 +361,8 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
                        yerr=get_yerrs(gswp3_ais_errors),
                        fmt='x', color='#0064A4', ls='')
     '''
-    p_ais_gswp3 = axes[1,1].contourf(p_array_gswp3[1][0], p_array_gswp3[1][1],
-                                p_array_gswp3[1][2], levels=100,
+    p_ais_gswp3 = axes[1,1].contourf(p_array_gswp3['ais'][0], p_array_gswp3['ais'][1],
+                                p_array_gswp3['ais'][2], levels=100,
                                 cmap='cet_linear_worb_100_25_c53',
                                 vmin=0)
     # ais_correlations[0,3]
@@ -381,8 +381,8 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
                        fmt='x', color='#0064A4', ls='')
     '''
 
-    p_gris_wfde5 = axes[0,2].contourf(p_array_wfde5[0][0], p_array_wfde5[0][1],
-                                      p_array_wfde5[0][2], levels=100,
+    p_gris_wfde5 = axes[0,2].contourf(p_array_wfde5['gris'][0], p_array_wfde5['gris'][1],
+                                      p_array_wfde5['gris'][2], levels=100,
                                       cmap='cet_linear_worb_100_25_c53',
                                       vmin=0)
     
@@ -402,8 +402,8 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
                        yerr=get_yerrs(wfde5_ais_errors),
                        fmt='x', color='#0064A4', ls='')
     '''
-    p_ais_wfde5 = axes[1,2].contourf(p_array_wfde5[1][0], p_array_wfde5[1][1],
-                                      p_array_wfde5[1][2], levels=100,
+    p_ais_wfde5 = axes[1,2].contourf(p_array_wfde5['ais'][0], p_array_wfde5['ais'][1],
+                                      p_array_wfde5['ais'][2], levels=100,
                                       cmap='cet_linear_worb_100_25_c53',
                                       vmin=0)
     
@@ -440,11 +440,11 @@ def compute_joint_distribution(sumup_mean_accum_gris, sumup_mean_accum_ais,
     # Compute join distribution of precipitation renanalyses and SUMup
     #.accumulation rates
     h_gris, xedges_gris, yedges_gris, image_gris= plt.hist2d(sumup_mean_accum_gris,
-                                    ra_mean_precip_gris_sample, bins=int(xlim/5.),
+                                    ra_mean_precip_gris_sample, bins=int(xlim/10.),
                                     range=[[0,xlim],[0,ylim]], density=True,
                                     cmap='cet_linear_worb_100_25_c53')
     h_ais, xedges_ais, yedges_ais, image_ais = plt.hist2d(sumup_mean_accum_ais,
-                                     ra_mean_precip_ais_sample, bins=int(xlim/5.),
+                                     ra_mean_precip_ais_sample, bins=int(xlim/10.),
                                      range=[[0,xlim],[0,ylim]], density=True,
                                      cmap='cet_linear_worb_100_25_c53')
     plt.close()
@@ -455,8 +455,8 @@ def compute_joint_distribution(sumup_mean_accum_gris, sumup_mean_accum_ais,
     xvals_ais = xedges_ais[:-1] + np.diff(xedges_ais)/2.
     yvals_ais = yedges_ais[:-1] + np.diff(yedges_ais)/2.
     
-    return([[xvals_gris, yvals_gris, h_gris],
-            [xvals_ais, yvals_ais, h_ais]])
+    return({'gris':[xvals_gris, yvals_gris, h_gris.T],
+            'ais':[xvals_ais, yvals_ais, h_ais.T]})
 
 def covariance(sample_matrix):
     sample_means = sample_matrix.mean(axis=1)
