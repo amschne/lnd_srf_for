@@ -260,7 +260,10 @@ def grid_sumup2era5(xlim=140, ylim=140):
                      vmin=0)
     '''
     p_gris = axes[0].plot(sumup_mean_accum_gris, era5_mean_precip_gris_sample,
-                             color='#1b3d6d', marker="s", alpha=0.1, ls='None')
+                             color='#1b3d6d', marker="s",
+                             markeredgecolor='None',
+                             #(27./255.,61./255.,109./255.,0.1),
+                             alpha=0.2, ls='None')
     axes[0].text(xlim/28., ylim - ylim/3., '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(era5_gris_errors),
                                np.around(gris_correlations[0,1]**2, decimals=4),
@@ -281,7 +284,9 @@ def grid_sumup2era5(xlim=140, ylim=140):
                      vmin=0)
     '''
     p_ais = axes[1].plot(sumup_mean_accum_ais, era5_mean_precip_ais_sample,
-                         color='#1b3d6d', marker="s", alpha=0.1, ls='None')
+                         color='#1b3d6d', marker="s",
+                         markeredgecolor='None',#(27./255.,61./255.,109/255.,0.1)
+                         alpha=0.2, ls='None')
     axes[1].text(xlim/28., ylim - ylim/3., '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(era5_ais_errors),
                                np.around(ais_correlations[0,1]**2, decimals=4),
