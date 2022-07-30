@@ -255,9 +255,12 @@ def grid_sumup2era5(xlim=140, ylim=140):
                        color='#0064A4',
                        #color='white',
                        ls='')
-    '''
+    
     p_gris = axes[0].contourf(xvals_gris, yvals_gris, h_gris.T, levels=100, cmap='cet_linear_worb_100_25_c53',
                      vmin=0)
+    '''
+    p_gris = axes[0].plot(sumup_mean_accum_gris, era5_mean_precip_gris_sample,
+                             color='#1b3d6d', marker="s", alpha=0.1, ls='None')
     axes[0].text(xlim/28., ylim - ylim/3., '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(era5_gris_errors),
                                np.around(gris_correlations[0,1]**2, decimals=4),
@@ -273,9 +276,12 @@ def grid_sumup2era5(xlim=140, ylim=140):
                        color='#0064A4',
                        #color='white',
                        ls='')
-    '''
+    
     p_ais = axes[1].contourf(xvals_ais, yvals_ais, h_ais.T, levels=100, cmap='cet_linear_worb_100_25_c53',
                      vmin=0)
+    '''
+    p_ais = axes[1].plot(sumup_mean_accum_ais, era5_mean_precip_ais_sample,
+                         color='#1b3d6d', marker="s", alpha=0.1, ls='None')
     axes[1].text(xlim/28., ylim - ylim/3., '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(era5_ais_errors),
                                np.around(ais_correlations[0,1]**2, decimals=4),
@@ -284,8 +290,8 @@ def grid_sumup2era5(xlim=140, ylim=140):
                                np.around(np.mean(era5_ais_errors),
                                          decimals=2),
                                ))
-    fig.colorbar(p_gris, ax=axes[0])
-    fig.colorbar(p_ais, ax=axes[1])
+    fig.colorbar(image_gris, ax=axes[0])
+    fig.colorbar(image_ais, ax=axes[1])
     for i in range(2):
         #for j in range(2):
         axes[i].set_ylim(0, ylim)
