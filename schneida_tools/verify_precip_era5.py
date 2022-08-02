@@ -213,24 +213,25 @@ def grid_sumup2era5(xlim=140, ylim=140):
     gris_covariances, gris_correlations = covariance(gris_sample_matrix)
     ais_covariances, ais_correlations = covariance(ais_sample_matrix)
     
-    #fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, sharey=True)
-    #axes[0].set_title('Greenland')
-    #axes[1].set_title('Antarctica')
-    h_gris, xedges_gris, yedges_gris, image_gris= plt.hist2d(sumup_mean_accum_gris,
+    if True:
+        #fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, sharey=True)
+        #axes[0].set_title('Greenland')
+        #axes[1].set_title('Antarctica')
+        h_gris, xedges_gris, yedges_gris, image_gris= plt.hist2d(sumup_mean_accum_gris,
                                     era5_mean_precip_gris_sample, bins=int(xlim/10.),
                                     range=[[0,xlim],[0,ylim]], density=True,
                                     cmap='cet_linear_worb_100_25_c53')
-    h_ais, xedges_ais, yedges_ais, image_ais = plt.hist2d(sumup_mean_accum_ais,
+        h_ais, xedges_ais, yedges_ais, image_ais = plt.hist2d(sumup_mean_accum_ais,
                                      era5_mean_precip_ais_sample, bins=int(xlim/10.),
                                      range=[[0,xlim],[0,ylim]], density=True,
                                      cmap='cet_linear_worb_100_25_c53')
-    #plt.savefig(path.join('results', 'hist_era5_sumup_gris_ais_precip.png'), dpi=600)
-    plt.close()
-    xvals_gris = xedges_gris[:-1] + np.diff(xedges_gris)/2.
-    yvals_gris = yedges_gris[:-1] + np.diff(yedges_gris)/2.
+        #plt.savefig(path.join('results', 'hist_era5_sumup_gris_ais_precip.png'), dpi=600)
+        plt.close()
+        xvals_gris = xedges_gris[:-1] + np.diff(xedges_gris)/2.
+        yvals_gris = yedges_gris[:-1] + np.diff(yedges_gris)/2.
     
-    xvals_ais = xedges_ais[:-1] + np.diff(xedges_ais)/2.
-    yvals_ais = yedges_ais[:-1] + np.diff(yedges_ais)/2.
+        xvals_ais = xedges_ais[:-1] + np.diff(xedges_ais)/2.
+        yvals_ais = yedges_ais[:-1] + np.diff(yedges_ais)/2.
     # Scatter data
     fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, sharey=True)
     #fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
@@ -301,7 +302,7 @@ def grid_sumup2era5(xlim=140, ylim=140):
         #for j in range(2):
         axes[i].set_ylim(0, ylim)
         axes[i].set_xlim(0, xlim)
-        axes[i].plot([0,xlim], [0,ylim], color='#555759', marker='None')
+        axes[i].plot([0,xlim], [0,ylim], color=(0,0,0,0.2),marker='None')
         axes[i].set_xticks(np.arange(0,xlim+1,20))
         axes[i].set_xticks(np.arange(0,xlim,5), minor=True)
         axes[i].set_yticks(np.arange(0,ylim+1,20))
