@@ -255,22 +255,23 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
     gris_covariances, gris_correlations = covariance(gris_sample_matrix)
     ais_covariances, ais_correlations = covariance(ais_sample_matrix)
     
-    p_array_cruncep = compute_joint_distribution(sumup_mean_accum_gris,
-                                                 sumup_mean_accum_ais,
-                                                 cruncep_mean_precip_gris_sample,
-                                                 cruncep_mean_precip_ais_sample,
-                                                 xlim=xlim, ylim=ylim)
-    p_array_wfde5 = compute_joint_distribution(sumup_mean_accum_gris,
-                                               sumup_mean_accum_ais,
-                                               wfde5_mean_precip_gris_sample,
-                                               wfde5_mean_precip_ais_sample,
-                                               xlim=xlim, ylim=ylim)
+    if False:
+        p_array_cruncep = compute_joint_distribution(sumup_mean_accum_gris,
+                                                     sumup_mean_accum_ais,
+                                                     cruncep_mean_precip_gris_sample,
+                                                     cruncep_mean_precip_ais_sample,
+                                                     xlim=xlim, ylim=ylim)
+        p_array_wfde5 = compute_joint_distribution(sumup_mean_accum_gris,
+                                                   sumup_mean_accum_ais,
+                                                   wfde5_mean_precip_gris_sample,
+                                                   wfde5_mean_precip_ais_sample,
+                                                   xlim=xlim, ylim=ylim)
                                                
-    p_array_gswp3 = compute_joint_distribution(sumup_mean_accum_gris,
-                                               sumup_mean_accum_ais,
-                                               gswp3_mean_precip_gris_sample,
-                                               gswp3_mean_precip_ais_sample,
-                                               xlim=xlim, ylim=ylim)
+        p_array_gswp3 = compute_joint_distribution(sumup_mean_accum_gris,
+                                                   sumup_mean_accum_ais,
+                                                   gswp3_mean_precip_gris_sample,
+                                                   gswp3_mean_precip_ais_sample,
+                                                   xlim=xlim, ylim=ylim)
     
     # Scatter data
     fig, axes = plt.subplots(nrows=2, ncols=3, sharex=True, sharey=False)
@@ -294,16 +295,21 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
     axes[1,1].set_xlabel('SUMup accumulation rate (cm w.eq. yr$^{-1}$)')
     axes[1,2].set_xlabel('SUMup accumulation rate (cm w.eq. yr$^{-1}$)')
             
-    '''
-    axes[0,0].errorbar(sumup_mean_accum_gris, cruncep_mean_precip_gris_sample,
-                       yerr=get_yerrs(cruncep_gris_errors),
-                       fmt='x', color='#0064A4', ls='')
+    
+    axes[0,0].plot(sumup_mean_accum_gris, cruncep_mean_precip_gris_sample,
+                       #yerr=get_yerrs(cruncep_gris_errors),
+                       #fmt='x', color='#0064A4', ls='')
+                   color='#1b3d6d', marker="s",
+                   markeredgecolor='None',
+                       #(27./255.,61./255.,109./255.,0.1),
+                   alpha=0.2, ls='None'
+                   )
     '''
     p_gris_cruncep = axes[0,0].contourf(p_array_cruncep['gris'][0], p_array_cruncep['gris'][1],
                                 p_array_cruncep['gris'][2], levels=100,
                                 cmap='cet_linear_worb_100_25_c53',
                                 vmin=0)
-    # gris_correlations[0,2]
+    '''# gris_correlations[0,2]
     axes[0,0].text(xlim/28., ylim - ylim/3.,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(cruncep_gris_errors),
@@ -314,10 +320,14 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
                                          decimals=2),
                         ))
                        
-    '''
-    axes[1,0].errorbar(sumup_mean_accum_ais, cruncep_mean_precip_ais_sample,
-                       yerr=get_yerrs(cruncep_ais_errors),
-                       fmt='x', color='#0064A4', ls='')
+    
+    axes[1,0].plot(sumup_mean_accum_ais, cruncep_mean_precip_ais_sample,
+                   #yerr=get_yerrs(cruncep_ais_errors),
+                   #fmt='x', color='#0064A4', ls='')
+                   color='#1b3d6d', marker="s",
+                   markeredgecolor='None',
+                   #(27./255.,61./255.,109./255.,0.1),
+                   alpha=0.2, ls='None')
     '''
     
     p_ais_cruncep = axes[1,0].contourf(p_array_cruncep['ais'][0], p_array_cruncep['ais'][1],
@@ -325,7 +335,7 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
                                 cmap='cet_linear_worb_100_25_c53',
                                 vmin=0)
     
-    #ais_correlaitons[0,2]
+    '''#ais_correlaitons[0,2]
     axes[1,0].text(xlim/28., ylim - ylim/3.,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(cruncep_ais_errors),
@@ -335,17 +345,21 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
                       np.around(np.mean(cruncep_ais_errors),
                                          decimals=2),
                         ))
-    '''                           
-    axes[0,1].errorbar(sumup_mean_accum_gris, gswp3_mean_precip_gris_sample,
-                       yerr=get_yerrs(gswp3_gris_errors),
-                       fmt='x', color='#0064A4', ls='')
+                               
+    axes[0,1].plot(sumup_mean_accum_gris, gswp3_mean_precip_gris_sample,
+                      #yerr=get_yerrs(gswp3_gris_errors),
+                       #fmt='x', color='#0064A4', ls='')
+                   color='#1b3d6d', marker="s",
+                   markeredgecolor='None',
+                   #(27./255.,61./255.,109./255.,0.1),
+                   alpha=0.2, ls='None')
     '''
     p_gris_gswp3 = axes[0,1].contourf(p_array_gswp3['gris'][0], p_array_gswp3['gris'][1],
                                 p_array_gswp3['gris'][2], levels=100,
                                 cmap='cet_linear_worb_100_25_c53',
                                 vmin=0)
                                 
-    # gris_correlations[0,3]
+    '''# gris_correlations[0,3]
     axes[0,1].text(xlim/28., ylim - ylim/3.,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(gswp3_gris_errors),
@@ -356,16 +370,20 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
                                          decimals=2),
                         ))
                        
-    '''
-    axes[1,1].errorbar(sumup_mean_accum_ais, gswp3_mean_precip_ais_sample,
-                       yerr=get_yerrs(gswp3_ais_errors),
-                       fmt='x', color='#0064A4', ls='')
+    
+    axes[1,1].plot(sumup_mean_accum_ais, gswp3_mean_precip_ais_sample,
+                       #yerr=get_yerrs(gswp3_ais_errors),
+                       #fmt='x', color='#0064A4', ls='')
+                   color='#1b3d6d', marker="s",
+                   markeredgecolor='None',
+                   #(27./255.,61./255.,109./255.,0.1),
+                   alpha=0.2, ls='None')
     '''
     p_ais_gswp3 = axes[1,1].contourf(p_array_gswp3['ais'][0], p_array_gswp3['ais'][1],
                                 p_array_gswp3['ais'][2], levels=100,
                                 cmap='cet_linear_worb_100_25_c53',
                                 vmin=0)
-    # ais_correlations[0,3]
+    '''# ais_correlations[0,3]
     axes[1,1].text(xlim/28., ylim - ylim/3.,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(gswp3_ais_errors),
@@ -375,10 +393,14 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
                       np.around(np.mean(gswp3_ais_errors),
                                          decimals=2),
                         ))
-    '''
-    axes[0,2].errorbar(sumup_mean_accum_gris, wfde5_mean_precip_gris_sample,
-                       yerr=get_yerrs(wfde5_gris_errors),
-                       fmt='x', color='#0064A4', ls='')
+    
+    axes[0,2].plot(sumup_mean_accum_gris, wfde5_mean_precip_gris_sample,
+                       #yerr=get_yerrs(wfde5_gris_errors),
+                       #fmt='x', color='#0064A4', ls='')
+                             color='#1b3d6d', marker="s",
+                             markeredgecolor='None',
+                             #(27./255.,61./255.,109./255.,0.1),
+                             alpha=0.2, ls='None')
     '''
 
     p_gris_wfde5 = axes[0,2].contourf(p_array_wfde5['gris'][0], p_array_wfde5['gris'][1],
@@ -386,7 +408,7 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
                                       cmap='cet_linear_worb_100_25_c53',
                                       vmin=0)
     
-    # gris_correlations[0,1]
+    '''# gris_correlations[0,1]
     axes[0,2].text(xlim/28., ylim - ylim/3.,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(wfde5_gris_errors),
@@ -397,17 +419,21 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
                                          decimals=2),
                         ))
                        
-    '''
-    axes[1,2].errorbar(sumup_mean_accum_ais, wfde5_mean_precip_ais_sample,
-                       yerr=get_yerrs(wfde5_ais_errors),
-                       fmt='x', color='#0064A4', ls='')
+    
+    axes[1,2].plot(sumup_mean_accum_ais, wfde5_mean_precip_ais_sample,
+                       #yerr=get_yerrs(wfde5_ais_errors),
+                       #fmt='x', color='#0064A4', ls='')
+                             color='#1b3d6d', marker="s",
+                             markeredgecolor='None',
+                             #(27./255.,61./255.,109./255.,0.1),
+                             alpha=0.2, ls='None')
     '''
     p_ais_wfde5 = axes[1,2].contourf(p_array_wfde5['ais'][0], p_array_wfde5['ais'][1],
                                       p_array_wfde5['ais'][2], levels=100,
                                       cmap='cet_linear_worb_100_25_c53',
                                       vmin=0)
     
-    #ais_correlations[0,1]
+    '''#ais_correlations[0,1]
     axes[1,2].text(xlim/28., ylim - ylim/3.,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(wfde5_ais_errors),
@@ -421,7 +447,7 @@ def grid_sumup2wfde5(xlim=140, ylim=140):
         for j in range(3):
             axes[i,j].set_ylim(0, ylim)
             axes[i,j].set_xlim(0, xlim)
-            axes[i,j].plot([0,xlim], [0,ylim], color='#555759', marker='None')
+            axes[i,j].plot([0,xlim], [0,ylim], color=(0,0,0,0.2), marker='None')
             axes[i,j].set_xticks(np.arange(0,xlim+1,20))
             axes[i,j].set_xticks(np.arange(0,xlim,5), minor=True)
             axes[i,j].set_yticks(np.arange(0,ylim+1,20))
