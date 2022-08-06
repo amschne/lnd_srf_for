@@ -232,6 +232,19 @@ def grid_sumup2era5(xlim=140, ylim=140):
     
         xvals_ais = xedges_ais[:-1] + np.diff(xedges_ais)/2.
         yvals_ais = yedges_ais[:-1] + np.diff(yedges_ais)/2.
+         
+        print('Taylor diagram results (ERA5)')
+        print('-----------------------------')
+        print('Greenland ice sheet:')
+        print('arccos(r) = %r radians' % np.arccos(gris_correlations[0,1]))
+        print('std_era5 / std_sumup = %r' % (np.std(era5_mean_precip_gris_sample)/
+                                             np.std(sumup_mean_accum_gris)))
+        print('RMSE = %r cm/yr' % np.sqrt(np.mean(era5_gris_errors**2)))
+        print('Antarctic ice sheet:')
+        print('arccos(r) = %r radians' % np.arccos(ais_correlations[0,1]))
+        print('std_era5 / std_sumup = %r' % (np.std(era5_mean_precip_ais_sample)/
+                                             np.std(sumup_mean_accum_ais)))
+        print('RMSE = %r cm/yr' % np.sqrt(np.mean(era5_ais_errors**2)))
     # Scatter data
     fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, sharey=True)
     #fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')

@@ -52,7 +52,7 @@ def four_map_horizontal_comparison(greenland=False,
                                    antarctica=False,
                                    lon_lines = np.arange(-180, 180, 30),
                                    lat_lines = np.arange(-90, 90, 30),
-                                   scale_bar_color='#c6beb5'):
+                                   scale_bar_color='white'):#'c6beb5'):
     """ Uses the Lambert Azimuthal Equal Area map projection
     """
     if greenland:
@@ -94,12 +94,12 @@ def four_map_horizontal_comparison(greenland=False,
     #plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
     
     nrows=1
-    ncols=4
+    ncols=2
     geo_axes1 = plt.subplot(nrows, ncols, 1, projection=map_proj)
     geo_axes2 = plt.subplot(nrows, ncols, 2, projection=map_proj)
-    geo_axes3 = plt.subplot(nrows, ncols, 3, projection=map_proj)
-    geo_axes4 = plt.subplot(nrows, ncols, 4, projection=map_proj)
-    axes = [geo_axes1, geo_axes2, geo_axes3, geo_axes4]
+    #geo_axes3 = plt.subplot(nrows, ncols, 3, projection=map_proj)
+    #geo_axes4 = plt.subplot(nrows, ncols, 4, projection=map_proj)
+    axes = [geo_axes1, geo_axes2]#, geo_axes3, geo_axes4]
     for i, ax in enumerate(axes):
         ax.set_extent((map_lon_min, map_lon_max, map_lat_min, map_lat_max),
                       crs=ccrs.PlateCarree())
@@ -111,7 +111,7 @@ def four_map_horizontal_comparison(greenland=False,
                           y_val + 0.1*scale_length, colors=scale_bar_color)
     
             if greenland:
-                ax.text(x0+50*10**3, y_val + 0.5*10**5, '500 km', color=scale_bar_color)
+                ax.text(x0+25*10**3, y_val + 0.5*10**5, '500 km', color=scale_bar_color)
             elif antarctica:
                 ax.text(x0+0.025*10**6, y_val + 0.1*10**6, '1000 km', color=scale_bar_color)
     return axes

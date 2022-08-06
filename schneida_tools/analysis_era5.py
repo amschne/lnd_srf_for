@@ -43,7 +43,7 @@ def set_map_titles(axes):
 def setup_map(greenland=False, antarctica=False,
               lon_lines = np.arange(-180, 180, 30),
               lat_lines = np.arange(-90, 90, 30),
-              scale_bar_color='#c6beb5'):
+              scale_bar_color='white'):#'#c6beb5'):
     """ Uses the Lambert Azimuthal Equal Area map projection
     """
     if greenland:
@@ -400,18 +400,18 @@ class Analysis(object):
                                              transform=ccrs.PlateCarree())
         '''
         # Colorbar
-        fig = plt.gcf()
+        #fig = plt.gcf()
         '''
         gswp3_cbar = fig.colorbar(gswp3_quad_mesh,
                             ax=axes[0:2], orientation='horizontal')
         gswp3_cbar.set_label('Precipitation rate (cm H$_2$O yr$^{-1}$)')
         '''
-        era5_cbar = fig.colorbar(era5_quad_mesh,
-                            ax=ax, orientation='vertical')
-        era5_cbar.set_ticks(np.arange(cm_per_year_min, cm_per_year_max+1, 20),)
+        #era5_cbar = fig.colorbar(era5_quad_mesh,
+        #                    ax=ax, orientation='vertical')
+        #era5_cbar.set_ticks(np.arange(cm_per_year_min, cm_per_year_max+1, 20),)
                             #labels=np.arange(cm_per_year_min, cm_per_year_max+1, 20))
         #era5_cbar.set_ticks(np.arange(cm_per_year_min, cm_per_year_max, 5), minor=True)
-        era5_cbar.set_label('precipitation rate (cm w.eq. yr$^{-1}$)')
+        #era5_cbar.set_label('precipitation rate (cm w.eq. yr$^{-1}$)')
         '''
         diffs_cbar = fig.colorbar(diffs_quad_mesh,
                             ax=axes[2], orientation='horizontal')
@@ -444,15 +444,17 @@ def test():
     gswp3.test()
     wfde5.test()
 
-def run(debug=False):
+def run(debug=True):
     ''' matplotlib Style files to choose from:
         plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
         plt.style.use('uci_darkblue')
         plt.style.use('agu_online_poster_presentation')
         plt.style.use('uci_blue')
     '''
-    plt.style.use('agu_full')
-    plt.style.use('hofmann_talk')
+    #plt.style.use('agu_full')
+    #plt.style.use('agu_half_vertical')
+    #plt.style.use('hofmann_talk')
+    plt.style.use('agu_quarter')
     #plt.style.use('grl')
     if debug:
         rank=0
@@ -467,7 +469,7 @@ def run(debug=False):
     northern_hemisphere_analysis = Analysis(compute_means=False)
     
     # Greenland analysis
-    if rank==0:
+    if rank==1:
         # Temperature
         ax = greenland_analysis.compare_temperature(degc_min=-50, degc_max=0,
                                                #cmap='cet_CET_L7',
@@ -481,10 +483,11 @@ def run(debug=False):
         plt.close()
         greenland_analysis.close_mean_t_rootgrps()
 
-    if rank==1:
+    if rank==0:
         # Precipitation
         (sumup_gris, sumup_ais) = verify_precip.grid_sumup2era5()
-        comm.send(sumup_ais, dest=3)
+        if not debug:
+            comm.send(sumup_ais, dest=3)
         ax = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
         # Get and plot SUMup locations
         ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],

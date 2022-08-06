@@ -24,8 +24,8 @@ import ipdb
 def set_map_titles(axes):
     axes[0].set_title('GSWP3')
     axes[1].set_title('WFDE5')
-    axes[2].set_title('GSWP3 - WFDE5')
-    axes[3].set_title('((GSWP3 - WFDE5)\n/ WFDE5) ' + r'$\times$ 100')
+    #axes[2].set_title('GSWP3 - WFDE5')
+    #axes[3].set_title('((GSWP3 - WFDE5)\n/ WFDE5) ' + r'$\times$ 100')
 
 class Analysis(object):
     def __init__(self, compute_means=True, greenland=False, antarctica=False):
@@ -103,7 +103,7 @@ class Analysis(object):
                                          shading='nearest', cmap=cmap,
                                          vmin=degc_min, vmax=degc_max,
                                          transform=ccrs.PlateCarree())
-    
+        ''' 
         diffs_quad_mesh = axes[2].pcolormesh(longxy.data, latixy.data,
                                          np.ma.clip(coordinate_space.mask_vals(longxy,
                                                               latixy,
@@ -126,18 +126,18 @@ class Analysis(object):
                                              shading='nearest', cmap='cet_CET_D1',
                                              vmin=-5, vmax=5,
                                              transform=ccrs.PlateCarree())
-        # Colorbar
+        '''# Colorbar
         fig = plt.gcf()
         gswp3_cbar = fig.colorbar(gswp3_quad_mesh,
-                                    ax=axes[0:2], orientation='horizontal')
+                                    ax=axes[0:], orientation='horizontal')
         gswp3_cbar.set_label('Temperature ($^{\circ}$ C)')
 
         '''
         wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
                                     ax=axes[1], orientation='horizontal')
         wfde5_cbar.set_label('Temperature ($^{\circ}$ C)')
-        '''    
-
+            
+        
         diffs_cbar = fig.colorbar(diffs_quad_mesh,
                                   ax=axes[2], orientation='horizontal')
         diffs_cbar.set_label('Difference (K)')
@@ -145,7 +145,7 @@ class Analysis(object):
         rel_cbar = fig.colorbar(rel_diffs_quad_mesh,
                                   ax=axes[3], orientation='horizontal')
         rel_cbar.set_label(r'Difference ($\%$)')
-    
+        '''
         self.draw_elevation_contours(axes)
         
         self.gswp3_mean_t_rootgrp = gswp3_mean_t_rootgrp
@@ -337,11 +337,12 @@ class Analysis(object):
         # Colorbar
         fig = plt.gcf()
         gswp3_cbar = fig.colorbar(gswp3_quad_mesh,
-                            ax=axes[0:2], orientation='vertical')
+                            ax=axes[0:], orientation='vertical')
         gswp3_cbar.set_label('precipitation rate (cm w.eq. yr$^{-1}$)')
         '''
         wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
                             ax=axes[1], orientation='horizontal')
+       
         wfde5_cbar.set_label('Precipitation (cm H$_2$O yr$^{-1}$)')
         
         diffs_cbar = fig.colorbar(diffs_quad_mesh,
@@ -372,15 +373,16 @@ def test():
     gswp3.test()
     wfde5.test()
 
-def run(debug=False):
+def run(debug=True):
     '''
     plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
     plt.style.use('uci_darkblue')
     '''
-    plt.style.use('agu_online_poster_presentation')
+    #plt.style.use('agu_online_poster_presentation')
     #plt.style.use('agu_full')
     #plt.style.use('hofmann_talk')
-    
+    plt.style.use('agu_half_horizontal')
+    plt.style.use('grl_big_txt')
     if debug:
         rank=0
     else:
@@ -394,7 +396,7 @@ def run(debug=False):
     northern_hemisphere_analysis = Analysis(compute_means=False)
     
     # Greenland analysis
-    if rank==0:
+    if rank==1:
         # Temperature
         axes = greenland_analysis.compare_temperature(degc_min=-50, degc_max=0,
                                                #cmap='cet_CET_L7',
@@ -408,10 +410,11 @@ def run(debug=False):
         plt.close()
         greenland_analysis.close_mean_t_rootgrps()
 
-    if rank==1:
+    if rank==0:
         # Precipitation
         (sumup_gris, sumup_ais) = verify_precip.grid_sumup2wfde5()
-        comm.send(sumup_ais, dest=3)
+        if not debug:
+            comm.send(sumup_ais, dest=3)
         axes = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
         # Get and plot SUMup locations
         axes[0].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
@@ -452,6 +455,10 @@ def run(debug=False):
     
     if rank==3:
         # Precipitation
+        #plt.style.use('hofmann_talk')
+        plt.style.use('agu_half_horizontal')
+        #plt.style.use('grl_big_text')
+        plt.style.use('grl')
         sumup_ais = comm.recv(source=1)
         axes = antarctica_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)
         # Get and plot SUMup locations
