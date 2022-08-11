@@ -3,6 +3,7 @@
 from os import path
 
 import numpy as np
+import scipy
 from cartopy import util
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature

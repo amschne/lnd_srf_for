@@ -15,6 +15,7 @@
 from os import path
 
 import numpy as np
+from scipy import stats
 from matplotlib import pyplot as plt
 
 from schneida_args import get_args
@@ -27,6 +28,8 @@ import colorcet as cc
 import cartopy.crs as ccrs
 
 import ipdb
+
+LETTERS=['a.', 'b.', 'c.', 'd.', 'e.', 'f.', 'g.', 'h.', 'i.', 'j.']
 
 def setup_map_fig1():    
     greenland_map_proj = ccrs.LambertAzimuthalEqualArea(central_longitude=-42.1,
@@ -116,6 +119,7 @@ def grid_sumup2era5(xlim=140, ylim=140):
     valid_sumup_accum = dict()
     valid_sumup_error = dict()
     valid_sumup_elev = dict()
+    valid_sumup_ref = dict()
     valid_sumup_idxs = list()
     grid_sumup_lat = sumup_rootgrp.variables['Latitude'][:]
     grid_sumup_lon = sumup_rootgrp.variables['Longitude'][:]
@@ -149,6 +153,7 @@ def grid_sumup2era5(xlim=140, ylim=140):
             valid_sumup_accum[key] = list()
             valid_sumup_error[key] = list()
             valid_sumup_elev[key] = list()
+            valid_sumup_ref[key] = list()
             
             # Adjust sumup grid coordinate arrays
             grid_sumup_lat[i] = era5_lat
@@ -164,6 +169,7 @@ def grid_sumup2era5(xlim=140, ylim=140):
         valid_sumup_accum[key].append(float(sumup_rootgrp.variables['Accumulation'][sumup_i]))
         valid_sumup_error[key].append(float(sumup_rootgrp.variables['Error'][sumup_i]))
         valid_sumup_elev[key].append(float(sumup_rootgrp.variables['Elevation'][sumup_i]))
+        valid_sumup_ref[key].append(sumup_rootgrp.variables['Citation'][sumup_i])
         valid_sumup_lat[key].append(float(grid_sumup_lat[sumup_i]))
         valid_sumup_lon[key].append(float(grid_sumup_lon[sumup_i]))
         if False:
@@ -183,7 +189,11 @@ def grid_sumup2era5(xlim=140, ylim=140):
     era5_mean_precip_ais_sample = list()
     sumup_mean_accum_gris = list()
     sumup_mean_accum_ais = list()
+    sumup_mad_accum_gris = list()
+    sumup_mad_accum_ais = list()
     for key, accum in valid_sumup_accum.items():
+        sumup_mad_accum = stats.median_abs_deviation(accum,
+                                   nan_policy='omit')
         sumup_mean_accum = np.ma.median(accum)
         if sumup_mean_accum >= 0: # valid accumulation rate
             era5_lat_idx = valid_era5_lat_idx[key]
@@ -201,9 +211,11 @@ def grid_sumup2era5(xlim=140, ylim=140):
                     lat_gris_sample.append(sumup_median_lat)
                     lon_gris_sample.append(sumup_median_lon)
                 
+                print(np.ma.unique(valid_sumup_ref[key]).data, ' (Greenland)')
                 gris_n_samples.append(len(valid_sumup_lat[key]))
                 # Convert sumup accumulation rate from m per year to cm per year
                 sumup_mean_accum_gris.append(100. * sumup_mean_accum)
+                sumup_mad_accum_gris.append(100. * sumup_mad_accum)
                 '''
                 era5_mean_precip_gris_sample.append(era5_mean_precip[era5_lat_idx,
                                                                        era5_lon_idx])
@@ -227,9 +239,11 @@ def grid_sumup2era5(xlim=140, ylim=140):
                     lat_ais_sample.append(sumup_median_lat)
                     lon_ais_sample.append(sumup_median_lon)
                 
+                print(np.ma.unique(valid_sumup_ref[key]).data, ' (Antarctica)')
                 ais_n_samples.append(len(valid_sumup_lat[key]))
                 # Convert sumup accumulation rate from m per year to cm per year
                 sumup_mean_accum_ais.append(100. * sumup_mean_accum)
+                sumup_mad_accum_ais.append(100. * sumup_mad_accum)
                 '''
                 era5_mean_precip_ais_sample.append(era5_mean_precip[era5_lat_idx,
                                                                       era5_lon_idx])
@@ -283,30 +297,35 @@ def grid_sumup2era5(xlim=140, ylim=140):
         print('-----------------------------')
         print('Greenland ice sheet:')
         print('arccos(r) = %r radians' % np.arccos(gris_correlations[0,1]))
-        print('std_era5 / std_sumup = %r' % (np.std(era5_mean_precip_gris_sample)/
-                                             np.std(sumup_mean_accum_gris)))
+        print('std_era5; std_sumup = %r; %r cm/yr' %
+                (np.std(era5_mean_precip_gris_sample),
+                 np.std(sumup_mean_accum_gris)))
         print('RMSE = %r cm/yr' % np.sqrt(np.mean(era5_gris_errors**2)))
         print('Antarctic ice sheet:')
         print('arccos(r) = %r radians' % np.arccos(ais_correlations[0,1]))
-        print('std_era5 / std_sumup = %r' % (np.std(era5_mean_precip_ais_sample)/
-                                             np.std(sumup_mean_accum_ais)))
+        print('std_era5; std_sumup = %r; %r cm/yr' %
+                  (np.std(era5_mean_precip_ais_sample),
+                   np.std(sumup_mean_accum_ais)))
         print('RMSE = %r cm/yr' % np.sqrt(np.mean(era5_ais_errors**2)))
     # Scatter data
-    fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, sharey=True)
+    fig, axes = plt.subplots(nrows=5, ncols=2, sharex=True, sharey=True)
     #fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
-    #plt.style.use('agu_half_vertical')
-    axes[0].set_title('Greenland')
-    axes[1].set_title('Antarctica')
+    subplot_idx = 0
+    for col in range(2):
+        for row in range(5):
+            axes[row,col].set_title('%s' % LETTERS[subplot_idx], loc='left')
+            subplot_idx+=1
     #axes[0,1].set_title('GSWP3')
     #axes[0,2].set_title('WFDE5')
-    axes[0].set_ylabel('ERA5 precipitation (cm w.eq. yr$^{-1}$)')
-    axes[1].set_ylabel('ERA5 precipitation (cm w.eq. yr$^{-1}$)')
-    axes[1].set_xlabel('SUMup accumulation rate (cm w.eq. yr$^{-1}$)')
+    axes[0,0].set_ylabel('ERA5 precipitation (cm w.eq. yr$^{-1}$)')
+    #axes[1].set_ylabel('ERA5 precipitation (cm w.eq. yr$^{-1}$)')
+    axes[-1,0].set_xlabel('SUMup GrIS accumulation rate (cm w.eq. yr$^{-1}$)')
+    axes[-1,1].set_xlabel('SUMup AIS accumulation rate (cm w.eq. yr$^{-1}$)')
     #axes[1,1].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
     #axes[1,2].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
     
-    axes[0].set_ylim(0, ylim)
-    axes[0].set_xlim(0, xlim)
+    axes[0,0].set_ylim(0, ylim)
+    axes[0,0].set_xlim(0, xlim)
     
     '''        
     axes[0].errorbar(sumup_mean_accum_gris, era5_mean_precip_gris_sample,
@@ -319,12 +338,13 @@ def grid_sumup2era5(xlim=140, ylim=140):
     p_gris = axes[0].contourf(xvals_gris, yvals_gris, h_gris.T, levels=100, cmap='cet_linear_worb_100_25_c53',
                      vmin=0)
     '''
-    p_gris = axes[0].plot(sumup_mean_accum_gris, era5_mean_precip_gris_sample,
-                             color='#1b3d6d', marker="s",
+    p_gris = axes[0,0].errorbar(sumup_mean_accum_gris, era5_mean_precip_gris_sample,
+                                xerr=sumup_mad_accum_gris,
+                                color='#0064a4', marker="o",
                              markeredgecolor='None',
                              #(27./255.,61./255.,109./255.,0.1),
-                             alpha=0.2, ls='None')
-    axes[0].text(xlim/28., ylim - ylim/3., '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+                             alpha=0.25, ls='None')
+    axes[0,0].text(xlim/28., ylim - ylim/2.5, '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(era5_gris_errors),
                                np.around(gris_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(era5_gris_errors)),
@@ -343,11 +363,12 @@ def grid_sumup2era5(xlim=140, ylim=140):
     p_ais = axes[1].contourf(xvals_ais, yvals_ais, h_ais.T, levels=100, cmap='cet_linear_worb_100_25_c53',
                      vmin=0)
     '''
-    p_ais = axes[1].plot(sumup_mean_accum_ais, era5_mean_precip_ais_sample,
-                         color='#1b3d6d', marker="s",
+    p_ais = axes[0,1].errorbar(sumup_mean_accum_ais, era5_mean_precip_ais_sample,
+                         xerr=sumup_mad_accum_ais,
+                         color='#ffd200', marker="o",
                          markeredgecolor='None',#(27./255.,61./255.,109/255.,0.1)
-                         alpha=0.2, ls='None')
-    axes[1].text(xlim/28., ylim - ylim/3., '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+                         alpha=0.25, ls='None')
+    axes[0,1].text(xlim/28., ylim - ylim/2.5, '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(era5_ais_errors),
                                np.around(ais_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(era5_ais_errors)),
@@ -355,18 +376,18 @@ def grid_sumup2era5(xlim=140, ylim=140):
                                np.around(np.mean(era5_ais_errors),
                                          decimals=2),
                                ))
-    fig.colorbar(image_gris, ax=axes[0])
-    fig.colorbar(image_ais, ax=axes[1])
-    for i in range(2):
-        #for j in range(2):
-        axes[i].set_ylim(0, ylim)
-        axes[i].set_xlim(0, xlim)
-        axes[i].plot([0,xlim], [0,ylim], color=(0,0,0,0.2),marker='None')
-        axes[i].set_xticks(np.arange(0,xlim+1,20))
-        axes[i].set_xticks(np.arange(0,xlim,5), minor=True)
-        axes[i].set_yticks(np.arange(0,ylim+1,20))
-        axes[i].set_yticks(np.arange(0,ylim,5), minor=True)
-        axes[i].tick_params(axis='both', which='both', top=True, right=True)
+    #fig.colorbar(image_gris, ax=axes[0])
+    #fig.colorbar(image_ais, ax=axes[1])
+    for col in range(2):
+        for row in range(5):
+            axes[row,col].set_ylim(0, ylim)
+            axes[row,col].set_xlim(0, xlim)
+            axes[row,col].plot([0,xlim], [0,ylim], color=(0,0,0,0.2),marker='None')
+            axes[row,col].set_xticks(np.arange(0,xlim+1,20))
+            axes[row,col].set_xticks(np.arange(0,xlim,5), minor=True)
+            axes[row,col].set_yticks(np.arange(0,ylim+1,20))
+            axes[row,col].set_yticks(np.arange(0,ylim,5), minor=True)
+            axes[row,col].tick_params(axis='both', which='both', top=True, right=True)
     '''                           
     axes[0,1].errorbar(sumup_mean_accum_gris, gswp3_mean_precip_gris_sample,
                        yerr=get_yerrs(gswp3_gris_errors),
@@ -459,13 +480,15 @@ def run():
     #plt.style.use('uci_darkblue')
     #plt.style.use('agu_half_horizontal')
     #plt.style.use('uci_blue')
-    plt.style.use('agu_quarter')
+    plt.style.use('agu_full')
     plt.style.use('grl')
     (sumup_gris, sumup_ais) = grid_sumup2era5()
     greenland_analysis = analysis_era5.Analysis(compute_means=False,
                                                 greenland=True)
     ant_analysis = analysis_era5.Analysis(compute_means=False,
                                                 antarctica=True)
+    plt.style.use('agu_quarter')
+    plt.style.use('grl')
     greenland_ax, ant_ax = setup_map_fig1()
     greenland_analysis.draw_elevation_contours(greenland_ax)
     ant_analysis.draw_elevation_contours(ant_ax)
@@ -490,10 +513,12 @@ def run():
     #era5_cbar.set_ticks(np.arange(0, 150, 5), minor=True)
     era5_cbar.set_label('median accumulation rate (cm w.eq. yr$^{-1}$)')
     
-    handles, labels = plot_gr.legend_elements(prop="sizes", alpha=0.6, num=4)
+    handles, labels = plot_gr.legend_elements(prop="sizes", color='black',
+                                  alpha=0.4, num=4)
     legend = greenland_ax.legend(handles, labels, loc="lower right", title="amount")
-
-    plt.savefig('sumup_accum_locs.png', dpi=600)
+    #handles, labels = plot_ant.legend_elements(prop="sizes", alpha=0.6, num=2)
+    #legend = ant_ax.legend(handles, labels, loc="lower left", title="amount")
+    plt.savefig(path.join('results','sumup_accum_locs.png'), dpi=600)
 
 def main():
     run()
