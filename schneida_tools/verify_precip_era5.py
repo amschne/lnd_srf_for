@@ -22,6 +22,7 @@ from schneida_args import get_args
 import sumup
 import era5
 import analysis_era5
+import verify_precip as verify_wecng3
 #from schneida_tools import cruncep
 #from schneida_tools import gswp3
 import colorcet as cc
@@ -429,7 +430,8 @@ def grid_sumup2era5(xlim=140, ylim=140):
     plt.close()
     
     return((lat_gris_sample, lon_gris_sample, sumup_mean_accum_gris, gris_n_samples),
-           (lat_ais_sample, lon_ais_sample, sumup_mean_accum_ais, ais_n_samples))
+           (lat_ais_sample, lon_ais_sample, sumup_mean_accum_ais, ais_n_samples),
+           axes)
     
 def covariance(sample_matrix):
     sample_means = sample_matrix.mean(axis=1)
@@ -518,7 +520,8 @@ def run():
     legend = greenland_ax.legend(handles, labels, loc="lower right", title="amount")
     #handles, labels = plot_ant.legend_elements(prop="sizes", alpha=0.6, num=2)
     #legend = ant_ax.legend(handles, labels, loc="lower left", title="amount")
-    plt.savefig(path.join('results','sumup_accum_locs.png'), dpi=600)
+    verify_wecng3.grid_sumup2wfde5(axes=axes)
+    #plt.savefig(path.join('results','sumup_accum_locs.png'), dpi=600)
 
 def main():
     run()
