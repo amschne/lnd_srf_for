@@ -17,15 +17,61 @@ from os import path
 import numpy as np
 from matplotlib import pyplot as plt
 
-from schneida_tools.schneida_args import get_args
-from schneida_tools import sumup
-from schneida_tools import era5
+from schneida_args import get_args
+import sumup
+import era5
+import analysis_era5
 #from schneida_tools import cruncep
 #from schneida_tools import gswp3
 import colorcet as cc
+import cartopy.crs as ccrs
 
 import ipdb
+
+def setup_map_fig1():    
+    greenland_map_proj = ccrs.LambertAzimuthalEqualArea(central_longitude=-42.1,
+                                              central_latitude=71.4,
+                                              false_easting=0.0,
+                                              false_northing=0.0)
+    ant_map_proj = ccrs.LambertAzimuthalEqualArea(central_longitude=0,
+                                              central_latitude=-90,
+                                              false_easting=0.0,
+                                              false_northing=0.0)
+    greenland_ax = plt.subplot(1,2,1,projection=greenland_map_proj)
+    plt.title('a.', loc='left')
+    greenland_ax.set_extent((-55, -29, 59, 84),
+                      crs=ccrs.PlateCarree())
+    ant_ax = plt.subplot(1,2,2,projection=ant_map_proj)
+    plt.title('b.', loc='left')
+    ant_ax.set_extent((-180, 180, -90, -65),
+                      crs=ccrs.PlateCarree())
+
+    gl = greenland_ax.gridlines(draw_labels=True,
+                                xlocs=np.arange(-180,180,15),
+                                ylocs=np.arange(-75,90,15),
+                                dms=False,
+                                x_inline=None,
+                                y_inline=None,
+                                xformatter=None, yformatter=None,
+                                color='black',alpha=0.2,#555759',
+                                linewidths=0.5)
+    gl.right_labels = False
+    gl.bottom_labels = False
     
+    gl = ant_ax.gridlines(draw_labels=True,
+                                xlocs=np.arange(-180,180,15),
+                                ylocs=np.arange(-75,90,15),
+                                dms=False,
+                                x_inline=None,
+                                y_inline=None,
+                                xformatter=None, yformatter=None,
+                                color='black',#555759',
+                                linewidths=0.5,
+                                alpha=0.2)
+    gl.left_labels = False
+    gl.bottom_labels = False
+    return(greenland_ax, ant_ax)
+
 def get_era5_temporal_means():
     """
     """
@@ -138,7 +184,7 @@ def grid_sumup2era5(xlim=140, ylim=140):
     sumup_mean_accum_gris = list()
     sumup_mean_accum_ais = list()
     for key, accum in valid_sumup_accum.items():
-        sumup_mean_accum = np.ma.mean(accum)
+        sumup_mean_accum = np.ma.median(accum)
         if sumup_mean_accum >= 0: # valid accumulation rate
             era5_lat_idx = valid_era5_lat_idx[key]
             era5_lon_idx = valid_era5_lon_idx[key]
@@ -409,12 +455,45 @@ def run():
     #test()
     #plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
     #plt.style.use('hofmann')
-    plt.style.use('agu_online_poster_presentation')
+    #plt.style.use('agu_online_poster_presentation')
     #plt.style.use('uci_darkblue')
     #plt.style.use('agu_half_horizontal')
     #plt.style.use('uci_blue')
+    plt.style.use('agu_quarter')
+    plt.style.use('grl')
     (sumup_gris, sumup_ais) = grid_sumup2era5()
-    ipdb.set_trace()
+    greenland_analysis = analysis_era5.Analysis(compute_means=False,
+                                                greenland=True)
+    ant_analysis = analysis_era5.Analysis(compute_means=False,
+                                                antarctica=True)
+    greenland_ax, ant_ax = setup_map_fig1()
+    greenland_analysis.draw_elevation_contours(greenland_ax)
+    ant_analysis.draw_elevation_contours(ant_ax)
+    
+    plot_gr = greenland_ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+               cmap='cet_CET_L7_r', vmin=0,
+                        vmax=150, edgecolors='black',
+                        linewidths=0.5,
+                        transform=ccrs.PlateCarree()) 
+
+    plot_ant = ant_ax.scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
+                   cmap='cet_CET_L7_r', vmin=0,
+                   vmax=150, edgecolors='black',
+                   linewidths=0.5,
+                   transform=ccrs.PlateCarree())
+
+    # Colorbar
+    fig = plt.gcf()
+    era5_cbar = fig.colorbar(plot_ant, ax=[ant_ax], orientation='horizontal')
+    era5_cbar.set_ticks(np.arange(0, 150+1, 20),)
+                       # labels=np.arange(0, 150+1, 20))
+    #era5_cbar.set_ticks(np.arange(0, 150, 5), minor=True)
+    era5_cbar.set_label('median accumulation rate (cm w.eq. yr$^{-1}$)')
+    
+    handles, labels = plot_gr.legend_elements(prop="sizes", alpha=0.6, num=4)
+    legend = greenland_ax.legend(handles, labels, loc="lower right", title="amount")
+
+    plt.savefig('sumup_accum_locs.png', dpi=600)
 
 def main():
     run()
