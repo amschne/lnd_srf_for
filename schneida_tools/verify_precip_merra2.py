@@ -15,6 +15,7 @@
 from os import path
 
 import numpy as np
+from scipy import stats
 from matplotlib import pyplot as plt
 
 from schneida_args import get_args
@@ -38,7 +39,7 @@ def get_merra2_temporal_means():
         
     return merra2_mean_precip_rootgrp
     
-def grid_sumup2merra2(xlim=150, ylim=150):
+def grid_sumup2merra2(xlim=150, ylim=150, axes=None):
     """ Loop through measurements and filter out:
         1. Measurements outside time period of analysis
         2. All measurements that are not from ice cores
@@ -128,8 +129,12 @@ def grid_sumup2merra2(xlim=150, ylim=150):
     merra2_mean_precip_ais_sample = list()
     sumup_mean_accum_gris = list()
     sumup_mean_accum_ais = list()
+    sumup_mad_accum_gris = list()
+    sumup_mad_accum_ais = list()
     for key, accum in valid_sumup_accum.items():
-        sumup_mean_accum = np.ma.mean(accum)
+        sumup_mad_accum = stats.median_abs_deviation(accum,
+                                           nan_policy='omit')
+        sumup_mean_accum = np.ma.median(accum)
         if sumup_mean_accum >= 0: # valid accumulation rate
             merra2_lat_idx = valid_merra2_lat_idx[key]
             merra2_lon_idx = valid_merra2_lon_idx[key]
@@ -149,7 +154,7 @@ def grid_sumup2merra2(xlim=150, ylim=150):
                 gris_n_samples.append(len(valid_sumup_lat[key]))
                 # Convert sumup accumulation rate from m per year to cm per year
                 sumup_mean_accum_gris.append(100. * sumup_mean_accum)
-
+                sumup_mad_accum_gris.append(100. * sumup_mad_accum)
                 merra2_mean_precip_gris_sample.append(merra2_mean_precip[merra2_lat_idx,
                                                                            merra2_lon_idx])
 
@@ -169,7 +174,7 @@ def grid_sumup2merra2(xlim=150, ylim=150):
                 ais_n_samples.append(len(valid_sumup_lat[key]))
                 # Convert sumup accumulation rate from m per year to cm per year
                 sumup_mean_accum_ais.append(100. * sumup_mean_accum)
-
+                sumup_mad_accum_ais.append(100. * sumup_mad_accum)
                 merra2_mean_precip_ais_sample.append(merra2_mean_precip[merra2_lat_idx,
                                                                           merra2_lon_idx])
 
@@ -188,21 +193,40 @@ def grid_sumup2merra2(xlim=150, ylim=150):
     gris_covariances, gris_correlations = covariance(gris_sample_matrix)
     ais_covariances, ais_correlations = covariance(ais_sample_matrix)
     
+    print('Taylor diagram results (MERRA-2)')
+    print('--------------------------------')
+    print('Greenland ice sheet:')
+    print('arccos(r) = %r radians' % np.arccos(gris_correlations[0,1]))
+    print('std_merra2; std_sumup = %r; %r cm/yr' %
+                    (np.std(merra2_mean_precip_gris_sample),
+                     np.std(sumup_mean_accum_gris)))
+    print('RMSE = %r cm/yr' % np.sqrt(np.mean(merra2_gris_errors**2)))
+    
+    print('Antarctic ice sheet:')
+    print('arccos(r) = %r radians' % np.arccos(ais_correlations[0,1]))
+    print('std_merra2; std_sumup = %r; %r cm/yr' %
+                      (np.std(merra2_mean_precip_ais_sample),
+                       np.std(sumup_mean_accum_ais)))
+    print('RMSE = %r cm/yr' % np.sqrt(np.mean(merra2_ais_errors**2)))
+    
     # Scatter data
-    fig, axes = plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
-    fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
-    axes[0, 0].set_title('MERRA-2')
-    #axes[0,1].set_title('GSWP3')
-    #axes[0,2].set_title('WFDE5')
-    axes[0, 0].set_ylabel('Greenland ice sheet\nprecipitation rate (cm w.e. yr$^{-1}$)')
-    axes[1, 0].set_ylabel('Antarctic ice sheet\nprecipitation rate (cm w.e. yr$^{-1}$)')
-    axes[1, 0].set_xlabel('SUMup accumulation rate (cm w.e. yr$^{-1}$)')
+    if axes is not None:
+        fig, axes = plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
+        fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
+        axes[0, 0].set_title('MERRA-2')
+        #axes[0,1].set_title('GSWP3')
+        #axes[0,2].set_title('WFDE5')
+    
+    axes[-1, 0].set_ylabel('MERRA-2: precipitation\n(cm w.e. yr$^{-1}$)')
+    #axes[1, 0].set_ylabel('Antarctic ice sheet\nprecipitation rate (cm w.e. yr$^{-1}$)')
+    #axes[1, 0].set_xlabel('SUMup accumulation rate (cm w.e. yr$^{-1}$)')
     #axes[1,1].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
     #axes[1,2].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
     
-    axes[0, 0].set_ylim(0, ylim)
-    axes[0, 0].set_xlim(0, xlim)
+    #axes[0, 0].set_ylim(0, ylim)
+    #axes[0, 0].set_xlim(0, xlim)
     
+    '''
     for i in range(2):
         for j in range(2):
             axes[i,j].set_ylim(0, ylim)
@@ -214,13 +238,15 @@ def grid_sumup2merra2(xlim=150, ylim=150):
             axes[i,j].set_yticks(np.arange(0,ylim,10), minor=True)
             axes[i,j].tick_params(axis='both', which='both', top=True, right=True)
             
-    axes[0,0].errorbar(sumup_mean_accum_gris, merra2_mean_precip_gris_sample,
-                       yerr=get_yerrs(merra2_gris_errors),
-                       fmt='x',
-                       color='#0064A4',
-                       #color='white',
-                       ls='')
-    axes[0,0].text(0.5*xlim-13, 5, '$n$ = %d\nr$^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+    '''
+    axes[-1,0].errorbar(sumup_mean_accum_gris, merra2_mean_precip_gris_sample,
+                       xerr = sumup_mad_accum_gris,
+                       #yerr=get_yerrs(merra2_gris_errors),
+                       #fmt='x',
+                       color='#7ab800',
+                       marker="o", markeredgecolor='None',
+                       alpha=0.25, ls='None')
+    axes[-1,0].text(xlim/28., ylim/2.5, '$n$ = %d\nr$^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(merra2_gris_errors),
                                np.around(gris_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(merra2_gris_errors)),
@@ -229,13 +255,15 @@ def grid_sumup2merra2(xlim=150, ylim=150):
                                          decimals=2)
                                ))
                        
-    axes[1,0].errorbar(sumup_mean_accum_ais, merra2_mean_precip_ais_sample,
-                       yerr=get_yerrs(merra2_ais_errors),
-                       fmt='x',
-                       color='#0064A4',
-                       #color='white',
-                       ls='')
-    axes[1,0].text(0.5*xlim-13, 5, '$n$ = %d\nr$^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+    axes[-1,1].errorbar(sumup_mean_accum_ais, merra2_mean_precip_ais_sample,
+                        xerr=sumup_mad_accum_ais,
+                        color='#c6beb5', marker="o",
+                        markeredgecolor='None', alpha=0.25, ls='None',
+                       #yerr=get_yerrs(merra2_ais_errors),
+                       #fmt='x',
+                       #color='#0064A4',
+                       )
+    axes[-1,1].text(xlim/28., ylim-ylim/2.5, '$n$ = %d\nr$^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(merra2_ais_errors),
                                np.around(ais_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(merra2_ais_errors)),
@@ -244,11 +272,12 @@ def grid_sumup2merra2(xlim=150, ylim=150):
                                           decimals=2)
                                 ))
 
-    plt.savefig(path.join('results', 'merra2_sumup_gris_ais_precip.png'), dpi=600)
-    plt.close()
+    #plt.savefig(path.join('results', 'merra2_sumup_gris_ais_precip.png'), dpi=600)
+    #plt.close()
     
     return((lat_gris_sample, lon_gris_sample, sumup_mean_accum_gris, gris_n_samples),
-           (lat_ais_sample, lon_ais_sample, sumup_mean_accum_ais, ais_n_samples))
+           (lat_ais_sample, lon_ais_sample, sumup_mean_accum_ais, ais_n_samples),
+           axes)
     
 def covariance(sample_matrix):
     sample_means = sample_matrix.mean(axis=1)

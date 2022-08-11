@@ -23,6 +23,7 @@ import sumup
 import era5
 import analysis_era5
 import verify_precip as verify_wecng3
+import verify_precip_merra2 as verify_merra2
 #from schneida_tools import cruncep
 #from schneida_tools import gswp3
 import colorcet as cc
@@ -485,6 +486,7 @@ def run():
     plt.style.use('agu_full')
     plt.style.use('grl')
     (sumup_gris, sumup_ais, axes) = grid_sumup2era5()
+    verify_merra2.grid_sumup2merra2(axes=axes)
     verify_wecng3.grid_sumup2wfde5(axes=axes)
     greenland_analysis = analysis_era5.Analysis(compute_means=False,
                                                 greenland=True)
