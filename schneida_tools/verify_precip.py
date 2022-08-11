@@ -15,6 +15,7 @@
 from os import path
 
 import numpy as np
+from scipy import stats
 from matplotlib import pyplot as plt
 
 from schneida_tools.schneida_args import get_args
@@ -189,7 +190,9 @@ def grid_sumup2wfde5(xlim=140, ylim=140, axes=None):
     sumup_mad_accum_gris = list()
     sumup_mad_accum_ais = list()
     for key, accum in valid_sumup_accum.items():
-        sumup_mean_accum = np.ma.mean(accum)
+        sumup_mean_accum = np.ma.median(accum)
+        sumup_mad_accum = stats.median_abs_deviation(accum,
+                                   nan_policy='omit')
         if sumup_mean_accum >= 0: # valid accumulation rate
             wfde5_lat_idx = valid_wfde5_lat_idx[key]
             wfde5_lon_idx = valid_wfde5_lon_idx[key]
@@ -321,17 +324,17 @@ def grid_sumup2wfde5(xlim=140, ylim=140, axes=None):
         fig, axes = plt.subplots(nrows=2, ncols=3, sharex=True, sharey=False)
     #fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
     #axes[0,0].set_title('Greenland')
-    axes[2,0].set_ylabel('CRUNCEP precipitation (cm w.eq. yr$^{-1}$)')
+    axes[2,0].set_ylabel('CRUNCEP: precipitation\n(cm w.eq. yr$^{-1}$)')
     #axes[1,0].set_title('Antarctica')
     #axes[1,0].set_ylabel('CRUNCEP precipitation (cm w.eq. yr$^{-1}$)')
     
     #axes[0,1].set_title('Greenland')
-    axes[3,0].set_ylabel('GSWP3 precipitation (cm w.eq. yr$^{-1}$)')
+    axes[3,0].set_ylabel('GSWP3: precipitation\n(cm w.eq. yr$^{-1}$)')
     #axes[1,1].set_title('Antarctica')
     #axes[1,1].set_ylabel('GSWP3 precipitation (cm w.eq. yr$^{-1}$)')
     
     #axes[0,2].set_title('Greenland')
-    axes[1,0].set_ylabel('WFDE5 precipitation (cm w.eq. yr$^{-1}$)')
+    axes[1,0].set_ylabel('WFDE5: precipitation\n(cm w.eq. yr$^{-1}$)')
     #axes[1,2].set_title('Antarctica')
     #axes[1,2].set_ylabel('WFDE5 precipitation (cm w.eq. yr$^{-1}$)')
     
@@ -354,7 +357,7 @@ def grid_sumup2wfde5(xlim=140, ylim=140, axes=None):
                                 cmap='cet_linear_worb_100_25_c53',
                                 vmin=0)
     '''# gris_correlations[0,2]
-    axes[2,0].text(xlim/2,ylim/20.,
+    axes[2,0].text(xlim/1.5 - 5,ylim/20.,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(cruncep_gris_errors),
                       np.around(gris_correlations[0,2]**2, decimals=4),
@@ -381,7 +384,7 @@ def grid_sumup2wfde5(xlim=140, ylim=140, axes=None):
                                 vmin=0)
     
     '''#ais_correlaitons[0,2]
-    axes[2,1].text(xlim/28., ylim - ylim/4. - 3,
+    axes[2,1].text(xlim/28., ylim - ylim/2.5,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(cruncep_ais_errors),
                       np.around(ais_correlations[0,2]**2, decimals=4),
@@ -406,7 +409,7 @@ def grid_sumup2wfde5(xlim=140, ylim=140, axes=None):
                                 vmin=0)
                                 
     '''# gris_correlations[0,3]
-    axes[3,0].text(xlim/2., ylim/20.,
+    axes[3,0].text(xlim/1.5 - 5, ylim/20.,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(gswp3_gris_errors),
                       np.around(gris_correlations[0,3]**2, decimals=4),
@@ -431,7 +434,7 @@ def grid_sumup2wfde5(xlim=140, ylim=140, axes=None):
                                 cmap='cet_linear_worb_100_25_c53',
                                 vmin=0)
     '''# ais_correlations[0,3]
-    axes[3,1].text(xlim/28., ylim - ylim/4. - 3.,
+    axes[3,1].text(xlim/28., ylim - ylim/2.5,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(gswp3_ais_errors),
                       np.around(ais_correlations[0,3]**2, decimals=4),
@@ -457,7 +460,7 @@ def grid_sumup2wfde5(xlim=140, ylim=140, axes=None):
                                       vmin=0)
     
     '''# gris_correlations[0,1]
-    axes[1,0].text(xlim/2.,ylim/20.,
+    axes[1,0].text(xlim/1.5 - 5,ylim/20.,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(wfde5_gris_errors),
                       np.around(gris_correlations[0,1]**2, decimals=4),
@@ -483,7 +486,7 @@ def grid_sumup2wfde5(xlim=140, ylim=140, axes=None):
                                       vmin=0)
     
     '''#ais_correlations[0,1]
-    axes[1,1].text(xlim/28., ylim - ylim/4. - 3,
+    axes[1,1].text(xlim/28., ylim - ylim/2.5,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(wfde5_ais_errors),
                       np.around(ais_correlations[0,1]**2, decimals=4),

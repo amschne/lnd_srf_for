@@ -318,10 +318,10 @@ def grid_sumup2era5(xlim=140, ylim=140):
             subplot_idx+=1
     #axes[0,1].set_title('GSWP3')
     #axes[0,2].set_title('WFDE5')
-    axes[0,0].set_ylabel('ERA5 precipitation (cm w.eq. yr$^{-1}$)')
+    axes[0,0].set_ylabel('ERA5: precipitation\n(cm w.eq. yr$^{-1}$)')
     #axes[1].set_ylabel('ERA5 precipitation (cm w.eq. yr$^{-1}$)')
-    axes[-1,0].set_xlabel('SUMup GrIS accumulation rate (cm w.eq. yr$^{-1}$)')
-    axes[-1,1].set_xlabel('SUMup AIS accumulation rate (cm w.eq. yr$^{-1}$)')
+    axes[-1,0].set_xlabel('SUMup: accumulation on the GrIS (cm w.eq. yr$^{-1}$)')
+    axes[-1,1].set_xlabel('SUMup: accumulation on the AIS (cm w.eq. yr$^{-1}$)')
     #axes[1,1].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
     #axes[1,2].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
     
@@ -426,8 +426,8 @@ def grid_sumup2era5(xlim=140, ylim=140):
                                          decimals=2),
                                len(wfde5_ais_errors)))
     '''
-    plt.savefig(path.join('results', 'p_era5_sumup_gris_ais_precip.png'), dpi=600)
-    plt.close()
+    #plt.savefig(path.join('results', 'p_era5_sumup_gris_ais_precip.png'), dpi=600)
+    #plt.close()
     
     return((lat_gris_sample, lon_gris_sample, sumup_mean_accum_gris, gris_n_samples),
            (lat_ais_sample, lon_ais_sample, sumup_mean_accum_ais, ais_n_samples),
@@ -484,7 +484,8 @@ def run():
     #plt.style.use('uci_blue')
     plt.style.use('agu_full')
     plt.style.use('grl')
-    (sumup_gris, sumup_ais) = grid_sumup2era5()
+    (sumup_gris, sumup_ais, axes) = grid_sumup2era5()
+    verify_wecng3.grid_sumup2wfde5(axes=axes)
     greenland_analysis = analysis_era5.Analysis(compute_means=False,
                                                 greenland=True)
     ant_analysis = analysis_era5.Analysis(compute_means=False,
@@ -520,8 +521,7 @@ def run():
     legend = greenland_ax.legend(handles, labels, loc="lower right", title="amount")
     #handles, labels = plot_ant.legend_elements(prop="sizes", alpha=0.6, num=2)
     #legend = ant_ax.legend(handles, labels, loc="lower left", title="amount")
-    verify_wecng3.grid_sumup2wfde5(axes=axes)
-    #plt.savefig(path.join('results','sumup_accum_locs.png'), dpi=600)
+    plt.savefig(path.join('results','sumup_accum_locs.png'), dpi=600)
 
 def main():
     run()
