@@ -19,8 +19,8 @@ from netCDF4 import MFDataset
 from netCDF4 import Dataset
 import numpy as np
 
-from schneida_tools import ncks_mk_time_rec_dmn
-from schneida_tools.schneida_args import get_args
+import ncks_mk_time_rec_dmn
+from schneida_args import get_args
 
 import ipdb
 

@@ -41,6 +41,47 @@ def set_map_titles(axes):
     axes[3].set_title('((GSWP3 - WFDE5)\n/ WFDE5) ' + r'$\times$ 100')
 '''
 
+def setup_map_fig3():
+    plt.style.use('agu_quarter')
+    plt.style.use('grl')
+    
+    greenland_map_proj = ccrs.LambertAzimuthalEqualArea(central_longitude=-42.1,
+                                              central_latitude=71.4,
+                                              false_easting=0.0,
+                                              false_northing=0.0)
+    ax_era5_g = plt.subplot(2,3,1,projection=greenland_map_proj)
+    plt.title('a.', loc='left')
+    ax_wfde5_g = plt.subplot(2,3,2,projection=greenland_map_proj)
+    plt.title('b.', loc='left')
+    ax_cruncep_g = plt.subplot(2,3,3,projection=greenland_map_proj)
+    plt.title('c.', loc='left')
+    ax_gswp3_g = plt.subplot(2,3,4,projection=greenland_map_proj)
+    plt.title('d.', loc='left')
+    ax_merra2_g = plt.subplot(2,3,5,projection=greenland_map_proj)
+    plt.title('e.', loc='left')
+    
+    axes = [ax_era5_g, ax_wfde5_g, ax_cruncep_g, ax_gswp3_g, ax_merra2_g]
+    
+    for i, ax in enumerate(axes):
+        ax.set_extent((-55, -29, 59, 84), crs=ccrs.PlateCarree())
+        gl = ax.gridlines(draw_labels=True,
+                                    xlocs=np.arange(-180,180,15),
+                                    ylocs=np.arange(-75,90,15),
+                                    dms=False,
+                                    x_inline=None,
+                                    y_inline=None,
+                                    xformatter=None, yformatter=None,
+                                    color='black',alpha=0.2,#555759',
+                                    linewidths=0.5)
+        
+        if i==0 or i==1 or i==3:
+            gl.right_labels = False
+        if i==1 or i==2 or i==4:
+            gl.left_labels = False
+        gl.bottom_labels = False
+        
+    return axes
+
 def setup_map(greenland=False, antarctica=False,
               lon_lines = np.arange(-180, 180, 30),
               lat_lines = np.arange(-90, 90, 30),
@@ -275,7 +316,8 @@ class Analysis(object):
                        #cmap='cet_CET_L6_r',
                        #cmap='cet_CET_LBL1_r',
                        cmap='cet_CET_L7_r',cm_per_year_min=0,
-                       cm_per_year_max=180):
+                       cm_per_year_max=180,
+                       ax=None):
         """
         """
         '''
@@ -328,7 +370,8 @@ class Analysis(object):
                                                                antarctica=self.antarctica)
         set_map_titles(axes)
         '''
-        ax = setup_map(greenland=self.greenland, antarctica=self.antarctica)
+        if ax is None:
+            ax = setup_map(greenland=self.greenland, antarctica=self.antarctica)
         # Map data
         print('Mapping precipitation data to figure...')
         longxy, latixy = np.meshgrid(era5_mean_precip_rootgrp.variables['lon'][:],
@@ -444,6 +487,29 @@ class Analysis(object):
 def test():
     gswp3.test()
     wfde5.test()
+
+def run_grl():
+    axes = setup_map_fig3()
+    greenland_analysis = Analysis(compute_means=False,
+                                      greenland=True)
+    (sumup_gris, sumup_ais, scatter_axes) = verify_precip.grid_sumup2era5(
+                                                                closefig=True)
+    
+    ax = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
+                                           ax=axes[0])
+    # Get and plot SUMup locations
+    ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+               cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
+               vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
+               linewidths=0.5,
+               transform=ccrs.PlateCarree())
+    
+    plt.sca(ax)
+    plt.savefig('pyplot_figure.png', dpi=600)
+    plt.show()
+    # Close figure and files
+    plt.close()
+    greenland_analysis.close_mean_precip_rootgrps()
 
 def run(debug=True):
     ''' matplotlib Style files to choose from:
@@ -579,7 +645,8 @@ def run(debug=True):
         northern_hemisphere_analysis.close_mean_precip_rootgrps()
     
 def main():
-    run()
+    #run()
+    run_grl()
 
 if __name__=='__main__':
     main()

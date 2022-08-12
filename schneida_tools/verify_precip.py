@@ -18,11 +18,11 @@ import numpy as np
 from scipy import stats
 from matplotlib import pyplot as plt
 
-from schneida_tools.schneida_args import get_args
-from schneida_tools import sumup
-from schneida_tools import wfde5
-from schneida_tools import cruncep
-from schneida_tools import gswp3
+from schneida_args import get_args
+import sumup
+import wfde5
+import cruncep
+import gswp3
 
 import ipdb
 

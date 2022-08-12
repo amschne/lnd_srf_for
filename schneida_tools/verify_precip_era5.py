@@ -93,7 +93,7 @@ def get_era5_temporal_means():
         
     return era5_mean_precip_rootgrp
     
-def grid_sumup2era5(xlim=140, ylim=140):
+def grid_sumup2era5(xlim=140, ylim=140, closefig=False):
     """ Loop through measurements and filter out:
         1. Measurements outside time period of analysis
         2. All measurements that are not from ice cores
@@ -427,8 +427,10 @@ def grid_sumup2era5(xlim=140, ylim=140):
                                          decimals=2),
                                len(wfde5_ais_errors)))
     '''
-    #plt.savefig(path.join('results', 'p_era5_sumup_gris_ais_precip.png'), dpi=600)
-    #plt.close()
+
+    if closefig:
+        #plt.savefig(path.join('results', 'p_era5_sumup_gris_ais_precip.png'), dpi=600)
+        plt.close()
     
     return((lat_gris_sample, lon_gris_sample, sumup_mean_accum_gris, gris_n_samples),
            (lat_ais_sample, lon_ais_sample, sumup_mean_accum_ais, ais_n_samples),
