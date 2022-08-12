@@ -384,7 +384,7 @@ def grid_sumup2era5(xlim=140, ylim=140):
         for row in range(5):
             axes[row,col].set_ylim(0, ylim)
             axes[row,col].set_xlim(0, xlim)
-            axes[row,col].plot([0,xlim], [0,ylim], color=(0,0,0,0.2),marker='None')
+            axes[row,col].plot([0,ylim], [0,ylim], color=(0,0,0,0.2),marker='None')
             axes[row,col].set_xticks(np.arange(0,xlim+1,20))
             axes[row,col].set_xticks(np.arange(0,xlim,5), minor=True)
             axes[row,col].set_yticks(np.arange(0,ylim+1,20))
@@ -475,7 +475,7 @@ def test():
     #get_cruncep_temporal_means()
     #get_gswp3_temporal_means()
 
-def run():
+def run(xlim=80, ylim=140):
     #test()
     #plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
     #plt.style.use('hofmann')
@@ -485,9 +485,10 @@ def run():
     #plt.style.use('uci_blue')
     plt.style.use('agu_full')
     plt.style.use('grl')
-    (sumup_gris, sumup_ais, axes) = grid_sumup2era5()
-    verify_merra2.grid_sumup2merra2(axes=axes)
-    verify_wecng3.grid_sumup2wfde5(axes=axes)
+    (sumup_gris, sumup_ais, axes) = grid_sumup2era5(xlim=xlim, ylim=ylim)
+    (sumup_gris_merra2, sumup_ais_merra2, axes) = verify_merra2.grid_sumup2merra2(xlim=xlim,
+                                                                 ylim=ylim,axes=axes)
+    verify_wecng3.grid_sumup2wfde5(xlim=xlim,ylim=ylim,axes=axes)
     greenland_analysis = analysis_era5.Analysis(compute_means=False,
                                                 greenland=True)
     ant_analysis = analysis_era5.Analysis(compute_means=False,

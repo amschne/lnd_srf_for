@@ -210,7 +210,7 @@ def grid_sumup2merra2(xlim=150, ylim=150, axes=None):
     print('RMSE = %r cm/yr' % np.sqrt(np.mean(merra2_ais_errors**2)))
     
     # Scatter data
-    if axes is not None:
+    if axes is None:
         fig, axes = plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
         fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
         axes[0, 0].set_title('MERRA-2')
@@ -246,7 +246,7 @@ def grid_sumup2merra2(xlim=150, ylim=150, axes=None):
                        color='#7ab800',
                        marker="o", markeredgecolor='None',
                        alpha=0.25, ls='None')
-    axes[-1,0].text(xlim/28., ylim/2.5, '$n$ = %d\nr$^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
+    axes[-1,0].text(xlim/28., ylim - ylim/2.5, '$n$ = %d\nr$^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                             % (len(merra2_gris_errors),
                                np.around(gris_correlations[0,1]**2, decimals=4),
                                np.around(np.mean(np.abs(merra2_gris_errors)),

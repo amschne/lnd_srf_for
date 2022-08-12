@@ -357,7 +357,7 @@ def grid_sumup2wfde5(xlim=140, ylim=140, axes=None):
                                 cmap='cet_linear_worb_100_25_c53',
                                 vmin=0)
     '''# gris_correlations[0,2]
-    axes[2,0].text(xlim/1.5 - 5,ylim/20.,
+    axes[2,0].text(xlim/1.5 - 5,ylim/20.-2,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(cruncep_gris_errors),
                       np.around(gris_correlations[0,2]**2, decimals=4),
@@ -409,7 +409,7 @@ def grid_sumup2wfde5(xlim=140, ylim=140, axes=None):
                                 vmin=0)
                                 
     '''# gris_correlations[0,3]
-    axes[3,0].text(xlim/1.5 - 5, ylim/20.,
+    axes[3,0].text(xlim/1.5 - 5, ylim/20.-2,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(gswp3_gris_errors),
                       np.around(gris_correlations[0,3]**2, decimals=4),
@@ -460,7 +460,7 @@ def grid_sumup2wfde5(xlim=140, ylim=140, axes=None):
                                       vmin=0)
     
     '''# gris_correlations[0,1]
-    axes[1,0].text(xlim/1.5 - 5,ylim/20.,
+    axes[1,0].text(xlim/1.5 - 5,ylim/20.-2,
           '$n$ = %d\n$r^2$ = %s\nMAE = %s cm yr$^{-1}$\nbias = %s cm yr$^{-1}$'
                    % (len(wfde5_gris_errors),
                       np.around(gris_correlations[0,1]**2, decimals=4),
