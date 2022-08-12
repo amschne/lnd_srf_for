@@ -13,7 +13,7 @@ import mpl_toolkits.axisartist.floating_axes as fa
 import mpl_toolkits.axisartist.grid_finder as gf
 from matplotlib.projections import PolarAxes
 
-AREA_FACTOR = 1. / 25.
+AREA_FACTOR = 15 #/ 25.
 
 class TaylorDiagram(object):
     """
@@ -59,8 +59,8 @@ class TaylorDiagram(object):
         tf1 = gf.DictFormatter(mydict)
 
         # Standard deviation axis extent (in units of reference stddev)
-        self.smin = srange[0] * self.refstd
-        self.smax = srange[1] * self.refstd
+        self.smin = srange[0] #* self.refstd
+        self.smax = srange[1] #* self.refstd
 
         ghelper = fa.GridHelperCurveLinear(
             tr,
@@ -81,7 +81,7 @@ class TaylorDiagram(object):
         ax.axis["top"].label.set_text("correlation")
 
         ax.axis["left"].set_axis_direction("bottom")  # "X axis"
-        ax.axis["left"].label.set_text("standard deviation (normalized)")
+        ax.axis["left"].label.set_text("standard deviation (cm w.eq. yr$^{-1}$)")
         
 
         ax.axis["right"].set_axis_direction("top")    # "Y-axis"
@@ -98,106 +98,172 @@ class TaylorDiagram(object):
         self.ax = ax.get_aux_axes(tr)   # Polar coordinates
 
         # Add reference point and stddev contour
-        l, = self.ax.plot([0], self.refstd, 'kX',
-                          ls='', ms=10, label=label)
+        l, = self.ax.plot([0], self.refstd, '*',
+                          ls='', ms=10, label=label,
+                          color='#555759')
         t = np.linspace(0, self.tmax)
         r = np.zeros_like(t) + self.refstd
-        self.ax.plot(t, r, ls='dotted', color=(0,0,0,0.5),label='_')
+        self.ax.plot(t, r, ls='dotted', color=(0,0,0,0.75),label='_')
 
         # Collect sample points for latter use (e.g. legend)
         self.samplePoints = [l]
+        
+        self.t_linspace = t
 
 def get_gris_results():
     """ Results derived separately from analysis_era5 and analysis_gswp3 programs
     """
     
-    era5_theta = 0.19073151285457224 # radians
-    era5_radius = 1.2459804340913663
+    sumup_radius = [23.719029486103437, # ERA5 cm /yr
+                    23.371683440537733, # MERRA-2
+                    23.719029486103437, # CRUNCEP
+                    23.719029486103437, # GSWP3
+                    23.719029486103437] # WFDE5
+
     
-    wfde5_theta = 0.9283789072489057 # radians
-    wfde5_radius = 1.6341081475375194
+    era5_theta = 0.2048826648895172 # radians
+    era5_radius = 26.893792683943417 # cm /yr
     
-    gswp3_theta = 1.0128260796391035 # radians
-    gswp3_radius = 1.9950618822467103
+    merra2_theta = 0.28582511855431747 # radians
+    merra2_radius = 22.6284310247389 # cm/yr
     
-    cruncep_theta = 1.0046885784830488 # radians
-    cruncep_radius = 1.0465605184220506
+    wfde5_theta = 0.9377025075172972 # radians
+    wfde5_radius = 35.271312887883006 # cm per year
+    
+    gswp3_theta = 1.0234720512343265 # radians
+    gswp3_radius = 43.06229791795151 # cm /yr
+    
+    cruncep_theta = 1.0171079721060172 # radians
+    cruncep_radius = 22.5894250371343 # cm /yr
     
     return({'era5': (era5_theta, era5_radius),
+            'merra2':(merra2_theta, merra2_radius),
             'wfde5': (wfde5_theta, wfde5_radius),
             'gswp3': (gswp3_theta, gswp3_radius),
-            'cruncep': (cruncep_theta, cruncep_radius)})
+            'cruncep': (cruncep_theta, cruncep_radius),
+            'sumup': (0, np.mean(sumup_radius))})
     
 def get_ais_results():
-    era5_theta = 0.5795554925778409 # radians
-    era5_radius = 0.9684034966207717
+
+    sumup_radius = [11.269603662650837, # ERA5 cm/yr
+                    11.496933568622762, # MERRA2 cm/yr
+                    11.505834868534699, # CRUNCEP cm/yr
+                    11.505834868534699, # GWSP3
+                    11.505834868534699] # WFDE5
+                    
+    era5_theta = 0.5816203992277824 # radians
+    era5_radius = 10.987223390578112 # cm /yr
     
-    wfde5_theta = 0.5793364633318597 # radians
-    wfde5_radius = 0.9237726825519608
+    merra2_theta = 0.5591699951113855 # radians
+    merra2_radius = 10.54466748441476 # cm/yr
+    
+    wfde5_theta =  0.6035660695589737 # radians
+    wfde5_radius = 10.63814578363175 # cm/yr
     
     gswp3_theta = 0.8255956397327044 # radians
-    gswp3_radius = 1.1170847654555394
+    gswp3_radius = 12.86432345537742
     
-    cruncep_theta = 1.2612001662696082 # radians
-    cruncep_radius = 1.1773849843635356
+    cruncep_theta = 1.2607223588974623# radians
+    cruncep_radius = 13.558739442821484 # cm/yr
     
     return({'era5': (era5_theta, era5_radius),
+            'merra2':(merra2_theta, merra2_radius),
             'wfde5': (wfde5_theta, wfde5_radius),
             'gswp3': (gswp3_theta, gswp3_radius),
-            'cruncep': (cruncep_theta, cruncep_radius)})
+            'cruncep': (cruncep_theta, cruncep_radius),
+            'sumup': (0, np.mean(sumup_radius))})
 
 def run():
-    plt.style.use('agu_quarter')
-    taylor_diagram = TaylorDiagram(srange=(0,2.2))
-    ax = taylor_diagram.ax
-
     gris_results = get_gris_results()
     ais_results = get_ais_results()
     
-    ax.scatter(gris_results['era5'][0], gris_results['era5'][1],
-               c='black', s=2*AREA_FACTOR * np.pi * 33**2,
-               marker='$\mathrm{E5}$')
-    ax.scatter(gris_results['era5'][0], gris_results['era5'][1],
-               c='#1b3d6d', s=AREA_FACTOR * np.pi * 33**2, alpha=0.5,
-               marker='o')
-    ax.scatter(ais_results['era5'][0], ais_results['era5'][1],
-               s=2*AREA_FACTOR * np.pi * 65**2,
-               c='black', marker='$\mathrm{E5}$')
-    ax.scatter(ais_results['era5'][0], ais_results['era5'][1],
-               c='#f78d2d', s=AREA_FACTOR * np.pi * 65**2, alpha=0.5,
-               marker='o')
-               
+    plt.style.use('agu_quarter')
+    #plt.style.use('grl')
+    taylor_diagram = TaylorDiagram(refstd=gris_results['sumup'][1],
+                                   srange=(0,45))
+    ax = taylor_diagram.ax
+    ax.plot([0], ais_results['sumup'][1], 'X',
+            ls='', ms=10, color='#c6beb5')
+    ax.plot(taylor_diagram.t_linspace,
+            np.zeros_like(taylor_diagram.t_linspace) + ais_results['sumup'][1],
+            ls='dashed', color=(0,0,0,0.25),label='_')
+    
+    # WFDE5
     ax.scatter(gris_results['wfde5'][0], gris_results['wfde5'][1],
-               s=2*AREA_FACTOR * np.pi * 33**2,
-               c='black', marker='$\mathrm{WE}$')
+               s=AREA_FACTOR*33,
+               c='black', marker='$\mathrm{WE5_G^*}$')
     ax.scatter(gris_results['wfde5'][0], gris_results['wfde5'][1],
-               c='#1b3d6d', s=AREA_FACTOR * np.pi * 33**2, alpha=0.5,
+               c='#1b3d6d', s= 0.5*AREA_FACTOR*33, alpha=0.5,
                marker='o')
     ax.scatter(ais_results['wfde5'][0], ais_results['wfde5'][1],
-               s=2*AREA_FACTOR * np.pi * 60**2,
-               c='black', marker='$\mathrm{WE}$')
+               s=AREA_FACTOR *60,
+               c='black', marker='$\mathrm{WE5_A^{x}}$')
     ax.scatter(ais_results['wfde5'][0], ais_results['wfde5'][1],
-               c='#f78d2d', s=AREA_FACTOR * np.pi * 60**2, alpha=0.5,
-               marker='o')
-               
-    ax.scatter(gris_results['gswp3'][0], gris_results['gswp3'][1],
-               s=2*AREA_FACTOR * np.pi * 33**2,
-               c='black', marker='$\mathrm{G3}$')
-    ax.scatter(gris_results['gswp3'][0], gris_results['gswp3'][1],
-               c='#1b3d6d', s=AREA_FACTOR * np.pi * 33**2, alpha=0.5,
-               marker='o')
-    ax.scatter(ais_results['gswp3'][0], ais_results['gswp3'][1],
-               s=2*AREA_FACTOR * np.pi * 60**2,
-               c='black', marker='$\mathrm{G3}$')
-    ax.scatter(ais_results['gswp3'][0], ais_results['gswp3'][1],
-               c='#f78d2d', s=AREA_FACTOR * np.pi * 60**2, alpha=0.5,
+               c='#f7eb5f', s=0.5*AREA_FACTOR * 60, alpha=0.5,
                marker='o')
 
-    #plt.grid()
+    # CRUNCEP7
+    ax.scatter(gris_results['cruncep'][0], gris_results['cruncep'][1],
+               s=AREA_FACTOR*33,
+               c='black', marker='$\mathrm{CN7_G^*}$')
+    ax.scatter(gris_results['cruncep'][0], gris_results['cruncep'][1],
+               c='black', s= 0.5*AREA_FACTOR*33, alpha=0.5,
+               marker='o')
+    ax.scatter(ais_results['cruncep'][0], ais_results['cruncep'][1],
+               s=AREA_FACTOR *60,
+               c='black', marker='$\mathrm{CN7_A^{x}}$')
+    ax.scatter(ais_results['cruncep'][0], ais_results['cruncep'][1],
+               c='#f78d2d', s=0.5*AREA_FACTOR * 60, alpha=0.5,
+               marker='o')
+    
+    # GSWP3
+    ax.scatter(gris_results['gswp3'][0], gris_results['gswp3'][1],
+               s=AREA_FACTOR * 33,
+               c='black', marker='$\mathrm{GP3_G^*}$')
+    ax.scatter(gris_results['gswp3'][0], gris_results['gswp3'][1],
+               c='#555759', s=0.5*AREA_FACTOR * 33, alpha=0.5,
+               marker='o')
+    ax.scatter(ais_results['gswp3'][0], ais_results['gswp3'][1],
+               s=AREA_FACTOR * 60,
+               c='black', marker='$\mathrm{GP3_A^{x}}$')
+    ax.scatter(ais_results['gswp3'][0], ais_results['gswp3'][1],
+               c='#6aa2b8', s=0.5*AREA_FACTOR * 60, alpha=0.5,
+               marker='o')
+               
+    # MERRA-2
+    ax.scatter(gris_results['merra2'][0], gris_results['merra2'][1],
+               c='black', s=AREA_FACTOR*34,
+               marker='$\mathrm{MR2_G^*}$')
+    ax.scatter(gris_results['merra2'][0], gris_results['merra2'][1],
+               c='#7ab800', s=0.5*AREA_FACTOR*34, alpha=0.5,
+               marker='o')
+    ax.scatter(ais_results['merra2'][0], ais_results['merra2'][1],
+               s=AREA_FACTOR*61,
+               c='black', marker='$\mathrm{MR2_A^{x}}$')
+    ax.scatter(ais_results['merra2'][0], ais_results['merra2'][1],
+               c='#c6beb5', s=0.5*AREA_FACTOR*61, alpha=0.5,
+               marker='o')
+               
+    # ERA5
+    ax.scatter(gris_results['era5'][0], gris_results['era5'][1],
+               c='black', s=AREA_FACTOR*33,
+               marker='$\mathrm{ER5_G^*}$')
+    ax.scatter(gris_results['era5'][0], gris_results['era5'][1],
+               c='#0064a4', s=0.5*AREA_FACTOR*33, alpha=0.5,
+               marker='o')
+    ax.scatter(ais_results['era5'][0], ais_results['era5'][1],
+               s=AREA_FACTOR*65,
+               c='black', marker='$\mathrm{ER5_A^{x}}$')
+    ax.scatter(ais_results['era5'][0], ais_results['era5'][1],
+               c='#ffd200', s=0.5*AREA_FACTOR*65, alpha=0.5,
+               marker='o')
+               
+
+    plt.grid(alpha=0.25)
     #ax.set_thetamin(0)
     #ax.set_thetamax(90)
 
-    plt.savefig(os.path.join('results', 'taylor_era5_wfde5_gswp3_sumup.pdf'))
+    plt.savefig(os.path.join('results', 'taylor_e5_we_g3_cn_m2_sumup.pdf'))
 
 def main():
     run()
