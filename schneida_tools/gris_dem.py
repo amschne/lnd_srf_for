@@ -35,7 +35,7 @@ class GrISDEM(object):
         self.wide = wide
                 
     def draw_contours(self, ax, filename, globe=None,
-                      downsample=1):
+                      downsample=1, levels_interval=500):
         gimpdem = Dataset(filename)
         globe = self.get_transform()
         (xx, yy) = np.meshgrid(gimpdem.variables['x'][::downsample],
@@ -45,7 +45,7 @@ class GrISDEM(object):
         ax.contour(lons, lats,
                    np.ma.masked_where(lons>-1,
                    gimpdem.variables['Band1'][::downsample,::downsample]),
-                   levels=np.arange(0, 3207, 500),
+                   levels=np.arange(0, 3207, levels_interval),
                    #cmap=self.cmap,
                    colors='black',
                    linewidths=0.5,
