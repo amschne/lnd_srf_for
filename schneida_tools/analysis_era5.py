@@ -35,17 +35,17 @@ from analysis_gswp3 import Analysis as GP3Analysis
 
 import ipdb
 
-'''
+"""
 def set_map_titles(axes):
     axes[0].set_title('GSWP3')
     axes[1].set_title('WFDE5')
     axes[2].set_title('GSWP3 - WFDE5')
     axes[3].set_title('((GSWP3 - WFDE5)\n/ WFDE5) ' + r'$\times$ 100')
-'''
+"""
 
 def setup_map_fig3():
     plt.style.use('agu_quarter')
-    plt.style.use('grl')
+    #plt.style.use('grl')
     
     greenland_map_proj = ccrs.LambertAzimuthalEqualArea(central_longitude=-42.1,
                                               central_latitude=71.4,
@@ -75,8 +75,9 @@ def setup_map_fig3():
                                     xformatter=None, yformatter=None,
                                     color='black',alpha=0.2,#555759',
                                     linewidths=0.5)
-        
-        if i==0 or i==1 or i==3:
+        gl.xlabel_style = {'size': 6}
+        gl.ylabel_style = {'size':6} 
+        if i<4:#i==0 or i==1 or i==3:
             gl.right_labels = False
         if i==1 or i==2 or i==4:
             gl.left_labels = False
@@ -275,7 +276,7 @@ class Analysis(object):
                                   ax=axes[3], orientation='horizontal')
         rel_cbar.set_label(r'Difference ($\%$)')
         '''
-        self.draw_elevation_contours(ax)
+        self.draw_elevation_contours(ax, levels_interval=elevation_levels)
         #self.gswp3_mean_t_rootgrp = gswp3_mean_t_rootgrp
         
         self.era5_mean_t_rootgrp = era5_mean_t_rootgrp
@@ -287,7 +288,7 @@ class Analysis(object):
         #self.gswp3_mean_t_rootgrp.close()
         self.era5_mean_t_rootgrp.close()
     
-    def draw_elevation_contours(self, ax):
+    def draw_elevation_contours(self, ax, levels_interval=500):
         """
         Draw contours
         """
@@ -297,7 +298,7 @@ class Analysis(object):
             #dem.print_dataset_info()
             dem.draw_contours(ax,
                               path.join('data_clean', 'gimpdem_90m_v01.1.nc'),
-                              downsample=10)
+                              downsample=10, levels_interval=levels_interval)
     
         elif self.antarctica:
             # Add elevation contours
@@ -319,7 +320,7 @@ class Analysis(object):
                        #cmap='cet_CET_LBL1_r',
                        cmap='cet_CET_L7_r',cm_per_year_min=0,
                        cm_per_year_max=180,
-                       ax=None):
+                       ax=None, elevation_levels=500):
         """
         """
         '''
@@ -335,7 +336,7 @@ class Analysis(object):
                             gswp3_mean_precip_rootgrp.variables['PRECTmms'][:]) / 10.
     
         '''
-        # Get ERA5 temporal mean precipitation
+        # Get ERA5 temporal me, elevation_levels=500an precipitation
         era5_data = era5.ERA5()
         # WFDE5 rainfall
         era5_data.get_precip()
@@ -468,7 +469,7 @@ class Analysis(object):
         rel_cbar.set_label(r'Difference ($\%$)')
         '''
 
-        self.draw_elevation_contours(ax)
+        self.draw_elevation_contours(ax, levels_interval=elevation_levels)
 
         self.era5_mean_precip_rootgrp = era5_mean_precip_rootgrp
         #self.wfde5_mean_snowf_rootgrp = wfde5_mean_snowf_rootgrp
@@ -477,6 +478,7 @@ class Analysis(object):
         self.precip_cm_per_year_min = cm_per_year_min
         self.precip_cm_per_year_max = cm_per_year_max
         
+        ax.set_title('ERA5')
         return ax
         
     def close_mean_precip_rootgrps(self):
@@ -490,7 +492,7 @@ def test():
     gswp3.test()
     wfde5.test()
 
-def run_grl(debug=True):
+def run_grl(debug=True, elevation_interval=1000):
     if debug:
         rank=0
     else:
@@ -505,7 +507,7 @@ def run_grl(debug=True):
                                                                 closefig=True)
 
         ax = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
-                                           ax=axes[0])
+                                           ax=axes[0], elevation_levels=elevation_interval)
     # Get and plot SUMup locations
         ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
@@ -517,7 +519,17 @@ def run_grl(debug=True):
                                      greenland=True)
         (sumup_gris, sumup_ais, scatter_axes) = grid_sumup2wfde5(savefig=False)
         axes = gswp3_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
-                                             axes=axes)
+                                             axes=axes, elevation_levels=elevation_interval)
+        axes[3].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+                cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
+               vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
+               linewidths=0.5,
+               transform=ccrs.PlateCarree())
+        axes[1].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+                   cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
+                   vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
+                   linewidths=0.5,
+                   transform=ccrs.PlateCarree())
     
     
     plt.sca(ax)

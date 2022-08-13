@@ -157,7 +157,7 @@ class Analysis(object):
         self.gswp3_mean_t_rootgrp.close()
         self.wfde5_mean_t_rootgrp.close()
     
-    def draw_elevation_contours(self, axes):
+    def draw_elevation_contours(self, axes, levels_interval=500):
         """
         Draw contours
         """
@@ -169,7 +169,7 @@ class Analysis(object):
                 # Add elevation contours
                 dem.draw_contours(ax,
                               path.join('data_clean', 'gimpdem_90m_v01.1.nc'),
-                              downsample=10)
+                              downsample=10, levels_interval=levels_interval)
     
         elif self.antarctica:
             # Add elevation contours
@@ -194,7 +194,7 @@ class Analysis(object):
                        #cmap='cet_CET_L6_r',
                        cmap='cet_CET_L7_r', cm_per_year_min=0,
                        cm_per_year_max=180,
-                       axes=None):
+                       axes=None, elevation_levels=500):
         """
         """
         # Get GSWP3 temporal mean precipitation
@@ -346,7 +346,7 @@ class Analysis(object):
         # Colorbar
         fig = plt.gcf()
         gswp3_cbar = fig.colorbar(gswp3_quad_mesh,
-                            ax=cbar_axes[0:], orientation='horizontal')
+                            ax=cbar_axes[0:], orientation='vertical')
         gswp3_cbar.set_label('mean precipitation rate (cm w.eq. yr$^{-1}$)')
         '''
         wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
@@ -362,7 +362,7 @@ class Analysis(object):
                             ax=axes[3], orientation='vertical')
         rel_cbar.set_label(r'Difference ($\%$)')
         '''
-        self.draw_elevation_contours(axes[0:2])
+        self.draw_elevation_contours(axes[0:2], levels_interval=elevation_levels)
 
         self.wfde5_mean_rainf_rootgrp = wfde5_mean_rainf_rootgrp
         self.wfde5_mean_snowf_rootgrp = wfde5_mean_snowf_rootgrp

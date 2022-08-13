@@ -321,7 +321,7 @@ def grid_sumup2wfde5(xlim=140, ylim=140, axes=None, savefig=True):
     print('WFDE5 RMSE = %r cm/yr' % np.sqrt(np.mean(wfde5_ais_errors**2)))
     # Scatter data
     if axes is None:
-        fig, axes = plt.subplots(nrows=2, ncols=3, sharex=True, sharey=False)
+        fig, axes = plt.subplots(nrows=5, ncols=2, sharex=True, sharey=False)
     #fig.suptitle('Mean 1980 to 1990 precipitation reanalyses vs. accumulation measurements (ice cores)')
     #axes[0,0].set_title('Greenland')
     axes[2,0].set_ylabel('CRUNCEP: precipitation\n(cm w.eq. yr$^{-1}$)')
