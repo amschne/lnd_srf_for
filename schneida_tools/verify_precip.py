@@ -87,7 +87,7 @@ def get_gswp3_temporal_means():
         
     return gswp3_mean_precip_rootgrp
     
-def grid_sumup2wfde5(xlim=140, ylim=140, axes=None):
+def grid_sumup2wfde5(xlim=140, ylim=140, axes=None, savefig=True):
     """ Loop through measurements and filter out:
         1. Measurements outside time period of analysis
         2. All measurements that are not from ice cores
@@ -507,7 +507,8 @@ def grid_sumup2wfde5(xlim=140, ylim=140, axes=None):
             axes[i,j].set_yticks(np.arange(0,ylim,5), minor=True)
             axes[i,j].tick_params(axis='both', which='both', top=True, right=True)
     '''
-    plt.savefig(path.join('results', 'p_cruncep_wfde5_sumup_gris_ais_precip.png'), dpi=600)
+    if savefig:
+        plt.savefig(path.join('results', 'p_cruncep_wfde5_sumup_gris_ais_precip.png'), dpi=600)
     plt.close()
     
     return((lat_gris_sample, lon_gris_sample, sumup_mean_accum_gris, gris_n_samples),

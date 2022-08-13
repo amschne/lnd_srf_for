@@ -29,7 +29,9 @@ import era5
 import coordinate_space
 import gris_dem
 import ais_dem
+from verify_precip import grid_sumup2wfde5
 import verify_precip_era5 as verify_precip
+from analysis_gswp3 import Analysis as GP3Analysis
 
 import ipdb
 
@@ -488,21 +490,35 @@ def test():
     gswp3.test()
     wfde5.test()
 
-def run_grl():
+def run_grl(debug=True):
+    if debug:
+        rank=0
+    else:
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        
     axes = setup_map_fig3()
     greenland_analysis = Analysis(compute_means=False,
                                       greenland=True)
-    (sumup_gris, sumup_ais, scatter_axes) = verify_precip.grid_sumup2era5(
+    if rank==0:
+        (sumup_gris, sumup_ais, scatter_axes) = verify_precip.grid_sumup2era5(
                                                                 closefig=True)
-    
-    ax = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
+
+        ax = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
                                            ax=axes[0])
     # Get and plot SUMup locations
-    ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+        ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
                vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
                linewidths=0.5,
                transform=ccrs.PlateCarree())
+    
+        gswp3_analysis = GP3Analysis(compute_means=False,
+                                     greenland=True)
+        (sumup_gris, sumup_ais, scatter_axes) = grid_sumup2wfde5(savefig=False)
+        axes = gswp3_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
+                                             axes=axes)
+    
     
     plt.sca(ax)
     plt.savefig('pyplot_figure.png', dpi=600)

@@ -73,10 +73,10 @@ class Analysis(object):
         if True:
             axes = coordinate_space.four_map_horizontal_comparison(greenland=self.greenland,
                                                                antarctica=self.antarctica)
+            #set_map_titles(axes)
         else:
             ax = analysis_era5.setup_map(greenland=self.greenland,
                                          antarctica=self.antarctica)
-        set_map_titles(axes)
         print('Mapping temperature data to figure...')
         # Map data
         longxy = gswp3_mean_t_rootgrp.variables['LONGXY'][:]
@@ -193,7 +193,8 @@ class Analysis(object):
     def compare_precip(self,
                        #cmap='cet_CET_L6_r',
                        cmap='cet_CET_L7_r', cm_per_year_min=0,
-                       cm_per_year_max=180):
+                       cm_per_year_max=180,
+                       axes=None):
         """
         """
         # Get GSWP3 temporal mean precipitation
@@ -244,13 +245,21 @@ class Analysis(object):
         time_mean_precip_diffs_rel = time_mean_precip_diffs / wfde5_time_mean_precip
     
         # Setup maps
-        if True:
+        if axes is None:
             axes = coordinate_space.four_map_horizontal_comparison(greenland=self.greenland,
                                                                antarctica=self.antarctica)
-            set_map_titles(axes)
-        else:
+            cbar_axes = axes
+            
+        elif axes=='era5':
             ax_wfde5 = analysis_era5.setup_map(greenland=self.greenland, antarctica=self.antarctica)
-            ax_gs
+            #ax_gswp
+        else:
+            grl_subplots=True
+            grl_axes = axes
+            axes = [grl_axes[3], grl_axes[1]]
+            cbar_axes = grl_axes
+
+        set_map_titles(axes)
         # Map data
         print('Mapping precipitation data to figure...')
         longxy = gswp3_mean_precip_rootgrp.variables['LONGXY'][:]
@@ -337,8 +346,8 @@ class Analysis(object):
         # Colorbar
         fig = plt.gcf()
         gswp3_cbar = fig.colorbar(gswp3_quad_mesh,
-                            ax=axes[0:], orientation='vertical')
-        gswp3_cbar.set_label('precipitation rate (cm w.eq. yr$^{-1}$)')
+                            ax=cbar_axes[0:], orientation='horizontal')
+        gswp3_cbar.set_label('mean precipitation rate (cm w.eq. yr$^{-1}$)')
         '''
         wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
                             ax=axes[1], orientation='horizontal')
@@ -353,7 +362,7 @@ class Analysis(object):
                             ax=axes[3], orientation='vertical')
         rel_cbar.set_label(r'Difference ($\%$)')
         '''
-        self.draw_elevation_contours(axes)
+        self.draw_elevation_contours(axes[0:2])
 
         self.wfde5_mean_rainf_rootgrp = wfde5_mean_rainf_rootgrp
         self.wfde5_mean_snowf_rootgrp = wfde5_mean_snowf_rootgrp
@@ -361,6 +370,9 @@ class Analysis(object):
         self.precip_cmap = cmap
         self.precip_cm_per_year_min = cm_per_year_min
         self.precip_cm_per_year_max = cm_per_year_max
+        
+        if grl_subplots:
+            axes = grl_axes
         
         return axes
         

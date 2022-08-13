@@ -279,6 +279,7 @@ def grid_sumup2era5(xlim=140, ylim=140, closefig=False):
         #fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, sharey=True)
         #axes[0].set_title('Greenland')
         #axes[1].set_title('Antarctica')
+        plt.figure()
         h_gris, xedges_gris, yedges_gris, image_gris= plt.hist2d(sumup_mean_accum_gris,
                                     era5_mean_precip_gris_sample, bins=int(xlim/10.),
                                     range=[[0,xlim],[0,ylim]], density=True,
