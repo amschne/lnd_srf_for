@@ -180,7 +180,7 @@ def draw_contours(data=os.path.join(os.path.join('data_clean',
     ax = plt.axes(projection=ccrs.LambertAzimuthalEqualArea(
                        central_longitude=0.0, central_latitude=-90))
     ax.set_extent([-179.999, 180., -90, -62], ccrs.PlateCarree())
-    
+    ax.coastlines(resolution='10m', linewidths=0.5, color=(0,0,0,0.5)) 
     ax.contour(aisdem.variables['lon'][:], aisdem.variables['lat'][:],
                aisdem.variables['surface_height'][:],
                levels=np.arange(0, 4070, 500),

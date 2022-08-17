@@ -3,7 +3,18 @@
 """ MAR version 3.5.2
 """
 
+import os
+import argparse
+import fnmatch
+
 from schneida_args import get_args
+import numpy as np
+from netCDF4 import Dataset
+from matplotlib import pyplot as plt
+from matplotlib import colors
+import cartopy.crs as ccrs
+
+import colorcet as cc
 
 DAYS_PER_MONTH = np.array([31., 28.25, 31., 30., 31., 30., 31., 31., 30., 31., 30., 31.])
 
@@ -83,7 +94,7 @@ class MARModelDataset(object):
                     gis_ssmb_time_idx += 1
                     
             else: # calculate sublimation
-                monthly_gis_sub_m_yr_T = (365.25 * f.variables['SUB'][:].T) / (1000.
+                monthly_gis_sub_m_yr_T = (365.25 * f.variables['SU'][:].T) / (1000.
                                                             * DAYS_PER_MONTH)
                 if i==0:
                     mean_annual_gis_sub_m_yr = np.ma.mean(monthly_gis_sub_m_yr_T.T,
@@ -94,7 +105,7 @@ class MARModelDataset(object):
             
             f.close()
             year_idx+=1.
-        self.mean_gis_sub_m_yr = mean_annual_gis_sub_m_yr / year_idx
+        self.mean_gis_sub_m_yr = ice_frac * (mean_annual_gis_sub_m_yr / year_idx)
             
         if plot_anomalies:
         
@@ -246,7 +257,7 @@ class MARModelDataset(object):
                     colors='#c6beb5',
                     transform=ccrs.PlateCarree())
         '''
-        '''
+        
         ax.pcolormesh(self.lons, self.lats,
                   var_arr, cmap=cmap,
                   shading='nearest',
@@ -258,7 +269,7 @@ class MARModelDataset(object):
                     levels=np.arange(vmin, vmax+0.01, 0.01),
                     extend='both',
                     transform=ccrs.PlateCarree())
-        '''              
+                      
         ax.contour(self.lons, self.lats,
                    self.topo_mar,
                        levels=np.arange(0, level_max, 500)[1:],

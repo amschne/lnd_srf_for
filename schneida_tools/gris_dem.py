@@ -41,20 +41,27 @@ class GrISDEM(object):
         (xx, yy) = np.meshgrid(gimpdem.variables['x'][::downsample],
                                gimpdem.variables['y'][::downsample])
         (lats, lons) = self.transformer.transform(xx, yy)
+        ax.coastlines(resolution='10m', linewidths=0.5, color=(0,0,0,0.5))
         print('Drawing GIMP DEM contours...')
-        ax.contour(lons, lats,
-                   np.ma.masked_where(lons>-1,
-                   gimpdem.variables['Band1'][::downsample,::downsample]),
-                   levels=np.arange(0, 3207, levels_interval),
+        line_c = ax.contour(lons, lats,
+                      np.ma.masked_where(lons>-1,
+                      gimpdem.variables['Band1'][::downsample,::downsample]),
+                    levels=np.arange(0, 3207, levels_interval),
                    #cmap=self.cmap,
                    colors='black',
                    linewidths=0.5,
-                   linestyles='solid',
-                   alpha=0.5,
+                   linestyles='solid',alpha=0.5,
                    vmin=-500,vmax=3207,
                    label='GIMP DEM$^1$',
                    transform=ccrs.PlateCarree())
-                   
+        '''
+        ax.clabel(line_c,  # Typically best results when labelling line contours.
+                  colors=['black'],
+                  manual=False,  # Automatic placement vs manual placement.
+                  inline=True,  # Cut the line where the label will be placed.
+                  fmt=' {:.0f} '.format,  # Labes as integers, with some extra space.
+                  )
+        '''
         gimpdem.close()
                    
         return ax
