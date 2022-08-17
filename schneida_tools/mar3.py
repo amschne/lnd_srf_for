@@ -205,7 +205,7 @@ class MARModelDataset(object):
                  #cmap=colors.ListedColormap(cc.CET_CBTD1),
                  label="specific balance rate (m w.eq. yr$^{-1}$)",
                  cbar_orientation='vertical',
-                 ais=False):
+                 ais=False, elevation_contours=True):
         """ Map var_arr onto the given Greenland map (ax)
         """
         if vmin < 0:
@@ -236,7 +236,7 @@ class MARModelDataset(object):
                                            label=label,
                                            orientation=cbar_orientation)
         
-        
+        '''
         ax.contourf(self.lons, self.lats,np.ones(var_arr.shape),
                     #np.ma.clip(var_arr,vmin,vmax),
                     #cmap=cmap,
@@ -246,6 +246,7 @@ class MARModelDataset(object):
                     colors='#c6beb5',
                     transform=ccrs.PlateCarree())
         '''
+        '''
         ax.pcolormesh(self.lons, self.lats,
                   var_arr, cmap=cmap,
                   shading='nearest',
@@ -254,7 +255,7 @@ class MARModelDataset(object):
         '''
         ax.contourf(self.lons, self.lats, var_arr,
                     cmap=cmap,
-                    levels=np.arange(vmin, vmax+0.01, 0.1),
+                    levels=np.arange(vmin, vmax+0.01, 0.01),
                     extend='both',
                     transform=ccrs.PlateCarree())
         '''              
@@ -268,7 +269,8 @@ class MARModelDataset(object):
                        vmin=-zmax,vmax=zmax,
                        transform=ccrs.PlateCarree())
         '''
-        ax.contour(self.lons, self.lats,
+        if elevation_contours:
+            ax.contour(self.lons, self.lats,
                    self.topo_1,
                        levels=np.arange(0, level_max, 500),
                        #cmap=colors.ListedColormap(cc.linear_grey_0_100_c0),

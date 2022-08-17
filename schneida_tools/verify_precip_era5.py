@@ -24,6 +24,7 @@ import era5
 import analysis_era5
 import verify_precip as verify_wecng3
 import verify_precip_merra2 as verify_merra2
+import mar3
 #from schneida_tools import cruncep
 #from schneida_tools import gswp3
 import colorcet as cc
@@ -478,7 +479,7 @@ def test():
     #get_cruncep_temporal_means()
     #get_gswp3_temporal_means()
 
-def run(xlim=80, ylim=140):
+def run(xlim=80, ylim=140, sublimation_cmap='cet_CET_D1A_r'):
     #test()
     #plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
     #plt.style.use('hofmann')
@@ -499,28 +500,38 @@ def run(xlim=80, ylim=140):
     plt.style.use('agu_quarter')
     plt.style.use('grl')
     greenland_ax, ant_ax = setup_map_fig1()
+    
+    # get MARv3 sublimation data
+    mar_gris = mar3.MARModelDataset()
+    mar_gris.map2gris(greenland_ax, 100. * mar_gris.mean_gis_sub_m_yr,
+                      vmin=-xlim, vmax=xlim, cmap=sublimation_cmap,
+                      cbar_orientation='none', elevation_contours=False)
+    
     greenland_analysis.draw_elevation_contours(greenland_ax)
     ant_analysis.draw_elevation_contours(ant_ax)
     
     plot_gr = greenland_ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
-               cmap='cet_CET_L7_r', vmin=0,
-                        vmax=150, edgecolors='black',
-                        linewidths=0.5,
-                        transform=ccrs.PlateCarree()) 
+                                   #cmap='cet_CET_L7_r',
+                                   cmap=sublimation_cmap,
+                                   vmin=-xlim, vmax=xlim,
+                                   edgecolors='black',
+                                   linewidths=0.5,
+                                   transform=ccrs.PlateCarree()) 
 
     plot_ant = ant_ax.scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
-                   cmap='cet_CET_L7_r', vmin=0,
-                   vmax=150, edgecolors='black',
-                   linewidths=0.5,
-                   transform=ccrs.PlateCarree())
+                              cmap=sublimation_cmap,
+                              vmin=-xlim, vmax=xlim,
+                              linewidths=0.5,
+                              transform=ccrs.PlateCarree())
 
     # Colorbar
     fig = plt.gcf()
     era5_cbar = fig.colorbar(plot_ant, ax=[ant_ax], orientation='horizontal')
-    era5_cbar.set_ticks(np.arange(0, 150+1, 20),)
+    era5_cbar.set_ticks(np.arange(-xlim, xlim+1, 20),)
                        # labels=np.arange(0, 150+1, 20))
     #era5_cbar.set_ticks(np.arange(0, 150, 5), minor=True)
-    era5_cbar.set_label('median accumulation rate (cm w.eq. yr$^{-1}$)')
+    #era5_cbar.set_label('median accumulation rate (cm w.eq. yr$^{-1}$)')
+    era5_cbar.set_label('specific balance rate (cm w.eq. yr$^{-1}$)')
     
     handles, labels = plot_gr.legend_elements(prop="sizes", color='black',
                                   alpha=0.4, num=4)
