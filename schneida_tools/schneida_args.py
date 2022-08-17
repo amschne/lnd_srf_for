@@ -78,6 +78,11 @@ def get_args():
                         default=1990,
                         help='First year to exclude in SUMup analysis')
     
+    parser.add_argument("mar3gr_raw_data_path", help='Path to data from '
+                                          'Fettweis et al., 2017',
+                        default=path.join('data_raw', 'fettweis_et_al_2017'))
+    parser.add_argument("--mar3gr_forcing", default='20CRv2c')
+    
     args = parser.parse_args()
     
     
