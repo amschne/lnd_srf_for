@@ -323,8 +323,8 @@ def grid_sumup2era5(xlim=140, ylim=140, closefig=False):
     #axes[0,2].set_title('WFDE5')
     axes[0,0].set_ylabel('ERA5: precipitation\n(cm w.eq. yr$^{-1}$)')
     #axes[1].set_ylabel('ERA5 precipitation (cm w.eq. yr$^{-1}$)')
-    axes[-1,0].set_xlabel('SUMup: accumulation on the GrIS (cm w.eq. yr$^{-1}$)')
-    axes[-1,1].set_xlabel('SUMup: accumulation on the AIS (cm w.eq. yr$^{-1}$)')
+    axes[-1,0].set_xlabel('SUMup: GrIS net accumulation (cm w.eq. yr$^{-1}$)')
+    axes[-1,1].set_xlabel('SUMup: AIS net accumulation (cm w.eq. yr$^{-1}$)')
     #axes[1,1].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
     #axes[1,2].set_xlabel('SUMup accumulation rate (cm H$_2$O yr$^{-1}$)')
     
@@ -479,7 +479,7 @@ def test():
     #get_cruncep_temporal_means()
     #get_gswp3_temporal_means()
 
-def run(xlim=80, ylim=140, sublimation_cmap='cet_CET_D1A_r'):
+def run(xlim=80, ylim=140, sublimation_cmap='cet_CET_D1A'):
     #test()
     #plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
     #plt.style.use('hofmann')
@@ -503,9 +503,17 @@ def run(xlim=80, ylim=140, sublimation_cmap='cet_CET_D1A_r'):
     
     # get MARv3 sublimation data
     mar_gris = mar3.MARModelDataset()
-    mar_gris.map2gris(greenland_ax, 100. * mar_gris.mean_gis_sub_m_yr,
-                      vmin=-xlim/2.+10, vmax=xlim/2.-10, cmap=sublimation_cmap,
+    mar_gris.map2gris(greenland_ax, 100. * -mar_gris.mean_gis_sub_m_yr,
+                      vmin=-xlim/2.-5, vmax=xlim/2.+5, cmap=sublimation_cmap,
                       cbar_orientation='none', elevation_contours=False)
+    
+    mar_ais = mar3.MARv3p11ModelDataset()
+    ant_ax.pcolormesh(mar_ais.lon, mar_ais.lat,
+                      mar_ais.mean_sub_cm_per_year, cmap=sublimation_cmap,
+                      shading='nearest',
+                      vmin=-xlim/2.-5, vmax=xlim/2.+5, 
+                      edgecolors='None',
+                      transform=ccrs.PlateCarree())
     
     greenland_analysis.draw_elevation_contours(greenland_ax)
     ant_analysis.draw_elevation_contours(ant_ax)
@@ -513,14 +521,14 @@ def run(xlim=80, ylim=140, sublimation_cmap='cet_CET_D1A_r'):
     plot_gr = greenland_ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                                    #cmap='cet_CET_L7_r',
                                    cmap=sublimation_cmap,
-                                   vmin=-xlim/2.+10, vmax=xlim/2.-10,
+                                   vmin=-xlim/2.-5, vmax=xlim/2.+5,
                                    edgecolors='black',
                                    linewidths=0.5,
                                    transform=ccrs.PlateCarree()) 
 
     plot_ant = ant_ax.scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
                               cmap=sublimation_cmap,
-                              vmin=-xlim/2.+10, vmax=xlim/2.-10,
+                              vmin=-xlim/2.-5, vmax=xlim/2.+5,
                               edgecolors='black',
                               linewidths=0.5,
                               transform=ccrs.PlateCarree())
@@ -528,12 +536,12 @@ def run(xlim=80, ylim=140, sublimation_cmap='cet_CET_D1A_r'):
     # Colorbar
     fig = plt.gcf()
     era5_cbar = fig.colorbar(plot_ant, ax=[ant_ax], orientation='horizontal',
-                             values=np.arange(-xlim/2+10,xlim/2-10,5)+2.5)
-    era5_cbar.set_ticks(np.arange(-xlim/2+10, xlim/2-9, 10))
+                             values=np.arange(-xlim/2-5,xlim/2+5,5)+2.5)
+    era5_cbar.set_ticks(np.arange(-xlim/2-5, xlim/2+6, 15))
                        # labels=np.arange(0, 150+1, 20))
     #era5_cbar.set_ticks(np.arange(0, 150, 5), minor=True)
     #era5_cbar.set_label('median accumulation rate (cm w.eq. yr$^{-1}$)')
-    era5_cbar.set_label('specific balance rate (cm w.eq. yr$^{-1}$)')
+    era5_cbar.set_label('net ice flux (cm w.eq. yr$^{-1}$)')
     
     handles, labels = plot_gr.legend_elements(prop="sizes", color='black',
                                   alpha=0.4, num=4)

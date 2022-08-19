@@ -291,9 +291,100 @@ class MARModelDataset(object):
                        alpha=0.5,
                        vmin=-zmax,vmax=zmax,
                        transform=ccrs.PlateCarree())
+                       
+class MARv3p11ModelDataset(object):
+    def __init__(self, verbose=True, clean_data=False,
+                 fi=os.path.join('data_raw', 'kittel_et_al_2021',
+                                 'year-MAR_ACCESS1.3-1980-2100_zen.nc2'),
+                 fd=os.path.join('data_raw', 'kittel_et_al_2021',
+                                 'MARcst-AN35km-176x148.cdf'),
+                 data_rgr= os.path.join('data_clean','mar_model',
+                                        'mean-MAR_ACCESS1.3-1980-1989_amsrgr.nc')):
+        
+        self.args = get_args()
+        self.data = Dataset(fi)
+        self.domain = Dataset(fd)
+        if verbose:
+            print(self.domain)
+            print(self.domain.variables.keys())
+            print(self.data)
+            for d in self.data.dimensions.items():
+                print(d)
+            print(self.data.variables.keys())
+            
+        if clean_data:
+            self.clean_data()
+        
+        rootgrp = Dataset(data_rgr)
+        self.lat = rootgrp.variables['lat']
+        self.lat_bnds = rootgrp.variables['lat_bnds']
+        self.lon = rootgrp.variables['lon']
+        self.lon_bnds = rootgrp.variables['lon_bnds']
+        self.mean_smb_cm_per_yr = rootgrp.variables['mean_smb']
+        self.mean_sub_cm_per_yer = rootgrp.variables['mean_sub']
+            
+    def clean_data(self):
+        clean_data_file=os.path.join('data_clean', 'mar_model',
+                                     'mean-MAR_ACCESS1.3-%d-%d_ams.nc' %
+                                     (self.args.sumup_start_year,
+                                      self.args.sumup_stop_year - 1))
+        
+        #print(self.args.sumup_start_year, self.args.sumup_stop_year)
+        year_idx_start = self.args.sumup_start_year - 1980
+        year_idx_stop = self.args.sumup_stop_year - 1980
+        
+        lons_src = self.domain.variables['LON'][:] # degrees
+        lats_src = self.domain.variables['LAT'][:] # degrees
+        ice_mask_src = self.domain.variables['ICE'][:] # percent
+        rock_mask_src = self.domain.variables['ROCK'][:] # percent
+        topo_mar_src = self.domain.variables['SH'][:] # meters
+        
+        surface_mass_balance = self.data.variables['SMB'][year_idx_start:year_idx_stop, 0] # mm/yr
+        sublimation = self.data.variables['SU'][year_idx_start:year_idx_stop, 0] # mm/yr
+        
+        #print(surface_mass_balance.shape)
+        #print(sublimation.shape)
+
+        rootgrp = Dataset(clean_data_file, 'w')
+        y_dim = rootgrp.createDimension("y", 148)
+        x_dim = rootgrp.createDimension("x", 176)
+        lat = rootgrp.createVariable('lat', 'f8', ('y', 'x'))
+        lon = rootgrp.createVariable('lon', 'f8', ('y', 'x'))
+        mean_smb = rootgrp.createVariable('mean_smb', 'f8', ('y', 'x'))
+        mean_sub = rootgrp.createVariable('mean_sub', 'f8', ('y', 'x'))
+
+        topo_mar = rootgrp.createVariable('surface_height', 'f8', ('y', 'x'))
+        ice_mask = rootgrp.createVariable('ice_mask', 'f8', ('y', 'x'))
+        rock_mask = rootgrp.createVariable('rock_mask', 'f8', ('y', 'x'))
+        solid_mask = rootgrp.createVariable('solid_mask', 'f8', ('y', 'x'))
+        grid_imask = rootgrp.createVariable('grid_imask', 'u1', ('y','x'))
+        
+        topo_mar.units = 'm'
+        mean_smb.units = 'cm_per_yr'
+        mean_sub.units = 'cm_per_yr'
+        lat[:] = lats_src
+        lon[:] = lons_src
+        
+        # integrate smb and sublimation
+        mean_smb[:] = 0.1 * np.ma.mean(surface_mass_balance, axis=0) # cm/yr
+        mean_sub[:] = 0.1 * np.ma.mean(sublimation, axis=0) # cm/yr
+        topo_mar[:] = topo_mar_src
+        ice_mask[:] = ice_mask_src / 100. 
+        rock_mask[:] = rock_mask_src / 100.
+        solid_mask[:] = (ice_mask_src + rock_mask_src) / 100.
+        
+        grid_imask[:] = np.ma.masked_where(ice_mask_src + rock_mask_src<0.1,
+                              np.ones(np.shape(ice_mask_src))).filled(fill_value=0)
+        
+        rootgrp.close()
+
+def process_mar_model_dataset():
+    mar_model_data = MARv3p11ModelDataset(clean_data=True)
+    mar_model_data.data.close()
+    mar_model_data.domain.close()
 
 def run():
-    pass
+    process_mar_model_dataset()
 
 def main():
     run()
