@@ -315,13 +315,16 @@ class MARv3p11ModelDataset(object):
         if clean_data:
             self.clean_data()
         
-        rootgrp = Dataset(data_rgr)
-        self.lat = rootgrp.variables['lat']
-        self.lat_bnds = rootgrp.variables['lat_bnds']
-        self.lon = rootgrp.variables['lon']
-        self.lon_bnds = rootgrp.variables['lon_bnds']
-        self.mean_smb_cm_per_yr = rootgrp.variables['mean_smb']
-        self.mean_sub_cm_per_yer = rootgrp.variables['mean_sub']
+        else:
+            rootgrp = Dataset(data_rgr)
+            self.lat = rootgrp.variables['lat']
+            self.lat_bnds = rootgrp.variables['lat_bnds']
+            self.lon = rootgrp.variables['lon']
+            self.lon_bnds = rootgrp.variables['lon_bnds']
+            self.ice_frac = np.ma.masked_where(rootgrp.variables['ice_mask'][:] < 0.001,
+                                               rootgrp.variables['ice_mask'][:])
+            self.mean_smb_cm_per_yr = self.ice_frac * rootgrp.variables['mean_smb'][:]
+            self.mean_sub_cm_per_yr = self.ice_frac * rootgrp.variables['mean_sub'][:]
             
     def clean_data(self):
         clean_data_file=os.path.join('data_clean', 'mar_model',
