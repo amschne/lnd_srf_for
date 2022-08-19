@@ -509,7 +509,7 @@ def run(xlim=80, ylim=140, sublimation_cmap='cet_CET_D1A'):
     
     mar_ais = mar3.MARv3p11ModelDataset()
     ant_ax.pcolormesh(mar_ais.lon, mar_ais.lat,
-                      mar_ais.mean_sub_cm_per_year, cmap=sublimation_cmap,
+                      -mar_ais.mean_sub_cm_per_year, cmap=sublimation_cmap,
                       shading='nearest',
                       vmin=-xlim/2.-5, vmax=xlim/2.+5, 
                       edgecolors='None',
