@@ -78,6 +78,30 @@ def setup_map_fig1():
     gl.bottom_labels = False
     return(greenland_ax, ant_ax)
 
+def get_net_vapor_flux(lat, lon, mar_model_gris, mar_model_ais):
+    """ Get net vapor flux from sublimation and deposition from
+        MAR model simulation data
+
+        return net ice flux (positive into surface)
+    """
+    if lat > 0 and mar_model_gris is not None:
+        # assume Greenland ice sheet
+        mar_model_data = mar_model_gris
+    elif lat < 0 and mar_model_ais is not None:
+        # assume Antarctic ice sheet
+        mar_model_data = mar_model_ais
+    else:
+        return 0.    
+
+    
+    mar_lat_idx = np.argmin(np.abs(mar_model_data.lats.flatten() - lat))
+    mar_lon_idx = np.argmin(np.abs(np.where(mar_model_data.lons > 0,
+                                            mar_model_data.lons,
+                                            mar_model_data.lons + 360).flatten()
+                                   - lon))
+    ipdb.set_trace()
+    #diff_score = np.abs()
+
 def get_era5_temporal_means():
     """
     """
@@ -94,7 +118,8 @@ def get_era5_temporal_means():
         
     return era5_mean_precip_rootgrp
     
-def grid_sumup2era5(xlim=140, ylim=140, closefig=False):
+def grid_sumup2era5(xlim=140, ylim=140, closefig=False,
+                    mar_model_gris=None, mar_model_ais=None):
     """ Loop through measurements and filter out:
         1. Measurements outside time period of analysis
         2. All measurements that are not from ice cores
@@ -195,9 +220,15 @@ def grid_sumup2era5(xlim=140, ylim=140, closefig=False):
     sumup_mad_accum_gris = list()
     sumup_mad_accum_ais = list()
     for key, accum in valid_sumup_accum.items():
-        sumup_mad_accum = stats.median_abs_deviation(accum,
-                                   nan_policy='omit')
-        sumup_mean_accum = np.ma.median(accum)
+        sumup_median_lat = np.ma.median(valid_sumup_lat[key])
+        sumup_median_lon = np.ma.median(valid_sumup_lon[key])
+        net_vapor_flux = get_net_vapor_flux(sumup_median_lat, sumup_median_lon,
+                                            mar_model_gris, mar_model_ais)
+        sumup_mad_accum = stats.median_abs_deviation(np.array(accum) +
+                                                     net_vapor_flux,
+                                                     nan_policy='omit')
+        sumup_mean_accum = np.ma.median(np.array(accum) +
+                                        net_vapor_flux)
         if sumup_mean_accum >= 0: # valid accumulation rate
             era5_lat_idx = valid_era5_lat_idx[key]
             era5_lon_idx = valid_era5_lon_idx[key]
@@ -209,8 +240,8 @@ def grid_sumup2era5(xlim=140, ylim=140, closefig=False):
                     lon_gris_sample.append(era5_mean_precip_rootgrp.variables['lon'][era5_lon_idx])
                 else:
                     # Store median SUMup locations
-                    sumup_median_lat = np.ma.median(valid_sumup_lat[key])
-                    sumup_median_lon = np.ma.median(valid_sumup_lon[key])
+                    #sumup_median_lat = np.ma.median(valid_sumup_lat[key])
+                    #sumup_median_lon = np.ma.median(valid_sumup_lon[key])
                     lat_gris_sample.append(sumup_median_lat)
                     lon_gris_sample.append(sumup_median_lon)
                 
@@ -237,8 +268,8 @@ def grid_sumup2era5(xlim=140, ylim=140, closefig=False):
                     lon_ais_sample.append(era5_mean_precip_rootgrp.variables['lon'][era5_lon_idx])
                 else:
                     # Store median SUMup locations
-                    sumup_median_lat = np.ma.median(valid_sumup_lat[key])
-                    sumup_median_lon = np.ma.median(valid_sumup_lon[key])
+                    #sumup_median_lat = np.ma.median(valid_sumup_lat[key])
+                    #sumup_median_lon = np.ma.median(valid_sumup_lon[key])
                     lat_ais_sample.append(sumup_median_lat)
                     lon_ais_sample.append(sumup_median_lon)
                 
@@ -489,7 +520,14 @@ def run(xlim=80, ylim=140, sublimation_cmap='cet_CET_D1A'):
     #plt.style.use('uci_blue')
     plt.style.use('agu_full')
     plt.style.use('grl')
-    (sumup_gris, sumup_ais, axes) = grid_sumup2era5(xlim=xlim, ylim=ylim)
+    
+    # get MARv3 sublimation data
+    mar_gris = mar3.MARModelDataset()
+    mar_ais = mar3.MARv3p11ModelDataset()
+
+    (sumup_gris, sumup_ais, axes) = grid_sumup2era5(xlim=xlim, ylim=ylim,
+                                                    mar_model_gris=mar_gris,
+                                                    mar_model_ais=mar_ais)
     (sumup_gris_merra2, sumup_ais_merra2, axes) = verify_merra2.grid_sumup2merra2(xlim=xlim,
                                                                  ylim=ylim,axes=axes)
     verify_wecng3.grid_sumup2wfde5(xlim=xlim,ylim=ylim,axes=axes)
@@ -501,14 +539,11 @@ def run(xlim=80, ylim=140, sublimation_cmap='cet_CET_D1A'):
     plt.style.use('grl')
     greenland_ax, ant_ax = setup_map_fig1()
     
-    # get MARv3 sublimation data
-    mar_gris = mar3.MARModelDataset()
     mar_gris.map2gris(greenland_ax, 100. * -mar_gris.mean_gis_sub_m_yr,
                       vmin=-xlim/2.-5, vmax=xlim/2.+5, cmap=sublimation_cmap,
                       cbar_orientation='none', elevation_contours=False)
     
-    mar_ais = mar3.MARv3p11ModelDataset()
-    ant_ax.pcolormesh(mar_ais.lon[:], mar_ais.lat[:],
+    ant_ax.pcolormesh(mar_ais.lons, mar_ais.lats,
                       -mar_ais.mean_sub_cm_per_yr, cmap=sublimation_cmap,
                       shading='nearest',
                       vmin=-xlim/2.-5, vmax=xlim/2.+5, 
