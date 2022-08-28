@@ -29,6 +29,7 @@ import mar3
 #from schneida_tools import gswp3
 import colorcet as cc
 import cartopy.crs as ccrs
+from pyproj import Geod
 
 import ipdb
 
@@ -78,7 +79,8 @@ def setup_map_fig1():
     gl.bottom_labels = False
     return(greenland_ax, ant_ax)
 
-def get_net_vapor_flux(lat, lon, mar_model_gris, mar_model_ais):
+def get_net_vapor_flux(lat, lon, mar_model_gris, mar_model_ais,
+                       geod=Geod(ellps="WGS84")):
     """ Get net vapor flux from sublimation and deposition from
         MAR model simulation data
 
@@ -92,15 +94,22 @@ def get_net_vapor_flux(lat, lon, mar_model_gris, mar_model_ais):
         mar_model_data = mar_model_ais
     else:
         return 0.    
-
     
-    mar_lat_idx = np.argmin(np.abs(mar_model_data.lats.flatten() - lat))
-    mar_lon_idx = np.argmin(np.abs(np.where(mar_model_data.lons > 0,
-                                            mar_model_data.lons,
-                                            mar_model_data.lons + 360).flatten()
-                                   - lon))
-    ipdb.set_trace()
-    #diff_score = np.abs()
+    mar_model_lons = np.where(mar_model_data.lons > 0,
+                              mar_model_data.lons,
+                              mar_model_data.lons + 360).flatten()
+
+    mar_model_lats = mar_model_data.lats.flatten()
+    
+    mar_model_mean_sub_m_per_yr = 0.01 * mar_model_data.mean_sub_cm_per_yr.flatten()
+    min_distance = 10.**7
+    for i, mar_model_lat in enumerate(mar_model_lats):
+        distance = geod.inv(lon, lat, mar_model_lons[i], mar_model_lat)[2] # m
+        if distance < min_distance:
+            min_distance = distance
+            net_ice_flux = -mar_model_mean_sub_m_per_yr[i]
+    
+    return net_ice_flux # m per year
 
 def get_era5_temporal_means():
     """
@@ -119,7 +128,8 @@ def get_era5_temporal_means():
     return era5_mean_precip_rootgrp
     
 def grid_sumup2era5(xlim=140, ylim=140, closefig=False,
-                    mar_model_gris=None, mar_model_ais=None):
+                    mar_model_gris=None, mar_model_ais=None,
+                    geod=Geod(ellps="WGS84")):
     """ Loop through measurements and filter out:
         1. Measurements outside time period of analysis
         2. All measurements that are not from ice cores
@@ -223,11 +233,12 @@ def grid_sumup2era5(xlim=140, ylim=140, closefig=False,
         sumup_median_lat = np.ma.median(valid_sumup_lat[key])
         sumup_median_lon = np.ma.median(valid_sumup_lon[key])
         net_vapor_flux = get_net_vapor_flux(sumup_median_lat, sumup_median_lon,
-                                            mar_model_gris, mar_model_ais)
-        sumup_mad_accum = stats.median_abs_deviation(np.array(accum) +
+                                            mar_model_gris, mar_model_ais,
+                                            geod=geod)
+        sumup_mad_accum = stats.median_abs_deviation(np.array(accum) -
                                                      net_vapor_flux,
                                                      nan_policy='omit')
-        sumup_mean_accum = np.ma.median(np.array(accum) +
+        sumup_mean_accum = np.ma.median(np.array(accum) -
                                         net_vapor_flux)
         if sumup_mean_accum >= 0: # valid accumulation rate
             era5_lat_idx = valid_era5_lat_idx[key]

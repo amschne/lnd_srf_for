@@ -106,7 +106,7 @@ class MARModelDataset(object):
             f.close()
             year_idx+=1.
         self.mean_gis_sub_m_yr = ice_frac * (mean_annual_gis_sub_m_yr / year_idx)
-            
+        self.mean_sub_cm_per_yr = 100. * self.mean_gis_sub_m_yr    
         if plot_anomalies:
         
             self.monthly_gis_smb_m_yr = (365.25 *
