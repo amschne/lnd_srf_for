@@ -79,37 +79,52 @@ def setup_map_fig1():
     gl.bottom_labels = False
     return(greenland_ax, ant_ax)
 
-def get_net_vapor_flux(lat, lon, mar_model_gris, mar_model_ais,
-                       geod=Geod(ellps="WGS84")):
-    """ Get net vapor flux from sublimation and deposition from
-        MAR model simulation data
+class SublimationDataset(object):
+    def __init__(self, mar_model_gris, mar_model_ais, geod=Geod(ellps="WGS84")):
+        self.geod=geod
+        self.mar_model_data = dict()
+        self.mar_model_data['gris'] = self.flatten_arrays(mar_model_gris)
+        self.mar_model_data['ais'] = self.flatten_arrays(mar_model_ais)
+        
+    def flatten_arrays(self, mar_model_data):
+        lons = np.where(mar_model_data.lons > 0,
+                        mar_model_data.lons,
+                        mar_model_data.lons + 360).flatten()
+        lats = mar_model_data.lats.flatten()
+        sub_m_per_yr = 0.01 * mar_model_data.mean_sub_cm_per_yr.flatten()
+        
+        return(lons, lats, sub_m_per_yr)
 
-        return net ice flux (positive into surface)
-    """
-    if lat > 0 and mar_model_gris is not None:
-        # assume Greenland ice sheet
-        mar_model_data = mar_model_gris
-    elif lat < 0 and mar_model_ais is not None:
-        # assume Antarctic ice sheet
-        mar_model_data = mar_model_ais
-    else:
-        return 0.    
-    
-    mar_model_lons = np.where(mar_model_data.lons > 0,
-                              mar_model_data.lons,
-                              mar_model_data.lons + 360).flatten()
+    def get_net_vapor_flux(self, lat, lon):
+        """ Get net vapor flux from sublimation and deposition from
+            MAR model simulation data
 
-    mar_model_lats = mar_model_data.lats.flatten()
+            return net ice flux (positive into surface)
+        """
+        if lat > 0:
+            # assume Greenland ice sheet
+            mar_model_data = self.mar_model_data['gris']
+        elif lat < 0:
+            # assume Antarctic ice sheet
+            mar_model_data = self.mar_model_data['ais']
+        else:
+            return 0.    
     
-    mar_model_mean_sub_m_per_yr = 0.01 * mar_model_data.mean_sub_cm_per_yr.flatten()
-    min_distance = 10.**7
-    for i, mar_model_lat in enumerate(mar_model_lats):
-        distance = geod.inv(lon, lat, mar_model_lons[i], mar_model_lat)[2] # m
-        if distance < min_distance:
-            min_distance = distance
-            net_ice_flux = -mar_model_mean_sub_m_per_yr[i]
+        mar_model_lons = mar_model_data[0]
+        mar_model_lats = mar_model_data[1]
+        mar_model_sub_m_per_yr = mar_model_data[2]
     
-    return net_ice_flux # m per year
+        min_distance = 10.**7
+        for i, mar_model_lat in enumerate(mar_model_lats):
+            distance = self.geod.inv(lon, lat, mar_model_lons[i], 
+                                     mar_model_lat)[2]# m
+            if distance < min_distance:
+                min_distance = distance
+                sublimation = mar_model_sub_m_per_yr[i]
+    
+        net_ice_flux = -sublimation
+    
+        return net_ice_flux # m per year
 
 def get_era5_temporal_means():
     """
@@ -229,12 +244,15 @@ def grid_sumup2era5(xlim=140, ylim=140, closefig=False,
     sumup_mean_accum_ais = list()
     sumup_mad_accum_gris = list()
     sumup_mad_accum_ais = list()
+    
+    sublimation_data = SublimationDataset(mar_model_gris, mar_model_ais,
+                                          geod=geod)
+    
     for key, accum in valid_sumup_accum.items():
         sumup_median_lat = np.ma.median(valid_sumup_lat[key])
         sumup_median_lon = np.ma.median(valid_sumup_lon[key])
-        net_vapor_flux = get_net_vapor_flux(sumup_median_lat, sumup_median_lon,
-                                            mar_model_gris, mar_model_ais,
-                                            geod=geod)
+        net_vapor_flux = sublimation_data.get_net_vapor_flux(sumup_median_lat,
+                                                             sumup_median_lon)
         sumup_mad_accum = stats.median_abs_deviation(np.array(accum) -
                                                      net_vapor_flux,
                                                      nan_policy='omit')
