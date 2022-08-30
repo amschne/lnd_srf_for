@@ -142,9 +142,7 @@ def get_era5_temporal_means():
         
     return era5_mean_precip_rootgrp
     
-def grid_sumup2era5(xlim=140, ylim=140, closefig=False,
-                    mar_model_gris=None, mar_model_ais=None,
-                    geod=Geod(ellps="WGS84")):
+def grid_sumup2era5(xlim=140, ylim=140, closefig=False, sublimation_data=None):
     """ Loop through measurements and filter out:
         1. Measurements outside time period of analysis
         2. All measurements that are not from ice cores
@@ -245,19 +243,18 @@ def grid_sumup2era5(xlim=140, ylim=140, closefig=False,
     sumup_mad_accum_gris = list()
     sumup_mad_accum_ais = list()
     
-    sublimation_data = SublimationDataset(mar_model_gris, mar_model_ais,
-                                          geod=geod)
-    
     for key, accum in valid_sumup_accum.items():
         sumup_median_lat = np.ma.median(valid_sumup_lat[key])
         sumup_median_lon = np.ma.median(valid_sumup_lon[key])
-        net_vapor_flux = sublimation_data.get_net_vapor_flux(sumup_median_lat,
-                                                             sumup_median_lon)
-        sumup_mad_accum = stats.median_abs_deviation(np.array(accum) -
-                                                     net_vapor_flux,
+        
+        if sublimation_data is None:
+            net_vapor_flux = 0.
+        else:
+            net_vapor_flux = sublimation_data.get_net_vapor_flux(sumup_median_lat,
+                                                                 sumup_median_lon)
+        sumup_mad_accum = stats.median_abs_deviation(np.array(accum) - net_vapor_flux,
                                                      nan_policy='omit')
-        sumup_mean_accum = np.ma.median(np.array(accum) -
-                                        net_vapor_flux)
+        sumup_mean_accum = np.ma.median(np.array(accum) - net_vapor_flux)
         if sumup_mean_accum >= 0: # valid accumulation rate
             era5_lat_idx = valid_era5_lat_idx[key]
             era5_lon_idx = valid_era5_lon_idx[key]
@@ -553,13 +550,16 @@ def run(xlim=80, ylim=140, sublimation_cmap='cet_CET_D1A'):
     # get MARv3 sublimation data
     mar_gris = mar3.MARModelDataset()
     mar_ais = mar3.MARv3p11ModelDataset()
+    sublimation_data = SublimationDataset(mar_gris, mar_ais)
 
     (sumup_gris, sumup_ais, axes) = grid_sumup2era5(xlim=xlim, ylim=ylim,
-                                                    mar_model_gris=mar_gris,
-                                                    mar_model_ais=mar_ais)
-    (sumup_gris_merra2, sumup_ais_merra2, axes) = verify_merra2.grid_sumup2merra2(xlim=xlim,
-                                                                 ylim=ylim,axes=axes)
-    verify_wecng3.grid_sumup2wfde5(xlim=xlim,ylim=ylim,axes=axes)
+                                                    sublimation_data=sublimation_data)
+    (sumup_gris_merra2, sumup_ais_merra2, axes) = verify_merra2.grid_sumup2merra2(
+                                                         xlim=xlim, ylim=ylim,
+                                                         axes=axes,
+                                                         sublimation_data=sublimation_data)
+    verify_wecng3.grid_sumup2wfde5(xlim=xlim,ylim=ylim,axes=axes,
+                                   sublimation_data=sublimation_data)
     greenland_analysis = analysis_era5.Analysis(compute_means=False,
                                                 greenland=True)
     ant_analysis = analysis_era5.Analysis(compute_means=False,

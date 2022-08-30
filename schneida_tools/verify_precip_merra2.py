@@ -39,7 +39,7 @@ def get_merra2_temporal_means():
         
     return merra2_mean_precip_rootgrp
     
-def grid_sumup2merra2(xlim=150, ylim=150, axes=None):
+def grid_sumup2merra2(xlim=150, ylim=150, axes=None, sublimation_data=None):
     """ Loop through measurements and filter out:
         1. Measurements outside time period of analysis
         2. All measurements that are not from ice cores
@@ -132,9 +132,18 @@ def grid_sumup2merra2(xlim=150, ylim=150, axes=None):
     sumup_mad_accum_gris = list()
     sumup_mad_accum_ais = list()
     for key, accum in valid_sumup_accum.items():
-        sumup_mad_accum = stats.median_abs_deviation(accum,
-                                           nan_policy='omit')
-        sumup_mean_accum = np.ma.median(accum)
+        sumup_median_lat = np.ma.median(valid_sumup_lat[key])
+        sumup_median_lon = np.ma.median(valid_sumup_lon[key])
+        
+        if sublimation_data is None:
+            net_vapor_flux = 0.
+        else:
+            net_vapor_flux = sublimation_data.get_net_vapor_flux(sumup_median_lat,
+                                                                 sumup_median_lon)
+        
+        sumup_mad_accum = stats.median_abs_deviation(np.array(accum) - net_vapor_flux,
+                                                     nan_policy='omit')
+        sumup_mean_accum = np.ma.median(nparray(accum) - net_vapor_flux)
         if sumup_mean_accum >= 0: # valid accumulation rate
             merra2_lat_idx = valid_merra2_lat_idx[key]
             merra2_lon_idx = valid_merra2_lon_idx[key]
@@ -146,8 +155,6 @@ def grid_sumup2merra2(xlim=150, ylim=150, axes=None):
                     lon_gris_sample.append(merra2_mean_precip_rootgrp.variables['lon'][merra2_lon_idx])
                 else:
                     # Store median SUMup locations
-                    sumup_median_lat = np.ma.median(valid_sumup_lat[key])
-                    sumup_median_lon = np.ma.median(valid_sumup_lon[key])
                     lat_gris_sample.append(sumup_median_lat)
                     lon_gris_sample.append(sumup_median_lon)
                 
@@ -166,8 +173,6 @@ def grid_sumup2merra2(xlim=150, ylim=150, axes=None):
                     lon_ais_sample.append(merra2_mean_precip_rootgrp.variables['lon'][merra2_lon_idx])
                 else:
                     # Store median SUMup locations
-                    sumup_median_lat = np.ma.median(valid_sumup_lat[key])
-                    sumup_median_lon = np.ma.median(valid_sumup_lon[key])
                     lat_ais_sample.append(sumup_median_lat)
                     lon_ais_sample.append(sumup_median_lon)
                 
