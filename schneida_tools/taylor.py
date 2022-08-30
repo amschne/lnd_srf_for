@@ -114,26 +114,26 @@ def get_gris_results():
     """ Results derived separately from analysis_era5 and analysis_gswp3 programs
     """
     
-    sumup_radius = [23.719029486103437, # ERA5 cm /yr
-                    23.371683440537733, # MERRA-2
-                    23.719029486103437, # CRUNCEP
-                    23.719029486103437, # GSWP3
-                    23.719029486103437] # WFDE5
+    sumup_radius = [24.049718323938052, #23.719029486103437, # ERA5 cm /yr
+                    23.996971676499307, # 23.371683440537733, # MERRA-2
+                    24.051362434541037, # 23.719029486103437, # CRUNCEP
+                    24.051362434541037, # 23.719029486103437, # GSWP3
+                    24.051362434541037] # 23.719029486103437] # WFDE5
 
     
-    era5_theta = 0.2048826648895172 # radians
+    era5_theta = 0.2045482908902662 #0.2048826648895172 # radians
     era5_radius = 26.893792683943417 # cm /yr
     
-    merra2_theta = 0.28582511855431747 # radians
-    merra2_radius = 22.6284310247389 # cm/yr
+    merra2_theta = 0.21896414957472363 # 0.28582511855431747 # radians
+    merra2_radius = 22.574283660341457 # 22.6284310247389 # cm/yr
     
-    wfde5_theta = 0.9377025075172972 # radians
+    wfde5_theta = 0.9503020169170465 # 0.9377025075172972 # radians
     wfde5_radius = 35.271312887883006 # cm per year
     
-    gswp3_theta = 1.0234720512343265 # radians
+    gswp3_theta = 1.0392600516288513# 1.0234720512343265 # radians
     gswp3_radius = 43.06229791795151 # cm /yr
     
-    cruncep_theta = 1.0171079721060172 # radians
+    cruncep_theta = 1.0389109501180485 # 1.0171079721060172 # radians
     cruncep_radius = 22.5894250371343 # cm /yr
     
     return({'era5': (era5_theta, era5_radius),
@@ -145,25 +145,25 @@ def get_gris_results():
     
 def get_ais_results():
 
-    sumup_radius = [11.269603662650837, # ERA5 cm/yr
-                    11.496933568622762, # MERRA2 cm/yr
-                    11.505834868534699, # CRUNCEP cm/yr
-                    11.505834868534699, # GWSP3
-                    11.505834868534699] # WFDE5
+    sumup_radius = [11.214891060861696,#11.269603662650837, # ERA5 cm/yr
+                    11.337603133420226, # 11.496933568622762, # MERRA2 cm/yr
+                    11.347537483099194, # 11.505834868534699, # CRUNCEP cm/yr
+                    11.347537483099194, # 11.505834868534699, # GWSP3
+                    11.347537483099194] # 11.505834868534699] # WFDE5
                     
-    era5_theta = 0.5816203992277824 # radians
+    era5_theta = 0.5420903918917168 # 0.5816203992277824 # radians
     era5_radius = 10.987223390578112 # cm /yr
     
-    merra2_theta = 0.5591699951113855 # radians
+    merra2_theta = 0.5176767766930164 # 0.5591699951113855 # radians
     merra2_radius = 10.54466748441476 # cm/yr
     
-    wfde5_theta =  0.6035660695589737 # radians
+    wfde5_theta =  0.5547841649037506 # 0.6035660695589737 # radians
     wfde5_radius = 10.63814578363175 # cm/yr
     
-    gswp3_theta = 0.8255956397327044 # radians
+    gswp3_theta = 0.784882815993962 # 0.8255956397327044 # radians
     gswp3_radius = 12.86432345537742
     
-    cruncep_theta = 1.2607223588974623# radians
+    cruncep_theta = 1.19774845566386 # 1.2607223588974623# radians
     cruncep_radius = 13.558739442821484 # cm/yr
     
     return({'era5': (era5_theta, era5_radius),
