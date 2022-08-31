@@ -184,11 +184,15 @@ class Analysis(object):
         """
         # Get CRUNCEP temporal mean precipitation
         cruncep_data = cruncep.CRUNCEP7()
-        cruncep_data.get_precip()
+        if self.compute_means:
+            cruncep_data.get_precip()
+        else:
+            cruncep_data.precip_rootgrp=None
         cruncep_mean_precip_rootgrp = cruncep.get_temporal_mean(cruncep_data.precip_rootgrp,
                                                                 'PRECTmms',
                                                               compute=self.compute_means)
-        cruncep_data.precip_rootgrp.close()
+        if self.compute_means:
+            cruncep_data.precip_rootgrp.close()
         # mm H2O / sec -> cm H2O / yr.
         cruncep_time_mean_precip = (60. * 60. * 24. * 365.25 *
                             cruncep_mean_precip_rootgrp.variables['PRECTmms'][:]) / 10.
@@ -196,17 +200,26 @@ class Analysis(object):
         # Get WFDE5 temporal mean precipitation
         wfde5_data = wfde5.WFDE5()
         # WFDE5 rainfall
-        wfde5_data.get_rainf()
+        if self.compute_means:
+            wfde5_data.get_rainf()
+        else:
+            wfde5_data.rainf=None
         wfde5_mean_rainf_rootgrp = wfde5.get_temporal_mean(wfde5_data.rainf,
                                                            'Rainf',
                                                            compute=self.compute_means)
-        wfde5.close_rootgrps(wfde5_data.rainf)
+        if self.compute_means:
+            wfde5.close_rootgrps(wfde5_data.rainf)
+        
         # WFDE5 snowfall
-        wfde5_data.get_snowf()
+        if self.compute_means:
+            wfde5_data.get_snowf()
+        else:
+            wfde5_data.snowf=None
         wfde5_mean_snowf_rootgrp = wfde5.get_temporal_mean(wfde5_data.snowf,
                                                            'Snowf',
                                                            compute=self.compute_means)
-        wfde5.close_rootgrps(wfde5_data.snowf)
+        if self.compute_means:
+            wfde5.close_rootgrps(wfde5_data.snowf)
         # Integrate total precip, convert to cm / yr., and shift WFDE5 data
         # toCRUNCEP grid
         wfde5_time_mean_precip = np.roll((60.* 60. * 24. * 365.25 *
