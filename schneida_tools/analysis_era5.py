@@ -25,13 +25,14 @@ from schneida_tools import verify_precip_era5 as verify_precip
 #from schneida_tools import gswp3
 #from schneida_tools import wfde5
 from schneida_args import get_args
+import mar3
 import era5
 import coordinate_space
 import gris_dem
 import ais_dem
 from verify_precip import grid_sumup2wfde5
 from verify_precip_merra2 import grid_sumup2merra2
-import verify_precip_era5 as verify_precip
+import verify_precip_era5
 from analysis_gswp3 import Analysis as GP3Analysis
 from analysis import Analysis as CN7Analysis
 from analysis_merra2 import Analysis as MR2Analysis
@@ -507,13 +508,13 @@ def run_grl(debug=True, elevation_interval=1000):
     # get MARv3 sublimation data
     mar_gris = mar3.MARModelDataset()
     mar_ais = mar3.MARv3p11ModelDataset()
-    sublimation_data = SublimationDataset(mar_gris, mar_ais)
+    sublimation_data = verify_precip_era5.SublimationDataset(mar_gris, mar_ais)
     
     # ERA 5 Greenland map
     greenland_analysis = Analysis(compute_means=False,
                                       greenland=True)
     if rank==0:
-        (sumup_gris, sumup_ais, scatter_axes) = verify_precip.grid_sumup2era5(
+        (sumup_gris, sumup_ais, scatter_axes) = verify_precip_era5.grid_sumup2era5(
                                                                 closefig=True,
                                               sublimation_data=sublimation_data)
 
@@ -558,7 +559,7 @@ def run_grl(debug=True, elevation_interval=1000):
         # MERRA-2 Greenland map
         merra2_analysis = MR2Analysis(compute_means=False,
                                       greenland=True)
-        (sumup_gris, sumup_ais, scatter_axes) = verify_precip.grid_sumup2merra2(
+        (sumup_gris, sumup_ais, scatter_axes) = grid_sumup2merra2(
                                                                 closefig=True,
                                                   sublimation_data=sublimation_data)
 
@@ -623,7 +624,7 @@ def run(debug=True):
 
     if rank==0:
         # Precipitation
-        (sumup_gris, sumup_ais) = verify_precip.grid_sumup2era5()
+        (sumup_gris, sumup_ais) = verify_precip_era5.grid_sumup2era5()
         if not debug:
             comm.send(sumup_ais, dest=3)
         ax = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150)

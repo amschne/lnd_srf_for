@@ -155,12 +155,14 @@ class Analysis(object):
             latixy=util.add_cyclic_point(latixy)
             merra2_time_mean_precip=util.add_cyclic_point(merra2_time_mean_precip)
             merra2_quad_mesh = ax.contourf(longxy, latixy,
-                                           coordinate_space.mask_vals(longxy,
-                                                             latixy,
-                                                              merra2_time_mean_precip,
-                                                              greenland=self.greenland,
-                                                              antarctica=self.antarctica),
-                                        extend='both',
+                                     np.ma.clip(coordinate_space.mask_vals(
+                                                          longxy,
+                                                          latixy,
+                                                          merra2_time_mean_precip,
+                                                          greenland=self.greenland,
+                                                          antarctica=self.antarctica),
+                                                cm_per_year_min, cm_per_year_max),
+                                        #extend='both',
                                         levels=int((cm_per_year_max-cm_per_year_min)/5),
                                         cmap=cmap,
                                         vmin=cm_per_year_min, vmax=cm_per_year_max,
@@ -181,7 +183,7 @@ class Analysis(object):
         self.precip_cm_per_year_min = cm_per_year_min
         self.precip_cm_per_year_max = cm_per_year_max
         
-        ax.set_title('MERRA-2')
+        ax.set_title(' MERRA-2')
         return ax
         
     def close_mean_precip_rootgrps(self):

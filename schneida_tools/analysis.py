@@ -19,7 +19,7 @@ from schneida_tools import verify_precip
 import ipdb
 
 def set_map_titles(axes):
-    axes[0].set_title('CRUNCEP')
+    axes[0].set_title(' CRUNCEP')
     '''
     axes[1].set_title('WFDE5')
     axes[2].set_title('CRUNCEP7 - WFDE5')
@@ -338,7 +338,7 @@ class Analysis(object):
                             ax=axes[3], orientation='horizontal')
         rel_cbar.set_label(r'Difference ($\%$)')
         '''
-        self.draw_elevation_contours(axes[0], levels_interval=elevation_levels)
+        self.draw_elevation_contours(axes, levels_interval=elevation_levels)
 
         self.wfde5_mean_rainf_rootgrp = wfde5_mean_rainf_rootgrp
         self.wfde5_mean_snowf_rootgrp = wfde5_mean_snowf_rootgrp

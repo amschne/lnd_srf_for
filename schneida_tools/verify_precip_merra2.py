@@ -39,7 +39,8 @@ def get_merra2_temporal_means():
         
     return merra2_mean_precip_rootgrp
     
-def grid_sumup2merra2(xlim=150, ylim=150, axes=None, sublimation_data=None):
+def grid_sumup2merra2(xlim=150, ylim=150, axes=None, sublimation_data=None,
+                      closefig=False):
     """ Loop through measurements and filter out:
         1. Measurements outside time period of analysis
         2. All measurements that are not from ice cores
@@ -143,7 +144,7 @@ def grid_sumup2merra2(xlim=150, ylim=150, axes=None, sublimation_data=None):
         
         sumup_mad_accum = stats.median_abs_deviation(np.array(accum) - net_vapor_flux,
                                                      nan_policy='omit')
-        sumup_mean_accum = np.ma.median(nparray(accum) - net_vapor_flux)
+        sumup_mean_accum = np.ma.median(np.array(accum) - net_vapor_flux)
         if sumup_mean_accum >= 0: # valid accumulation rate
             merra2_lat_idx = valid_merra2_lat_idx[key]
             merra2_lon_idx = valid_merra2_lon_idx[key]
@@ -276,9 +277,9 @@ def grid_sumup2merra2(xlim=150, ylim=150, axes=None, sublimation_data=None):
                                np.around(np.mean(merra2_ais_errors),
                                           decimals=2)
                                 ))
-
-    #plt.savefig(path.join('results', 'merra2_sumup_gris_ais_precip.png'), dpi=600)
-    #plt.close()
+    if closefig:
+        #plt.savefig(path.join('results', 'merra2_sumup_gris_ais_precip.png'), dpi=600)
+        plt.close()
     
     return((lat_gris_sample, lon_gris_sample, sumup_mean_accum_gris, gris_n_samples),
            (lat_ais_sample, lon_ais_sample, sumup_mean_accum_ais, ais_n_samples),
