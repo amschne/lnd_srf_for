@@ -112,7 +112,7 @@ class Analysis(object):
     def compare_precip(self,
                        #cmap='cet_CET_L6_r',
                        cmap='cet_CET_L7_r', cm_per_year_min=0,
-                       cm_per_year_max=180):
+                       cm_per_year_max=180, ax=None, elevation_levels=500):
         """
         """
         # Get MERRA-2 temporal mean precipitation
@@ -126,8 +126,9 @@ class Analysis(object):
         merra2_time_mean_precip = (60.*60.*24.*365.25 *
                     merra2_mean_precip_rootgrp.variables[merra2.TOT_PREC][:]) / 10.
         # Setup maps
-        ax = analysis_era5.setup_map(greenland=self.greenland,
-                                     antarctica=self.antarctica)
+        if ax is None:
+            ax = analysis_era5.setup_map(greenland=self.greenland,
+                                         antarctica=self.antarctica)
         # Map data
         print('Mapping precipitation data to figure...')
         longxy, latixy = np.meshgrid(merra2_mean_precip_rootgrp.variables['lon'][:],
@@ -165,14 +166,14 @@ class Analysis(object):
                                         vmin=cm_per_year_min, vmax=cm_per_year_max,
                                         transform=ccrs.PlateCarree())
 
-
+        '''
         # Colorbar
         fig = plt.gcf()
         merra2_cbar = fig.colorbar(merra2_quad_mesh,
                             ax=ax, orientation='vertical')
         merra2_cbar.set_label('precipitation (cm w.eq. yr$^{-1}$)')
-
-        self.draw_elevation_contours(ax)
+        '''
+        self.draw_elevation_contours(ax, levels_interval=elevation_levels)
 
         self.merra2_mean_precip_rootgrp = merra2_mean_precip_rootgrp
         
@@ -180,6 +181,7 @@ class Analysis(object):
         self.precip_cm_per_year_min = cm_per_year_min
         self.precip_cm_per_year_max = cm_per_year_max
         
+        ax.set_title('MERRA-2')
         return ax
         
     def close_mean_precip_rootgrps(self):
@@ -187,7 +189,7 @@ class Analysis(object):
         '''
         self.merra2_mean_precip_rootgrp.close()
 
-    def draw_elevation_contours(self, ax):
+    def draw_elevation_contours(self, ax, levels_interval=500):
         """
         Draw contours
         """
@@ -197,7 +199,7 @@ class Analysis(object):
             #dem.print_dataset_info()
             dem.draw_contours(ax,
                               path.join('data_clean', 'gimpdem_90m_v01.1.nc'),
-                              downsample=10)
+                              downsample=10, levels_interval=levels_interval)
     
         elif self.antarctica:
             # Add elevation contours

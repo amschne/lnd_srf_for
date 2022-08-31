@@ -4,6 +4,7 @@ from os import path
 
 import numpy as np
 import cartopy.crs as ccrs
+from cartopy import util
 from matplotlib import pyplot as plt
 import colorcet as cc
 
@@ -18,11 +19,12 @@ from schneida_tools import verify_precip
 import ipdb
 
 def set_map_titles(axes):
-    axes[0].set_title('CRUNCEP7')
+    axes[0].set_title('CRUNCEP')
+    '''
     axes[1].set_title('WFDE5')
     axes[2].set_title('CRUNCEP7 - WFDE5')
     axes[3].set_title('((CRUNCEP7 - WFDE5)\n/ WFDE5) ' + r'$\times$ 100')
-
+    '''
 class Analysis(object):
     def __init__(self, compute_means=True, greenland=False, antarctica=False):
         self.compute_means=compute_means
@@ -138,7 +140,7 @@ class Analysis(object):
         
         return(axes)
         
-    def draw_elevation_contours(self, axes):
+    def draw_elevation_contours(self, axes, levels_interval=500):
         """
         Draw contours
         """
@@ -150,7 +152,7 @@ class Analysis(object):
                 # Add elevation contours
                 dem.draw_contours(ax,
                                   path.join('data_clean', 'gimpdem_90m_v01.1.nc'),
-                                  downsample=10)
+                                  downsample=10, levels_interval=levels_interval)
     
         elif self.antarctica:
             # Add elevation contours
@@ -177,7 +179,7 @@ class Analysis(object):
     
     def compare_precip(self, #cmap='cet_CET_L6_r',
                        cmap='cet_CET_L7_r', cm_per_year_min=0,
-                       cm_per_year_max=180):
+                       cm_per_year_max=180, axes=None, elevation_levels=500):
         """
         """
         # Get CRUNCEP temporal mean precipitation
@@ -217,15 +219,50 @@ class Analysis(object):
         time_mean_precip_diffs_rel = time_mean_precip_diffs / wfde5_time_mean_precip
     
         # Setup maps
-        axes = coordinate_space.four_map_horizontal_comparison(greenland=self.greenland,
+        if axes is None:
+            axes = coordinate_space.four_map_horizontal_comparison(greenland=self.greenland,
                                                                antarctica=self.antarctica)
+            cbar_axes = axes
+        else:
+            grl_subplots = True
+            grl_axes = axes
+            axes = [grl_axes[2]]
+        
         set_map_titles(axes)
 
         # Map data
         print('Mapping precipitation data to figure...')
         longxy = cruncep_mean_precip_rootgrp.variables['LONGXY'][:]
         latixy = cruncep_mean_precip_rootgrp.variables['LATIXY'][:]
-    
+        
+        longxy=util.add_cyclic_point(longxy)
+        for i in range(longxy.shape[0]):
+            if True:#longxy[i,-1] < 0:
+                # check for negative longitude on right most side,
+                # change to positive
+                longxy[i, -1] +=360
+        latixy=util.add_cyclic_point(latixy)
+        cruncep_time_mean_precip=util.add_cyclic_point(cruncep_time_mean_precip)
+        #wfde5_time_mean_precip=util.add_cyclic_point(wfde5_time_mean_precip)
+        #time_mean_precip_diffs=util.add_cyclic_point(time_mean_precip_diffs)
+        #time_mean_precip_diffs_rel=util.add_cyclic_point(time_mean_precip_diffs_rel)
+        
+        cruncep_quad_mesh = axes[0].contourf(
+                         longxy.data, latixy.data,
+                         np.ma.clip(coordinate_space.mask_vals(longxy,
+                                                               latixy,
+                                                               cruncep_time_mean_precip,
+                                                               greenland=self.greenland,
+                                                               antarctica=self.antarctica),
+                                                               cm_per_year_min,
+                                                               cm_per_year_max),
+                         levels=int((cm_per_year_max-cm_per_year_min)/5.),
+                         #extend='both',
+                         cmap=cmap,
+                         vmin=cm_per_year_min, vmax=cm_per_year_max,
+                         transform=ccrs.PlateCarree())
+        
+        '''
         cruncep_quad_mesh = axes[0].pcolormesh(longxy.data, latixy.data,
                                            np.ma.clip(coordinate_space.mask_vals(longxy, latixy,
                                                                 cruncep_time_mean_precip,
@@ -266,15 +303,19 @@ class Analysis(object):
                                              shading='nearest', cmap='cet_CET_D10',
                                              vmin=-50, vmax=50,
                                              transform=ccrs.PlateCarree())
+        '''
+        '''
         # Colorbar
         fig = plt.gcf()
         cruncep_cbar = fig.colorbar(cruncep_quad_mesh,
                             ax=axes[0:2], orientation='horizontal')
         cruncep_cbar.set_label('Precipitation rate (cm H$_2$O yr$^{-1}$)')
         '''
+        '''
         wfde5_cbar = fig.colorbar(wfde5_quad_mesh,
                             ax=axes[1], orientation='horizontal')
         wfde5_cbar.set_label('Precipitation (cm H$_2$O yr$^{-1}$)')
+        '''
         '''
         diffs_cbar = fig.colorbar(diffs_quad_mesh,
                             ax=axes[2], orientation='horizontal')
@@ -283,8 +324,8 @@ class Analysis(object):
         rel_cbar = fig.colorbar(rel_diffs_quad_mesh,
                             ax=axes[3], orientation='horizontal')
         rel_cbar.set_label(r'Difference ($\%$)')
-
-        self.draw_elevation_contours(axes)
+        '''
+        self.draw_elevation_contours(axes[0], levels_interval=elevation_levels)
 
         self.wfde5_mean_rainf_rootgrp = wfde5_mean_rainf_rootgrp
         self.wfde5_mean_snowf_rootgrp = wfde5_mean_snowf_rootgrp
@@ -292,6 +333,9 @@ class Analysis(object):
         self.precip_cmap = cmap
         self.precip_cm_per_year_min = cm_per_year_min
         self.precip_cm_per_year_max = cm_per_year_max
+        
+        if grl_subplots:
+            axes = grl_axes
         
         return axes
         

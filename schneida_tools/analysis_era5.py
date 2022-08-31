@@ -30,8 +30,11 @@ import coordinate_space
 import gris_dem
 import ais_dem
 from verify_precip import grid_sumup2wfde5
+from verify_precip_merra2 import grid_sumup2merra2
 import verify_precip_era5 as verify_precip
 from analysis_gswp3 import Analysis as GP3Analysis
+from analysis import Analysis as CN7Analysis
+from analysis_merra2 import Analysis as MR2Analysis
 
 import ipdb
 
@@ -500,24 +503,34 @@ def run_grl(debug=True, elevation_interval=1000):
         rank = comm.Get_rank()
         
     axes = setup_map_fig3()
+    
+    # get MARv3 sublimation data
+    mar_gris = mar3.MARModelDataset()
+    mar_ais = mar3.MARv3p11ModelDataset()
+    sublimation_data = SublimationDataset(mar_gris, mar_ais)
+    
+    # ERA 5 Greenland map
     greenland_analysis = Analysis(compute_means=False,
                                       greenland=True)
     if rank==0:
         (sumup_gris, sumup_ais, scatter_axes) = verify_precip.grid_sumup2era5(
-                                                                closefig=True)
+                                                                closefig=True,
+                                              sublimation_data=sublimation_data)
 
         ax = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
                                            ax=axes[0], elevation_levels=elevation_interval)
-    # Get and plot SUMup locations
+       # Get and plot SUMup locations
         ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
                vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
                linewidths=0.5,
                transform=ccrs.PlateCarree())
     
+        # GSWP3 and WFDE5 Greenland maps
         gswp3_analysis = GP3Analysis(compute_means=False,
                                      greenland=True)
-        (sumup_gris, sumup_ais, scatter_axes) = grid_sumup2wfde5(savefig=False)
+        (sumup_gris, sumup_ais, scatter_axes) = grid_sumup2wfde5(savefig=False,
+                                                    sublimation_data=sublimation_data)
         axes = gswp3_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
                                              axes=axes, elevation_levels=elevation_interval)
         axes[3].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
@@ -530,7 +543,33 @@ def run_grl(debug=True, elevation_interval=1000):
                    vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
                    linewidths=0.5,
                    transform=ccrs.PlateCarree())
-    
+        
+        # CRUNCEPv7 Greenland map
+        cruncep_analysis = CN7Analysis(compute_means=False, greenland=True)
+        
+        axes = cruncep_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
+                                               axes=axes, elevation_levels=elevation_interval)
+        axes[2].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+                cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
+               vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
+               linewidths=0.5,
+               transform=ccrs.PlateCarree())
+               
+        # MERRA-2 Greenland map
+        merra2_analysis = MR2Analysis(compute_means=False,
+                                      greenland=True)
+        (sumup_gris, sumup_ais, scatter_axes) = verify_precip.grid_sumup2merra2(
+                                                                closefig=True,
+                                                  sublimation_data=sublimation_data)
+
+        merra2_ax = merra2_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
+                                                   ax=axes[4], elevation_levels=elevation_interval)
+        # Get and plot SUMup locations
+        merra2_ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+                   cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
+                   vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
+                   linewidths=0.5,
+                   transform=ccrs.PlateCarree())
     
     plt.sca(ax)
     plt.savefig('pyplot_figure.png', dpi=600)
@@ -538,6 +577,10 @@ def run_grl(debug=True, elevation_interval=1000):
     # Close figure and files
     plt.close()
     greenland_analysis.close_mean_precip_rootgrps()
+    gswp3_analysis.close_mean_precip_rootgrps()
+    cruncep_analysis.close_mean_precip_rootgrps()
+    merra2_analysis.close_mean_precip_rootgrps()
+    
 
 def run(debug=True):
     ''' matplotlib Style files to choose from:
