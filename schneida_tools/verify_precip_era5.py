@@ -609,9 +609,9 @@ def run(xlim=80, ylim=140, sublimation_cmap='cet_CET_D1A'):
     
     handles, labels = plot_gr.legend_elements(prop="sizes", color='black',
                                   alpha=0.4, num=4)
-    legend = greenland_ax.legend(handles, labels, loc="lower right", title="amount")
+    legend = greenland_ax.legend(handles, labels, loc="lower right", title="number")
     #handles, labels = plot_ant.legend_elements(prop="sizes", alpha=0.6, num=2)
-    #legend = ant_ax.legend(handles, labels, loc="lower left", title="amount")
+    #legend = ant_ax.legend(handles, labels, loc="lower left", title="number")
     plt.savefig(path.join('results','sumup_accum_locs.png'), dpi=600)
 
 def main():
