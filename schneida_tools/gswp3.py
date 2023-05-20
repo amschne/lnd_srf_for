@@ -102,7 +102,7 @@ def get_temporal_mean(rootgrp_in, var, compute=True, results_dir='results'):
     # Open and return temporal mean dataset
     return(Dataset(file_path, 'r'))
         
-def clean_data():
+def clean_data(only_precip=False):
     """ 1. Gather raw data
         2. Call ncks to change the time dimension to the record dimension.
     """
@@ -116,21 +116,22 @@ def clean_data():
                                    os.path.join(args.gswp3_clean_data_path,
                                    args.gswp3_precip_dir))
     
-    # Clean solar data
-    solar_path = os.path.join(args.gswp3_raw_data_path,
-                              args.gswp3_solar_dir)
-    solar_files = os.listdir(solar_path)
-    ncks_mk_time_rec_dmn.call_ncks(solar_path, solar_files,
-                                   os.path.join(args.gswp3_clean_data_path,
-                                   args.gswp3_solar_dir))
+    if not only_precip:
+        # Clean solar data
+        solar_path = os.path.join(args.gswp3_raw_data_path,
+                                  args.gswp3_solar_dir)
+        solar_files = os.listdir(solar_path)
+        ncks_mk_time_rec_dmn.call_ncks(solar_path, solar_files,
+                                       os.path.join(args.gswp3_clean_data_path,
+                                       args.gswp3_solar_dir))
     
-    # Clean temperature, pressure, humidity, wind, and longwave data
-    tphwl_path = os.path.join(args.gswp3_raw_data_path,
-                              args.gswp3_tphwl_dir)
-    tphwl_files = os.listdir(tphwl_path)
-    ncks_mk_time_rec_dmn.call_ncks(tphwl_path, tphwl_files,
-                                   os.path.join(args.gswp3_clean_data_path,
-                                   args.gswp3_tphwl_dir))
+        # Clean temperature, pressure, humidity, wind, and longwave data
+        tphwl_path = os.path.join(args.gswp3_raw_data_path,
+                                  args.gswp3_tphwl_dir)
+        tphwl_files = os.listdir(tphwl_path)
+        ncks_mk_time_rec_dmn.call_ncks(tphwl_path, tphwl_files,
+                                       os.path.join(args.gswp3_clean_data_path,
+                                       args.gswp3_tphwl_dir))
 
 def test():
     data = GSWP3()
@@ -145,18 +146,18 @@ def test():
     data.tphwl_rootgrp.close()
 
 def run():
-    #clean_data()
+    clean_data(only_precip=True)
     #test()
     data = GSWP3()
-    data.get_tphwl()
-    mean_temperature = get_temporal_mean(data.tphwl_rootgrp, 'TBOT', compute=True)
-    data.tphwl_rootgrp.close()
+    #data.get_tphwl()
+    #mean_temperature = get_temporal_mean(data.tphwl_rootgrp, 'TBOT', compute=True)
+    #data.tphwl_rootgrp.close()
     
     data.get_precip()
     mean_precip = get_temporal_mean(data.precip_rootgrp, 'PRECTmms', compute=True)
     data.precip_rootgrp.close()
     
-    ipdb.set_trace()
+    #ipdb.set_trace()
     
 def main():
     run()

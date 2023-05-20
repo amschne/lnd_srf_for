@@ -13,7 +13,7 @@ import mpl_toolkits.axisartist.floating_axes as fa
 import mpl_toolkits.axisartist.grid_finder as gf
 from matplotlib.projections import PolarAxes
 
-AREA_FACTOR = 15 #/ 25.
+AREA_FACTOR = 11 #/ 25.
 
 class TaylorDiagram(object):
     """
@@ -195,7 +195,7 @@ def run():
     ax.scatter(gris_results['wfde5'][0], gris_results['wfde5'][1],
                c='#1b3d6d', s= 0.5*AREA_FACTOR*33, alpha=0.5,
                marker='o')
-    ax.scatter(ais_results['wfde5'][0], ais_results['wfde5'][1],
+    ax.scatter(ais_results['wfde5'][0] + 0.1, ais_results['wfde5'][1],
                s=AREA_FACTOR *60,
                c='black', marker='$\mathrm{WE5_A^{x}}$')
     ax.scatter(ais_results['wfde5'][0], ais_results['wfde5'][1],
@@ -237,7 +237,7 @@ def run():
     ax.scatter(gris_results['merra2'][0], gris_results['merra2'][1],
                c='#7ab800', s=0.5*AREA_FACTOR*34, alpha=0.5,
                marker='o')
-    ax.scatter(ais_results['merra2'][0], ais_results['merra2'][1],
+    ax.scatter(ais_results['merra2'][0] - 0.3, ais_results['merra2'][1] - 2,
                s=AREA_FACTOR*61,
                c='black', marker='$\mathrm{MR2_A^{x}}$')
     ax.scatter(ais_results['merra2'][0], ais_results['merra2'][1],
@@ -251,7 +251,7 @@ def run():
     ax.scatter(gris_results['era5'][0], gris_results['era5'][1],
                c='#0064a4', s=0.5*AREA_FACTOR*33, alpha=0.5,
                marker='o')
-    ax.scatter(ais_results['era5'][0], ais_results['era5'][1],
+    ax.scatter(ais_results['era5'][0] - 0.2, ais_results['era5'][1] + 1,
                s=AREA_FACTOR*65,
                c='black', marker='$\mathrm{ER5_A^{x}}$')
     ax.scatter(ais_results['era5'][0], ais_results['era5'][1],

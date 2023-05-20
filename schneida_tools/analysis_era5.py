@@ -47,6 +47,49 @@ def set_map_titles(axes):
     axes[3].set_title('((GSWP3 - WFDE5)\n/ WFDE5) ' + r'$\times$ 100')
 """
 
+def setup_map_supplement():
+    plt.style.use('agu_full')
+    #plt.style.use('grl')
+    
+    ais_map_proj = ccrs.LambertAzimuthalEqualArea(central_longitude=0,
+                                              central_latitude=-90,
+                                              false_easting=0.0,
+                                              false_northing=0.0)
+                                              
+    ax_era5_a = plt.subplot(2,3,1,projection=ais_map_proj)
+    plt.title('a.', loc='left')
+    ax_wfde5_a = plt.subplot(2,3,2,projection=ais_map_proj)
+    plt.title('b.', loc='left')
+    ax_cruncep_a = plt.subplot(2,3,3,projection=ais_map_proj)
+    plt.title('c.', loc='left')
+    ax_gswp3_a = plt.subplot(2,3,4,projection=ais_map_proj)
+    plt.title('d.', loc='left')
+    ax_merra2_a = plt.subplot(2,3,5,projection=ais_map_proj)
+    plt.title('e.', loc='left')
+    
+    axes = [ax_era5_a, ax_wfde5_a, ax_cruncep_a, ax_gswp3_a, ax_merra2_a]
+    
+    for i, ax in enumerate(axes):
+        ax.set_extent((-180, 180, -90, -65), crs=ccrs.PlateCarree())
+        gl = ax.gridlines(draw_labels=True,
+                                    xlocs=np.arange(-180,180,15),
+                                    ylocs=np.arange(-75,90,15),
+                                    dms=False,
+                                    x_inline=None,
+                                    y_inline=None,
+                                    xformatter=None, yformatter=None,
+                                    color='black',alpha=0.2,#555759',
+                                    linewidths=0.5)
+        gl.xlabel_style = {'size': 6}
+        gl.ylabel_style = {'size':6} 
+        if i<4:#i==0 or i==1 or i==3:
+            gl.right_labels = False
+        if i==1 or i==2 or i==4:
+            gl.left_labels = False
+        gl.bottom_labels = False
+        
+    return axes
+
 def setup_map_fig3():
     plt.style.use('agu_quarter')
     #plt.style.use('grl')
@@ -496,92 +539,185 @@ def test():
     gswp3.test()
     wfde5.test()
 
-def run_grl(debug=True, elevation_interval=1000):
+def run_grl(debug=True, elevation_interval=1000, greenland=True, antarctica=False):
     if debug:
         rank=0
     else:
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
         
-    axes = setup_map_fig3()
+    if greenland:
+        axes = setup_map_fig3()
+    if antarctica:
+        axes_ais = setup_map_supplement()
     
     # get MARv3 sublimation data
     mar_gris = mar3.MARModelDataset()
     mar_ais = mar3.MARv3p11ModelDataset()
     sublimation_data = verify_precip_era5.SublimationDataset(mar_gris, mar_ais)
     
-    # ERA 5 Greenland map
-    greenland_analysis = Analysis(compute_means=False,
+    if greenland:
+        # ERA 5 Greenland map
+        greenland_analysis = Analysis(compute_means=False,
                                       greenland=True)
+    if antarctica:
+        # Antarctica map
+        antarctica_analysis = Analysis(compute_means=False,
+                                       antarctica=True)
     if rank==0:
         (sumup_gris, sumup_ais, scatter_axes) = verify_precip_era5.grid_sumup2era5(
                                                                 closefig=True,
                                               sublimation_data=sublimation_data)
 
-        ax = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
-                                           ax=axes[0], elevation_levels=elevation_interval)
-       # Get and plot SUMup locations
-        ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+        if greenland:
+            ax = greenland_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
+                                              ax=axes[0], elevation_levels=elevation_interval)
+            # Get and plot SUMup locations
+            ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
                vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
                linewidths=0.5,
                transform=ccrs.PlateCarree())
+                                           
+        if antarctica:
+            ax_ais = antarctica_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
+                                   ax=axes_ais[0], elevation_levels=elevation_interval)
+               
+            ax_ais.scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
+                       cmap=antarctica_analysis.precip_cmap,
+                       vmin=antarctica_analysis.precip_cm_per_year_min,
+                       vmax=antarctica_analysis.precip_cm_per_year_max,
+                       edgecolors='black',
+                       linewidths=0.5,
+                       transform=ccrs.PlateCarree())
     
-        # GSWP3 and WFDE5 Greenland maps
-        gswp3_analysis = GP3Analysis(compute_means=False,
+        if greenland:
+            # GSWP3 and WFDE5 Greenland maps
+            gswp3_analysis = GP3Analysis(compute_means=False,
                                      greenland=True)
+        if antarctica:
+            # Antarctica
+            gswp3_analysis_ais = GP3Analysis(compute_means=False,
+                                             antarctica=True)
+        
         (sumup_gris, sumup_ais, scatter_axes) = grid_sumup2wfde5(savefig=False,
                                                     sublimation_data=sublimation_data)
-        axes = gswp3_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
-                                             axes=axes, elevation_levels=elevation_interval)
-        axes[3].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+        
+        if greenland:
+            axes = gswp3_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
+                                                 axes=axes, elevation_levels=elevation_interval)
+        
+            axes[3].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                 cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
                vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
                linewidths=0.5,
                transform=ccrs.PlateCarree())
-        axes[1].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+            
+            axes[1].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                    cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
                    vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
                    linewidths=0.5,
                    transform=ccrs.PlateCarree())
         
-        # CRUNCEPv7 Greenland map
-        cruncep_analysis = CN7Analysis(compute_means=False, greenland=True)
+        if antarctica:
+            axes_ais = gswp3_analysis_ais.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
+                                axes=axes_ais, elevation_levels=elevation_interval)
+            
+            axes_ais[3].scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
+                cmap=antarctica_analysis.precip_cmap,
+                vmin=antarctica_analysis.precip_cm_per_year_min,
+                vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='black',
+                linewidths=0.5,
+                transform=ccrs.PlateCarree())
         
-        axes = cruncep_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
+            axes_ais[1].scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
+                   cmap=antarctica_analysis.precip_cmap,
+                   vmin=antarctica_analysis.precip_cm_per_year_min,
+                   vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='black',
+                   linewidths=0.5,
+                   transform=ccrs.PlateCarree())
+        
+        if greenland:
+            # CRUNCEPv7 Greenland map
+            cruncep_analysis = CN7Analysis(compute_means=False, greenland=True)
+        
+            axes = cruncep_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
                                                axes=axes, elevation_levels=elevation_interval)
-        axes[2].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+            axes[2].scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                 cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
                vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
                linewidths=0.5,
                transform=ccrs.PlateCarree())
                
-        # MERRA-2 Greenland map
-        merra2_analysis = MR2Analysis(compute_means=False,
+        if antarctica:
+            cruncep_analysis_ais = CN7Analysis(compute_means=False, antarctica=True)
+        
+            axes_ais = cruncep_analysis_ais.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
+                                    axes=axes_ais, elevation_levels=elevation_interval)
+            axes_ais[2].scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
+                cmap=antarctica_analysis.precip_cmap,
+                vmin=antarctica_analysis.precip_cm_per_year_min,
+                vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='black',
+               linewidths=0.5,
+               transform=ccrs.PlateCarree())
+        
+        if greenland:
+            # MERRA-2 Greenland map
+            merra2_analysis = MR2Analysis(compute_means=False,
                                       greenland=True)
+        if antarctica:
+            # Antarctica
+            merra2_analysis_ais = MR2Analysis(compute_means=False,
+                                              antarctica=True)
+        
         (sumup_gris, sumup_ais, scatter_axes) = grid_sumup2merra2(
                                                                 closefig=True,
                                                   sublimation_data=sublimation_data)
 
-        merra2_ax = merra2_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
+        if greenland:
+            merra2_ax = merra2_analysis.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
                                                    ax=axes[4], elevation_levels=elevation_interval)
-        # Get and plot SUMup locations
-        merra2_ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
+            # Get and plot SUMup locations
+            merra2_ax.scatter(sumup_gris[1], sumup_gris[0], s=sumup_gris[3], c=sumup_gris[2],
                    cmap=greenland_analysis.precip_cmap, vmin=greenland_analysis.precip_cm_per_year_min,
                    vmax=greenland_analysis.precip_cm_per_year_max, edgecolors='black',
                    linewidths=0.5,
                    transform=ccrs.PlateCarree())
+
+        if antarctica:
+            merra2_ax_ais = merra2_analysis_ais.compare_precip(cm_per_year_min=0, cm_per_year_max=150,
+                                    ax=axes_ais[4], elevation_levels=elevation_interval)
+            # Get and plot SUMup locations
+            merra2_ax_ais.scatter(sumup_ais[1], sumup_ais[0], s=sumup_ais[3], c=sumup_ais[2],
+                   cmap=antarctica_analysis.precip_cmap,
+                   vmin=antarctica_analysis.precip_cm_per_year_min,
+                   vmax=antarctica_analysis.precip_cm_per_year_max, edgecolors='black',
+                   linewidths=0.5,
+                   transform=ccrs.PlateCarree())
     
-    plt.sca(ax)
-    plt.savefig('pyplot_figure.png', dpi=600)
-    plt.show()
+    if greenland:
+        plt.sca(ax)
+        plt.savefig('pyplot_figure.png', dpi=600)
+    
+    if antarctica:
+        plt.sca(ax_ais)
+        plt.savefig('pyplot_figure_supp.png', dpi=600)
+    
+    #plt.show()
     # Close figure and files
     plt.close()
-    greenland_analysis.close_mean_precip_rootgrps()
-    gswp3_analysis.close_mean_precip_rootgrps()
-    cruncep_analysis.close_mean_precip_rootgrps()
-    merra2_analysis.close_mean_precip_rootgrps()
+        
+    if greenland:
+        greenland_analysis.close_mean_precip_rootgrps()
+        gswp3_analysis.close_mean_precip_rootgrps()
+        cruncep_analysis.close_mean_precip_rootgrps()
+        merra2_analysis.close_mean_precip_rootgrps()
     
+    if antarctica:
+        antarctica_analysis.close_mean_precip_rootgrps()
+        gswp3_analysis_ais.close_mean_precip_rootgrps()
+        cruncep_analysis_ais.close_mean_precip_rootgrps()
+        merra2_analysis_ais.close_mean_precip_rootgrps()
 
 def run(debug=True):
     ''' matplotlib Style files to choose from:
@@ -718,7 +854,8 @@ def run(debug=True):
     
 def main():
     #run()
-    run_grl()
+    #run_grl()
+    run_grl(antarctica=True)
 
 if __name__=='__main__':
     main()
