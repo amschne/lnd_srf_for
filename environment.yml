@@ -1,0 +1,12 @@
+name: lnd_srf_for
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pytest
+  - matplotlib
+  - cartopy
+  - colorcet
+  - ipython
+  - gdal
+prefix: /Users/aschneider/.conda/envs/lnd_srf_for
