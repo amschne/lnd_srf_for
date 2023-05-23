@@ -16,8 +16,6 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 import colorcet as cc
 
-import ipdb
-
 WSG_84 = 4326
 EPSG_NSIDC = 3976
 
@@ -194,7 +192,7 @@ def draw_contours(data=os.path.join(os.path.join('data_clean',
     plt.show()
     aisdem.close()
 
-def run():
+def test_run():
     test = AisDem(os.path.join('data_raw', 'krigged_dem_nsidc.bin'))
     test.print_dataset_info()
     #write_netcdf()
@@ -211,7 +209,7 @@ def run():
     plt.show()
 
 def main():
-    run()
+    test_run()
     #draw_contours()
 
 if __name__=='__main__':

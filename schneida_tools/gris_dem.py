@@ -115,7 +115,7 @@ class GrISDEM(object):
                                central_longitude=central_longitude,
                                central_latitude=71.4,
                                false_easting=0.0, false_northing=0.0,
-                               secant_latitudes=None,
+                               #secant_latitudes=None,
                                standard_parallels=(83.4,59.4),
                                globe=None, cutoff=59))
         else:    
@@ -162,7 +162,7 @@ class GrISDEM(object):
             print("Band has a color table with {} "
                   "entries".format(band.GetRasterColorTable().GetCount()))
     
-def run():
+def test_run():
     #plt.style.use('agu_half_vertical')
     test = GrISDEM(path.join('data_raw','gimpdem_90m_v01.1.tif'))
     test.print_dataset_info()
@@ -171,7 +171,7 @@ def run():
     plt.show()
 
 def main():
-    run()
+    test_run()
 
 if __name__=='__main__':
     main()

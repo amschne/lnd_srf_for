@@ -16,7 +16,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import colorcet as cc
 
-from schneida_args import get_args
+from schneida_tools.schneida_args import get_args
 
 class CoordinateSpace(object):
     def __init__(self, spheroid='WGS84'):
