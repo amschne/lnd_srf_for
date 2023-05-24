@@ -196,9 +196,10 @@ def test_run():
     test = AisDem(os.path.join('data_raw', 'krigged_dem_nsidc.bin'))
     test.print_dataset_info()
     #write_netcdf()
-    test.setup_map(os.path.join('data_clean', "krigged_dem_nsidc.nc"),
-                   os.path.join('data_clean', "krigged_dem_errormap_nsidc.nc"),
-                   new_map=True)
+    ax = test.setup_map(os.path.join('data_clean', "krigged_dem_nsidc.nc"),
+                        os.path.join('data_clean', 
+                                    "krigged_dem_errormap_nsidc.nc"),
+                        new_map=True)
     
     if False:
         test.write_latlon(os.path.join('data_clean', "krigged_dem_nsidc.nc"),

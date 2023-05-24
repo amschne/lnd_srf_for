@@ -166,7 +166,7 @@ def test_run():
     #plt.style.use('agu_half_vertical')
     test = GrISDEM(path.join('data_raw','gimpdem_90m_v01.1.tif'))
     test.print_dataset_info()
-    test.setup_map(path.join('data_clean', "gimpdem_90m_v01.1.nc"))
+    ax = test.setup_map(path.join('data_clean', "gimpdem_90m_v01.1.nc"))
     
     plt.show()
 
