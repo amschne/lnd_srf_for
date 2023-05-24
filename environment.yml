@@ -1,12 +1,13 @@
-name: lnd_srf_for
+name: schneida_tools
 channels:
   - conda-forge
   - defaults
 dependencies:
   - pytest
   - matplotlib
-  - cartopy
-  - colorcet
   - ipython
+  - cartopy
   - gdal
-prefix: /Users/aschneider/.conda/envs/lnd_srf_for
+  - colorcet
+  - netcdf4
+prefix: /home/amschnei/miniconda3/envs/schneida_tools
