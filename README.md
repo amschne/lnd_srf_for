@@ -9,19 +9,17 @@ and Bamber et al. (2009), respectively.
 
 ## Mapping tutorial
 
-#0. Download and install the package
-	
+### 0. Download and install the package and environment
+	bash$ git clone https://github.com/amschne/lnd_srf_for.git; cd lnd_srf_for
+	lnd_srf_for/$ conda env create -n [ENVNAME] --file environment.yml # this usually takes a few minutes
+	lnd_srf_for/$ conda activate [ENVNAME]
+	lnd_srf_for/$ pip install .
 
+### 1. Test the installation - this should generate a short series of map demos
+	 lnd_srf_for/$ pytest tests/
 
 ## References
 
-Bamber, J., Gomez-Dans, J. & Griggs, J. (2009). _Antarctic 1 km Digital 
-	Elevation Model (DEM) from Combined ERS-1 Radar and ICESat Laser Satellite
-	Altimetry, Version 1._ NASA National Snow and Ice Data Center DAAC. 
-	Retrieved 2020-11-17, from http://nsidc.org/data/NSIDC-0422/versions/1 
-	(type: dataset) doi: 10.5067/H0FQ1KL9NEKM
+Bamber, J., Gomez-Dans, J. & Griggs, J. (2009). _Antarctic 1 km Digital Elevation Model (DEM) from Combined ERS-1 Radar and ICESat Laser Satellite Altimetry, Version 1._ NASA National Snow and Ice Data Center DAAC. Retrieved 2020-11-17, from http://nsidc.org/data/NSIDC-0422/versions/1 (type: dataset) doi: 10.5067/H0FQ1KL9NEKM
 
-Howat, I. M., Negrete, Al., & Smith, B. E. (2014, August). The Greenland
-	Ice Mapping Project (GIMP) land classification and surface elevation data 
-	sets. _The Cryosphere_, _8_(4), 1509-1518. Retrieved 2020-09-23, from
-	https://tc.copernicus.org/articles/8/1509/2014/ doi: 105194/tc-8-1509-2014
+Howat, I. M., Negrete, Al., & Smith, B. E. (2014, August). The Greenland Ice Mapping Project (GIMP) land classification and surface elevation data sets. _The Cryosphere, 8_(4), 1509-1518. Retrieved 2020-09-23, from https://tc.copernicus.org/articles/8/1509/2014/ doi: 105194/tc-8-1509-2014
