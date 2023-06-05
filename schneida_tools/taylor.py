@@ -177,7 +177,7 @@ def run():
     gris_results = get_gris_results()
     ais_results = get_ais_results()
     
-    plt.style.use('agu_quarter')
+    plt.style.use('schneida_tools.agu_quarter')
     #plt.style.use('grl')
     taylor_diagram = TaylorDiagram(refstd=gris_results['sumup'][1],
                                    srange=(0,45))
