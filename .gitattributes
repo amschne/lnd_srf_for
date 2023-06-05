@@ -3,3 +3,4 @@
 *.nc filter=lfs diff=lfs merge=lfs -text
 *.bin* filter=lfs diff=lfs merge=lfs -text
 *.bin filter=lfs diff=lfs merge=lfs -text
+*.nc2 filter=lfs diff=lfs merge=lfs -text

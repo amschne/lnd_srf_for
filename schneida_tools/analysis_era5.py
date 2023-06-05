@@ -48,7 +48,7 @@ def set_map_titles(axes):
 """
 
 def setup_map_fig3():
-    plt.style.use('agu_quarter')
+    plt.style.use('schneida_tools.agu_quarter')
     #plt.style.use('grl')
     
     greenland_map_proj = ccrs.LambertAzimuthalEqualArea(central_longitude=-42.1,
@@ -590,10 +590,7 @@ def run(debug=True):
         plt.style.use('agu_online_poster_presentation')
         plt.style.use('uci_blue')
     '''
-    #plt.style.use('agu_full')
-    #plt.style.use('agu_half_vertical')
-    #plt.style.use('hofmann_talk')
-    plt.style.use('agu_quarter')
+    plt.style.use('schneida_tools.agu_quarter')
     #plt.style.use('grl')
     if debug:
         rank=0

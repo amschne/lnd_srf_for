@@ -538,14 +538,8 @@ def test():
 
 def run(xlim=80, ylim=140, sublimation_cmap='cet_CET_D1A'):
     #test()
-    #plt.style.use(path.join('schneida_tools', 'gmd_movie_frame.mplstyle'))
-    #plt.style.use('hofmann')
-    #plt.style.use('agu_online_poster_presentation')
-    #plt.style.use('uci_darkblue')
-    #plt.style.use('agu_half_horizontal')
-    #plt.style.use('uci_blue')
-    plt.style.use('agu_full')
-    plt.style.use('grl')
+    plt.style.use('schneida_tools.agu_full')
+    plt.style.use('schneida_tools.grl')
     
     # get MARv3 sublimation data
     mar_gris = mar3.MARModelDataset()
@@ -564,8 +558,8 @@ def run(xlim=80, ylim=140, sublimation_cmap='cet_CET_D1A'):
                                                 greenland=True)
     ant_analysis = analysis_era5.Analysis(compute_means=False,
                                                 antarctica=True)
-    plt.style.use('agu_quarter')
-    plt.style.use('grl')
+    plt.style.use('schneida_tools.agu_quarter')
+    plt.style.use('schneida_tools.grl')
     greenland_ax, ant_ax = setup_map_fig1()
     
     mar_gris.map2gris(greenland_ax, 100. * -mar_gris.mean_gis_sub_m_yr,

@@ -1,0 +1,15 @@
+#### matplotlib style file for GRL figures
+
+### FONT
+font.size : 6
+
+### AXES
+axes.titlesize : 6
+axes.labelsize : 6
+
+### TICKS
+xtick.labelsize : 6
+ytick.labelsize : 6
+
+### Legend
+legend.fontsize : 6
